@@ -8102,7 +8102,7 @@ function parseTemplate(tpl, nodes) {
     for (var i = 0, len = nodes.length, node, match, binding; i < len; i++) {
         node = nodes[i];
         if (node.nodeType === 3) {
-            if (node.data.indexOf('{{') !== -1) {
+            if (hasInterpolation(node.data)) {
                 matcherRe.lastIndex = 0;
                 binding = getNodeBinding(tpl, node, node.data);
                 while (match = matcherRe.exec(node.data)) {
@@ -8112,7 +8112,7 @@ function parseTemplate(tpl, nodes) {
         } else if (node.nodeType === 1) {
             for (var j = 0, length = node.attributes.length, attr; j < length; j++) {
                 attr = node.attributes[j];
-                if (attr.value.indexOf('{{') !== -1) {
+                if (hasInterpolation(attr.value)) {
                     matcherRe.lastIndex = 0;
                     binding = getAttributeBinding(tpl, node, attr.name, attr.value);
                     while (match = matcherRe.exec(attr.value)) {
@@ -8183,6 +8183,17 @@ function interpolate(tpl, values) {
     return tpl.replace(matcherRe, function (all, token) {
         return values[token] || '';
     });
+}
+
+/**
+ * Check if a string has interpolation
+ *
+ * @param {String} str
+ * @return {Boolean}
+ * @api private
+ */
+function hasInterpolation(str) {
+    return str.indexOf('{{') !== -1;
 }
 
 /**
