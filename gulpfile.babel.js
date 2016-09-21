@@ -23,8 +23,8 @@ const config = {
     },
     test: {
         runner: './test/runner.html',
-        specs: './test/specs/*.js',
-        entryFile: './test/specs/index.js',
+        specs: './test/test-templar.js',
+        entryFile: './test/test-templar.js',
         outputDir: './test/',
         outputFile: 'tests.js'
     }
