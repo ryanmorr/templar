@@ -42,6 +42,12 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
+    it('should support the removal of an attribute if none is defined', () => {
+        const tpl = templar('<div id="{{id}}"></div>');
+        tpl.set('id', '');
+        expect(tpl.frag.childNodes[0].hasAttribute('foo')).to.equal(false);
+    });
+
     it('should support leading and trailing spaces between delimiters of tokens', () => {
         const tpl = templar('<div>{{ foo }}</div>');
         tpl.set('foo', 'bar');

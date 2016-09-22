@@ -15871,6 +15871,12 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
+    it('should support the removal of an attribute if none is defined', function () {
+        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
+        tpl.set('id', '');
+        (0, _chai.expect)(tpl.frag.childNodes[0].hasAttribute('foo')).to.equal(false);
+    });
+
     it('should support leading and trailing spaces between delimiters of tokens', function () {
         var tpl = (0, _templar2.default)('<div>{{ foo }}</div>');
         tpl.set('foo', 'bar');
