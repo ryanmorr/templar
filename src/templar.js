@@ -18,7 +18,7 @@ const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
  * @return {Object}
  * @api private
  */
-function parseTemplate(tpl, nodes, bindings = {}) {
+function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
     for (let i = 0, len = nodes.length, node, match, binding; i < len; i++) {
         node = nodes[i];
         if (node.nodeType === 3) {
@@ -151,7 +151,7 @@ class Templar {
     constructor(tpl) {
         this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
-        this.data = {};
+        this.data = Object.create(null);
         this.rendered = false;
     }
 

@@ -8097,7 +8097,7 @@ var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
  * @api private
  */
 function parseTemplate(tpl, nodes) {
-    var bindings = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var bindings = arguments.length <= 2 || arguments[2] === undefined ? Object.create(null) : arguments[2];
 
     for (var i = 0, len = nodes.length, node, match, binding; i < len; i++) {
         node = nodes[i];
@@ -8236,7 +8236,7 @@ var Templar = function () {
 
         this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
-        this.data = {};
+        this.data = Object.create(null);
         this.rendered = false;
     }
 
