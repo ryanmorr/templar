@@ -24,7 +24,7 @@ class Templar {
         this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
         this.data = Object.create(null);
-        this.rendered = false;
+        this.mounted = false;
     }
 
     /**
@@ -33,9 +33,9 @@ class Templar {
      * @param {Element} root
      * @api public
      */
-    render(root) {
+    mount(root) {
         if (this.frag) {
-            this.rendered = true;
+            this.mounted = true;
             root.appendChild(this.frag);
             this.frag = null;
         }
@@ -69,14 +69,14 @@ class Templar {
     }
 
     /**
-     * Is the template rendered to
+     * Is the template mounted to
      * the DOM
      *
      * @return {Boolean}
      * @api public
      */
-    isRendered() {
-        return this.rendered;
+    isMounted() {
+        return this.mounted;
     }
 }
 

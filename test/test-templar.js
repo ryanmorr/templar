@@ -52,10 +52,10 @@ describe('templar', () => {
         expect(tpl.get('value')).to.equal(null);
     });
 
-    it('should support rendering of a template to the DOM', () => {
+    it('should support appending a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
-        tpl.render(container);
+        tpl.mount(container);
         expect(container.firstChild.tagName.toLowerCase()).to.equal('div');
         expect(container.firstChild.textContent).to.equal('foo');
     });
@@ -63,8 +63,8 @@ describe('templar', () => {
     it('should know whether the template has been appended to the DOM or not', () => {
         const tpl = templar('<div>{{value}}</div>');
         const container = document.createElement('div');
-        expect(tpl.isRendered()).to.equal(false);
-        tpl.render(container);
-        expect(tpl.isRendered()).to.equal(true);
+        expect(tpl.isMounted()).to.equal(false);
+        tpl.mount(container);
+        expect(tpl.isMounted()).to.equal(true);
     });
 });

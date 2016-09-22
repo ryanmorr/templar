@@ -8443,7 +8443,7 @@ var Templar = function () {
         this.frag = (0, _parser.parseHTML)(tpl);
         this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes);
         this.data = Object.create(null);
-        this.rendered = false;
+        this.mounted = false;
     }
 
     /**
@@ -8455,10 +8455,10 @@ var Templar = function () {
 
 
     _createClass(Templar, [{
-        key: 'render',
-        value: function render(root) {
+        key: 'mount',
+        value: function mount(root) {
             if (this.frag) {
-                this.rendered = true;
+                this.mounted = true;
                 root.appendChild(this.frag);
                 this.frag = null;
             }
@@ -8498,7 +8498,7 @@ var Templar = function () {
         }
 
         /**
-         * Is the template rendered to
+         * Is the template mounted to
          * the DOM
          *
          * @return {Boolean}
@@ -8506,9 +8506,9 @@ var Templar = function () {
          */
 
     }, {
-        key: 'isRendered',
-        value: function isRendered() {
-            return this.rendered;
+        key: 'isMounted',
+        value: function isMounted() {
+            return this.mounted;
         }
     }]);
 
@@ -8595,7 +8595,7 @@ describe('templar', function () {
     it('should support rendering of a template to the DOM', function () {
         var tpl = (0, _templar2.default)('<div>foo</div>');
         var container = document.createElement('div');
-        tpl.render(container);
+        tpl.mount(container);
         (0, _chai.expect)(container.firstChild.tagName.toLowerCase()).to.equal('div');
         (0, _chai.expect)(container.firstChild.textContent).to.equal('foo');
     });
@@ -8603,9 +8603,9 @@ describe('templar', function () {
     it('should know whether the template has been appended to the DOM or not', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         var container = document.createElement('div');
-        (0, _chai.expect)(tpl.isRendered()).to.equal(false);
-        tpl.render(container);
-        (0, _chai.expect)(tpl.isRendered()).to.equal(true);
+        (0, _chai.expect)(tpl.isMounted()).to.equal(false);
+        tpl.mount(container);
+        (0, _chai.expect)(tpl.isMounted()).to.equal(true);
     });
 });
 
