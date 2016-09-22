@@ -170,6 +170,18 @@ class Templar {
     }
 
     /**
+     * Get the value for a token in
+     * the template
+     *
+     * @param {String} token
+     * @return {String|Number|Boolean}
+     * @api public
+     */
+    get(token) {
+        return token in this.data ? this.data[token] : null;
+    }
+
+    /**
      * Set the value for a token in
      * the template
      *

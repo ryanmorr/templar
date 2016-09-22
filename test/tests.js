@@ -8259,6 +8259,21 @@ var Templar = function () {
         }
 
         /**
+         * Get the value for a token in
+         * the template
+         *
+         * @param {String} token
+         * @return {String|Number|Boolean}
+         * @api public
+         */
+
+    }, {
+        key: 'get',
+        value: function get(token) {
+            return token in this.data ? this.data[token] : null;
+        }
+
+        /**
          * Set the value for a token in
          * the template
          *
@@ -8354,10 +8369,16 @@ describe('templar', function () {
     });
 
     it('should support multiple attribute interpolation', function () {
-        var tpl = (0, _templar2.default)('<div class="item block {{class}} {{class2}}"></div>');
-        tpl.set('class', 'foo');
-        tpl.set('class2', 'bar');
-        (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('item block foo bar');
+        var tpl = (0, _templar2.default)('<div class="foo bar {{class1}} {{class2}}"></div>');
+        tpl.set('class1', 'baz');
+        tpl.set('class2', 'qux');
+        (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
+    });
+
+    it('should support the retrieval of the current value of a token', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 
     it('should support rendering of a template to the DOM', function () {

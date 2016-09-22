@@ -35,10 +35,16 @@ describe('templar', () => {
     });
 
     it('should support multiple attribute interpolation', () => {
-        const tpl = templar('<div class="item block {{class}} {{class2}}"></div>');
-        tpl.set('class', 'foo');
-        tpl.set('class2', 'bar');
-        expect(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('item block foo bar');
+        const tpl = templar('<div class="foo bar {{class1}} {{class2}}"></div>');
+        tpl.set('class1', 'baz');
+        tpl.set('class2', 'qux');
+        expect(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
+    });
+
+    it('should support the retrieval of the current value of a token', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', 'foo');
+        expect(tpl.get('value')).to.equal('foo');
     });
 
     it('should support rendering of a template to the DOM', () => {
