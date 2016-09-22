@@ -1,31 +1,32 @@
 /* eslint-disable max-len */
 
 import { expect } from 'chai';
+import sinon from 'sinon';
 import templar from '../src/templar';
 
+// Polyfill `requestAnimationFrame` and 'cancelAnimationFrame'
+// for PhantomJS
+window.requestAnimationFrame = window.requestAnimationFrame
+    || window.webkitRequestAnimationFrame
+    || function requestAnimationFrame(cb) { return window.setTimeout(cb, 1000 / 60); };
+
+window.cancelAnimationFrame = window.cancelAnimationFrame
+    || function cancelAnimationFrame(id) { window.clearTimeout(id); };
+
 describe('templar', () => {
-    it('should support node interpolation with a string', () => {
-        const tpl = templar('<div>{{str}}</div>');
-        tpl.set('str', 'foo');
+    it('should support node content interpolation', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        const div = tpl.frag.childNodes[0];
+        const textNode = div.firstChild;
+        tpl.set('value', 'foo');
+        // The template engine should not use `requestAnimationFrame` if
+        // the fragment hasn't been mounted to the DOM, so these
+        // assertions should work synchronously
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
-    });
-
-    it('should support node interpolation with a number', () => {
-        const tpl = templar('<div>{{num}}</div>');
-        tpl.set('num', 25);
-        expect(tpl.frag.childNodes[0].textContent).to.equal('25');
-    });
-
-    it('should support node interpolation with a boolean', () => {
-        const tpl = templar('<div>{{bool}}</div>');
-        tpl.set('bool', true);
-        expect(tpl.frag.childNodes[0].textContent).to.equal('true');
-    });
-
-    it('should support leading and trailing spaces between delimiters of tokens', () => {
-        const tpl = templar('<div>{{ foo }}</div>');
-        tpl.set('foo', 'bar');
-        expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
+        // The div should not be removed when updating its content
+        expect(tpl.frag.childNodes[0]).to.equal(div);
+        // Only the inner text node should be different
+        expect(tpl.frag.childNodes[0].firstChild).to.not.equal(textNode);
     });
 
     it('should support attribute interpolation', () => {
@@ -39,6 +40,12 @@ describe('templar', () => {
         tpl.set('class1', 'baz');
         tpl.set('class2', 'qux');
         expect(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
+    });
+
+    it('should support leading and trailing spaces between delimiters of tokens', () => {
+        const tpl = templar('<div>{{ foo }}</div>');
+        tpl.set('foo', 'bar');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
     });
 
     it('should support multiple token interpolation', () => {
@@ -72,6 +79,39 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
         tpl.set('value', void 0);
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+    });
+
+    it('should support dynamic updates', (done) => {
+        const tpl = templar('<div>{{foo}} {{bar}}</div>');
+        const container = document.createElement('div');
+        const requestSpy = sinon.spy(window, 'requestAnimationFrame');
+        const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
+        const renderSpy = sinon.spy(tpl.bindings.foo[0], 'render');
+        // Mount the template to a parent element, which should
+        // use `requestAnimationFrame` for updates
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        expect(requestSpy.callCount).to.equal(1);
+        expect(cancelSpy.callCount).to.equal(0);
+        expect(renderSpy.callCount).to.equal(0);
+        // Immediately updating one binding after another should cancel
+        // the current frame and start a new one
+        tpl.set('bar', 'bbb');
+        expect(requestSpy.callCount).to.equal(2);
+        expect(cancelSpy.callCount).to.equal(1);
+        expect(renderSpy.callCount).to.equal(0);
+        // Restore the original methods
+        requestSpy.restore();
+        cancelSpy.restore();
+        renderSpy.restore();
+        // Check the updates in the next frame
+        requestAnimationFrame(() => {
+            expect(renderSpy.callCount).to.equal(2);
+            expect(requestSpy.callCount).to.equal(2);
+            expect(cancelSpy.callCount).to.equal(1);
+            expect(container.firstChild.textContent).to.equal('aaa bbb');
+            done();
+        });
     });
 
     it('should support the retrieval of the current value of a token', () => {

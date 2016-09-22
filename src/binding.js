@@ -4,6 +4,34 @@
 import { interpolate } from './parser';
 
 /**
+ * Common variables
+ */
+let frame;
+const batch = [];
+
+/**
+ * Use `requestAnimationFrame` to
+ * optimize DOM updates and avoid
+ * dropped frames
+ *
+ * @param {Function} fn
+ * @api private
+ */
+function updateDOM(fn) {
+    if (frame) {
+        cancelAnimationFrame(frame);
+    }
+    batch.push(fn);
+    frame = requestAnimationFrame(() => {
+        frame = null;
+        let render;
+        while ((render = batch.shift())) {
+            render();
+        }
+    });
+}
+
+/**
  * Abstract class that binds a token
  * to a DOM node
  *
@@ -25,6 +53,17 @@ export default class Binding {
         this.tpl = tpl;
         this.node = node;
         this.text = text;
+    }
+
+    /**
+     * Schedule a frame to update the
+     * binding
+     *
+     * @return {String}
+     * @api private
+     */
+    update() {
+        updateDOM(this.render.bind(this));
     }
 
     /**
