@@ -15445,7 +15445,10 @@ var Binding = function () {
     _createClass(Binding, [{
         key: 'update',
         value: function update() {
-            updateDOM(this.render.bind(this));
+            if (!this.renderer) {
+                this.renderer = this.render.bind(this);
+                updateDOM(this.renderer);
+            }
         }
 
         /**
@@ -15460,6 +15463,7 @@ var Binding = function () {
     }, {
         key: 'render',
         value: function render() {
+            this.renderer = null;
             return (0, _parser.interpolate)(this.text, this.tpl.data);
         }
     }]);
@@ -15854,7 +15858,7 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
         // The div should not be removed when updating its content
         (0, _chai.expect)(tpl.frag.childNodes[0]).to.equal(div);
-        // Only the inner text node should be different
+        // Only the inner text node should be replaced
         (0, _chai.expect)(tpl.frag.childNodes[0].firstChild).to.not.equal(textNode);
     });
 
@@ -15892,15 +15896,12 @@ describe('templar', function () {
 
     it('should support multiple interpolation via key/value map', function () {
         var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>');
-        tpl.set({
-            foo: 123,
-            bar: 456
-        });
+        tpl.set({ foo: 123, bar: 456 });
         (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('456');
     });
 
-    it('should not interpolate a null value', function () {
+    it('should ignore a null value', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
@@ -15908,7 +15909,7 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
-    it('should not interpolate an undefined value', function () {
+    it('should ignore an undefined value', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
@@ -15916,35 +15917,73 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
-    it('should support dynamic updates', function (done) {
+    it('should schedule a frame to make dynamic updates in the DOM', function (done) {
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
+        var container = document.createElement('div');
+        var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        // Mount the template to a parent element, which should
+        // use `requestAnimationFrame` for updates
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        (0, _chai.expect)(spy.called).to.equal(true);
+        // Check the updates in the next frame
+        requestAnimationFrame(function () {
+            (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa');
+            spy.restore();
+            done();
+        });
+    });
+
+    it('should only schedule one callback per frame per binding', function (done) {
         var tpl = (0, _templar2.default)('<div>{{foo}} {{bar}}</div>');
         var container = document.createElement('div');
         var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
-        var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
         var renderSpy = _sinon2.default.spy(tpl.bindings.foo[0], 'render');
+
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
+        // Updating a binding more than once in succession should
+        // not schedule another frame
+        tpl.set('bar', 'bbb');
+        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
+        // Restore the original methods
+        requestSpy.restore();
+        renderSpy.restore();
+        // Check the updates in the next frame
+        requestAnimationFrame(function () {
+            // The actual render method should only be called once
+            (0, _chai.expect)(renderSpy.callCount).to.equal(1);
+            (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa bbb');
+            done();
+        });
+    });
+
+    it('should only schedule one frame per cycle', function (done) {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>');
+        var container = document.createElement('div');
+        var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
         // Mount the template to a parent element, which should
         // use `requestAnimationFrame` for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         (0, _chai.expect)(requestSpy.callCount).to.equal(1);
         (0, _chai.expect)(cancelSpy.callCount).to.equal(0);
-        (0, _chai.expect)(renderSpy.callCount).to.equal(0);
         // Immediately updating one binding after another should cancel
         // the current frame and start a new one
         tpl.set('bar', 'bbb');
         (0, _chai.expect)(requestSpy.callCount).to.equal(2);
         (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
-        (0, _chai.expect)(renderSpy.callCount).to.equal(0);
         // Restore the original methods
         requestSpy.restore();
         cancelSpy.restore();
-        renderSpy.restore();
         // Check the updates in the next frame
         requestAnimationFrame(function () {
-            (0, _chai.expect)(renderSpy.callCount).to.equal(2);
             (0, _chai.expect)(requestSpy.callCount).to.equal(2);
             (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
-            (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa bbb');
+            (0, _chai.expect)(container.firstChild.id).to.equal('aaa');
+            (0, _chai.expect)(container.firstChild.textContent).to.equal('bbb');
             done();
         });
     });

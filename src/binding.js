@@ -63,7 +63,10 @@ export default class Binding {
      * @api private
      */
     update() {
-        updateDOM(this.render.bind(this));
+        if (!this.renderer) {
+            this.renderer = this.render.bind(this);
+            updateDOM(this.renderer);
+        }
     }
 
     /**
@@ -75,6 +78,7 @@ export default class Binding {
      * @api private
      */
     render() {
+        this.renderer = null;
         return interpolate(this.text, this.tpl.data);
     }
 }

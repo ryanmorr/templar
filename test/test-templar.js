@@ -25,7 +25,7 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
         // The div should not be removed when updating its content
         expect(tpl.frag.childNodes[0]).to.equal(div);
-        // Only the inner text node should be different
+        // Only the inner text node should be replaced
         expect(tpl.frag.childNodes[0].firstChild).to.not.equal(textNode);
     });
 
@@ -63,10 +63,7 @@ describe('templar', () => {
 
     it('should support multiple interpolation via key/value map', () => {
         const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
-        tpl.set({
-            foo: 123,
-            bar: 456
-        });
+        tpl.set({foo: 123, bar: 456});
         expect(tpl.frag.childNodes[0].id).to.equal('123');
         expect(tpl.frag.childNodes[0].textContent).to.equal('456');
     });
@@ -87,35 +84,73 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
-    it('should support dynamic updates', (done) => {
+    it('should schedule a frame to make dynamic updates in the DOM', (done) => {
+        const tpl = templar('<div>{{foo}}</div>');
+        const container = document.createElement('div');
+        const spy = sinon.spy(window, 'requestAnimationFrame');
+        // Mount the template to a parent element, which should
+        // use `requestAnimationFrame` for updates
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        expect(spy.called).to.equal(true);
+        // Check the updates in the next frame
+        requestAnimationFrame(() => {
+            expect(container.firstChild.textContent).to.equal('aaa');
+            spy.restore();
+            done();
+        });
+    });
+
+    it('should only schedule one callback per frame per binding', (done) => {
         const tpl = templar('<div>{{foo}} {{bar}}</div>');
         const container = document.createElement('div');
         const requestSpy = sinon.spy(window, 'requestAnimationFrame');
-        const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
         const renderSpy = sinon.spy(tpl.bindings.foo[0], 'render');
+
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        expect(requestSpy.callCount).to.equal(1);
+        // Updating a binding more than once in succession should
+        // not schedule another frame
+        tpl.set('bar', 'bbb');
+        expect(requestSpy.callCount).to.equal(1);
+        // Restore the original methods
+        requestSpy.restore();
+        renderSpy.restore();
+        // Check the updates in the next frame
+        requestAnimationFrame(() => {
+            // The actual render method should only be called once
+            expect(renderSpy.callCount).to.equal(1);
+            expect(container.firstChild.textContent).to.equal('aaa bbb');
+            done();
+        });
+    });
+
+    it('should only schedule one frame per cycle', (done) => {
+        const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
+        const container = document.createElement('div');
+        const requestSpy = sinon.spy(window, 'requestAnimationFrame');
+        const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
         // Mount the template to a parent element, which should
         // use `requestAnimationFrame` for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         expect(requestSpy.callCount).to.equal(1);
         expect(cancelSpy.callCount).to.equal(0);
-        expect(renderSpy.callCount).to.equal(0);
         // Immediately updating one binding after another should cancel
         // the current frame and start a new one
         tpl.set('bar', 'bbb');
         expect(requestSpy.callCount).to.equal(2);
         expect(cancelSpy.callCount).to.equal(1);
-        expect(renderSpy.callCount).to.equal(0);
         // Restore the original methods
         requestSpy.restore();
         cancelSpy.restore();
-        renderSpy.restore();
         // Check the updates in the next frame
         requestAnimationFrame(() => {
-            expect(renderSpy.callCount).to.equal(2);
             expect(requestSpy.callCount).to.equal(2);
             expect(cancelSpy.callCount).to.equal(1);
-            expect(container.firstChild.textContent).to.equal('aaa bbb');
+            expect(container.firstChild.id).to.equal('aaa');
+            expect(container.firstChild.textContent).to.equal('bbb');
             done();
         });
     });
