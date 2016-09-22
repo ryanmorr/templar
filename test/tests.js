@@ -8072,16 +8072,273 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-exports.default = templar;
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _binding = require('./binding');
+
+var _binding2 = _interopRequireDefault(_binding);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Import `Binding` abstract class
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+
+/**
+ * Bind a token to a DOM node attribute
+ *
+ * @class NodeBinding
+ * @api private
+ */
+var AttrBinding = function (_Binding) {
+    _inherits(AttrBinding, _Binding);
+
+    /**
+     * Instantiate the class
+     *
+     * @constructor
+     * @param {Templar} tpl
+     * @param {Node} node
+     * @param {String} attr
+     * @param {String} text
+     * @api private
+     */
+    function AttrBinding(tpl, node, attr, text) {
+        _classCallCheck(this, AttrBinding);
+
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AttrBinding).call(this, tpl, node, text));
+
+        _this.attr = attr;
+        return _this;
+    }
+
+    /**
+     * Update the attribute of the node,
+     * if empty then remove the attribute
+     *
+     * @return {String}
+     * @api private
+     */
+
+
+    _createClass(AttrBinding, [{
+        key: 'render',
+        value: function render() {
+            var value = _get(Object.getPrototypeOf(AttrBinding.prototype), 'render', this).call(this);
+            if (value === '') {
+                this.node.removeAttribute(this.attr);
+                return;
+            }
+            this.node.setAttribute(this.attr, value);
+        }
+    }]);
+
+    return AttrBinding;
+}(_binding2.default);
+
+exports.default = AttrBinding;
+module.exports = exports['default'];
+
+},{"./binding":42}],42:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Import dependencies
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _parser = require('./parser');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
+ * Abstract class that binds a token
+ * to a DOM node
+ *
+ * @class Binding
+ * @api private
+ */
+var Binding = function () {
+
+  /**
+   * Instantiate the class
+   *
+   * @constructor
+   * @param {Templar} tpl
+   * @param {Node} node
+   * @param {String} text
+   * @api private
+   */
+  function Binding(tpl, node, text) {
+    _classCallCheck(this, Binding);
+
+    this.tpl = tpl;
+    this.node = node;
+    this.text = text;
+  }
+
+  /**
+   * Render the template string
+   * using the current values in the
+   * `Templar` instance
+   *
+   * @return {String}
+   * @api private
+   */
+
+
+  _createClass(Binding, [{
+    key: 'render',
+    value: function render() {
+      return (0, _parser.interpolate)(this.text, this.tpl.data);
+    }
+  }]);
+
+  return Binding;
+}();
+
+exports.default = Binding;
+module.exports = exports['default'];
+
+},{"./parser":44}],43:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _binding = require('./binding');
+
+var _binding2 = _interopRequireDefault(_binding);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Import `Binding` abstract class
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+
+/**
+ * Bind a token to a DOM text node
+ *
+ * @class NodeBinding
+ * @api private
+ */
+var NodeBinding = function (_Binding) {
+  _inherits(NodeBinding, _Binding);
+
+  /**
+   * Instantiate the class
+   *
+   * @constructor
+   * @param {Templar} tpl
+   * @param {Node} node
+   * @api private
+   */
+  function NodeBinding(tpl, node) {
+    _classCallCheck(this, NodeBinding);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(NodeBinding).call(this, tpl, node, node.data));
+  }
+
+  /**
+   * Replace the current text node with a
+   * new text node containing the updated
+   * values
+   *
+   * @return {String}
+   * @api private
+   */
+
+
+  _createClass(NodeBinding, [{
+    key: 'render',
+    value: function render() {
+      var value = _get(Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this);
+      var node = document.createTextNode(value);
+      this.node.parentNode.replaceChild(node, this.node);
+      this.node = node;
+    }
+  }]);
+
+  return NodeBinding;
+}(_binding2.default);
+
+exports.default = NodeBinding;
+module.exports = exports['default'];
+
+},{"./binding":42}],44:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.interpolate = interpolate;
+exports.parseTemplate = parseTemplate;
+exports.parseHTML = parseHTML;
+
+var _nodeBinding = require('./node-binding');
+
+var _nodeBinding2 = _interopRequireDefault(_nodeBinding);
+
+var _attrBinding = require('./attr-binding');
+
+var _attrBinding2 = _interopRequireDefault(_attrBinding);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
  * Common variables
  */
-var doc = window.document;
-var div = doc.createElement('div');
+/**
+ * Import binding classes
+ */
+var div = document.createElement('div');
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+
+/**
+ * Check if a string has interpolation
+ *
+ * @param {String} str
+ * @return {Boolean}
+ * @api private
+ */
+function hasInterpolation(str) {
+    return str.indexOf('{{') !== -1;
+}
+
+/**
+ * Supplant the placeholders of a string
+ * with the corresponding value in an
+ * object literal
+ *
+ * @param {String} tpl
+ * @param {Object} values
+ * @return {String}
+ * @api private
+ */
+function interpolate(tpl, values) {
+    return tpl.replace(matcherRe, function (all, token) {
+        return values[token] || '';
+    });
+}
 
 /**
  * Parses the nodes of a template to
@@ -8104,7 +8361,7 @@ function parseTemplate(tpl, nodes) {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 matcherRe.lastIndex = 0;
-                binding = getNodeBinding(tpl, node, node.data);
+                binding = new _nodeBinding2.default(tpl, node);
                 while (match = matcherRe.exec(node.data)) {
                     bindings[match[1]] = binding;
                 }
@@ -8114,7 +8371,7 @@ function parseTemplate(tpl, nodes) {
                 attr = node.attributes[j];
                 if (hasInterpolation(attr.value)) {
                     matcherRe.lastIndex = 0;
-                    binding = getAttributeBinding(tpl, node, attr.name, attr.value);
+                    binding = new _attrBinding2.default(tpl, node, attr.name, attr.value);
                     while (match = matcherRe.exec(attr.value)) {
                         bindings[match[1]] = binding;
                     }
@@ -8129,74 +8386,6 @@ function parseTemplate(tpl, nodes) {
 }
 
 /**
- * Get a function capable of updating
- * the provided text node
- *
- * @param {Templar} tpl
- * @param {TextNode} node
- * @param {String} text
- * @return {Function}
- * @api private
- */
-function getNodeBinding(tpl, node, text) {
-    return function renderNode() {
-        var newNode = doc.createTextNode(interpolate(text, tpl.data));
-        node.parentNode.replaceChild(newNode, node);
-        node = newNode;
-    };
-}
-
-/**
- * Get a function capable of updating
- * the provided attribute of the provided
- * node
- *
- * @param {Templar} tpl
- * @param {Node} node
- * @param {String} attr
- * @param {String} text
- * @return {Function}
- * @api private
- */
-function getAttributeBinding(tpl, node, attr, text) {
-    return function renderAttribute() {
-        var value = interpolate(text, tpl.data);
-        if (value === '') {
-            node.removeAttribute(attr);
-            return;
-        }
-        node.setAttribute(attr, value);
-    };
-}
-
-/**
- * Supplant the placeholders of a string
- * with the corresponding value in an
- * object literal
- *
- * @param {String} tpl
- * @param {Object} values
- * @return {String}
- * @api private
- */
-function interpolate(tpl, values) {
-    return tpl.replace(matcherRe, function (all, token) {
-        return values[token] || '';
-    });
-}
-
-/**
- * Check if a string has interpolation
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
-function hasInterpolation(str) {
-    return str.indexOf('{{') !== -1;
-}
-
-/**
  * Convert an HTML string into a
  * document fragment
  *
@@ -8205,7 +8394,7 @@ function hasInterpolation(str) {
  * @api private
  */
 function parseHTML(html) {
-    var frag = doc.createDocumentFragment();
+    var frag = document.createDocumentFragment();
     div.innerHTML = html;
     while (div.firstChild) {
         frag.appendChild(div.firstChild);
@@ -8213,13 +8402,30 @@ function parseHTML(html) {
     return frag;
 }
 
+},{"./attr-binding":41,"./node-binding":43}],45:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Import dependencies
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+exports.default = templar;
+
+var _parser = require('./parser');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /**
  * Simple DOM templating class
  *
  * @class Templar
  * @api public
  */
-
 var Templar = function () {
 
     /**
@@ -8234,8 +8440,8 @@ var Templar = function () {
     function Templar(tpl) {
         _classCallCheck(this, Templar);
 
-        this.frag = parseHTML(tpl);
-        this.bindings = parseTemplate(this, this.frag.childNodes);
+        this.frag = (0, _parser.parseHTML)(tpl);
+        this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes);
         this.data = Object.create(null);
         this.rendered = false;
     }
@@ -8287,7 +8493,7 @@ var Templar = function () {
         value: function set(token, value) {
             if (value != null) {
                 this.data[token] = value;
-                this.bindings[token]();
+                this.bindings[token].render();
             }
         }
 
@@ -8324,7 +8530,7 @@ function templar(tpl) {
 }
 module.exports = exports['default'];
 
-},{}],42:[function(require,module,exports){
+},{"./parser":44}],46:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');
@@ -8398,4 +8604,4 @@ describe('templar', function () {
     });
 });
 
-},{"../src/templar":41,"chai":5}]},{},[42]);
+},{"../src/templar":45,"chai":5}]},{},[46]);
