@@ -71,7 +71,7 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('456');
     });
 
-    it('should not interpolate a null value', () => {
+    it('should ignore a null value', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
@@ -79,7 +79,7 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
-    it('should not interpolate an undefined value', () => {
+    it('should ignore an undefined value', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
