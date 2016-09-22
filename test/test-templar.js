@@ -58,6 +58,22 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('456');
     });
 
+    it('should not interpolate a null value', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', 'foo');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+        tpl.set('value', null);
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+    });
+
+    it('should not interpolate an undefined value', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', 'foo');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+        tpl.set('value', void 0);
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+    });
+
     it('should support the retrieval of the current value of a token', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
