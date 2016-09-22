@@ -8483,7 +8483,7 @@ var Templar = function () {
          * Set the value for a token in
          * the template
          *
-         * @param {String} token
+         * @param {String|Object} token
          * @param {String|Number|Boolean} value
          * @api public
          */
@@ -8491,6 +8491,14 @@ var Templar = function () {
     }, {
         key: 'set',
         value: function set(token, value) {
+            var _this = this;
+
+            if (typeof token !== 'string') {
+                Object.keys(token).forEach(function (name) {
+                    return _this.set(name, token[name]);
+                });
+                return;
+            }
             if (value != null) {
                 this.data[token] = value;
                 this.bindings[token].render();
@@ -8581,6 +8589,16 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
+    it('should support multiple interpolation via key/value map', function () {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>');
+        tpl.set({
+            foo: 123,
+            bar: 456
+        });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('456');
+    });
+
     it('should support the retrieval of the current value of a token', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo');
@@ -8592,7 +8610,7 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.get('value')).to.equal(null);
     });
 
-    it('should support rendering of a template to the DOM', function () {
+    it('should support appending a template to the DOM', function () {
         var tpl = (0, _templar2.default)('<div>foo</div>');
         var container = document.createElement('div');
         tpl.mount(container);

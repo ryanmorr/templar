@@ -41,6 +41,16 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
+    it('should support multiple interpolation via key/value map', () => {
+        const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
+        tpl.set({
+            foo: 123,
+            bar: 456
+        });
+        expect(tpl.frag.childNodes[0].id).to.equal('123');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('456');
+    });
+
     it('should support the retrieval of the current value of a token', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');

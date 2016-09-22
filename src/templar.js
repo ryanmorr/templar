@@ -57,11 +57,15 @@ class Templar {
      * Set the value for a token in
      * the template
      *
-     * @param {String} token
+     * @param {String|Object} token
      * @param {String|Number|Boolean} value
      * @api public
      */
     set(token, value) {
+        if (typeof token !== 'string') {
+            Object.keys(token).forEach((name) => this.set(name, token[name]));
+            return;
+        }
         if (value != null) {
             this.data[token] = value;
             this.bindings[token].render();
