@@ -47,6 +47,11 @@ describe('templar', () => {
         expect(tpl.get('value')).to.equal('foo');
     });
 
+    it('should return null if trying to retrieve a non-existent token', () => {
+        const tpl = templar('<div></div>');
+        expect(tpl.get('value')).to.equal(null);
+    });
+
     it('should support rendering of a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');

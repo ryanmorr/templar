@@ -8587,6 +8587,11 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 
+    it('should return null if trying to retrieve a non-existent token', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        (0, _chai.expect)(tpl.get('value')).to.equal(null);
+    });
+
     it('should support rendering of a template to the DOM', function () {
         var tpl = (0, _templar2.default)('<div>foo</div>');
         var container = document.createElement('div');
