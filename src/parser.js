@@ -7,8 +7,30 @@ import AttrBinding from './attr-binding';
 /**
  * Common variables
  */
+const has = {}.hasOwnProperty;
 const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+
+/**
+ * Map tokens to a `Binding` instance
+ *
+ * @param {Object} bindings
+ * @param {String} text
+ * @param {Binding} binding
+ * @return {Boolean}
+ * @api private
+ */
+function addBindings(bindings, text, binding) {
+    let match;
+    matcherRe.lastIndex = 0;
+    while ((match = matcherRe.exec(text))) {
+        const token = match[1];
+        if (!has.call(bindings, token)) {
+            bindings[token] = [];
+        }
+        bindings[token].push(binding);
+    }
+}
 
 /**
  * Check if a string has interpolation
@@ -49,25 +71,19 @@ export function interpolate(tpl, values) {
  * @api private
  */
 export function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
-    for (let i = 0, len = nodes.length, node, match, binding; i < len; i++) {
+    for (let i = 0, len = nodes.length, node; i < len; i++) {
         node = nodes[i];
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
-                matcherRe.lastIndex = 0;
-                binding = new NodeBinding(tpl, node);
-                while ((match = matcherRe.exec(node.data))) {
-                    bindings[match[1]] = binding;
-                }
+                const binding = new NodeBinding(tpl, node);
+                addBindings(bindings, node.data, binding);
             }
         } else if (node.nodeType === 1) {
             for (let j = 0, length = node.attributes.length, attr; j < length; j++) {
                 attr = node.attributes[j];
                 if (hasInterpolation(attr.value)) {
-                    matcherRe.lastIndex = 0;
-                    binding = new AttrBinding(tpl, node, attr.name, attr.value);
-                    while ((match = matcherRe.exec(attr.value))) {
-                        bindings[match[1]] = binding;
-                    }
+                    const binding = new AttrBinding(tpl, node, attr.name, attr.value);
+                    addBindings(bindings, attr.value, binding);
                 }
             }
             if (node.hasChildNodes()) {

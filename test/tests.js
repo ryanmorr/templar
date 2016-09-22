@@ -8310,8 +8310,30 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * Import binding classes
  */
+var has = {}.hasOwnProperty;
 var div = document.createElement('div');
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+
+/**
+ * Map tokens to a `Binding` instance
+ *
+ * @param {Object} bindings
+ * @param {String} text
+ * @param {Binding} binding
+ * @return {Boolean}
+ * @api private
+ */
+function addBindings(bindings, text, binding) {
+    var match = void 0;
+    matcherRe.lastIndex = 0;
+    while (match = matcherRe.exec(text)) {
+        var token = match[1];
+        if (!has.call(bindings, token)) {
+            bindings[token] = [];
+        }
+        bindings[token].push(binding);
+    }
+}
 
 /**
  * Check if a string has interpolation
@@ -8356,25 +8378,19 @@ function interpolate(tpl, values) {
 function parseTemplate(tpl, nodes) {
     var bindings = arguments.length <= 2 || arguments[2] === undefined ? Object.create(null) : arguments[2];
 
-    for (var i = 0, len = nodes.length, node, match, binding; i < len; i++) {
+    for (var i = 0, len = nodes.length, node; i < len; i++) {
         node = nodes[i];
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
-                matcherRe.lastIndex = 0;
-                binding = new _nodeBinding2.default(tpl, node);
-                while (match = matcherRe.exec(node.data)) {
-                    bindings[match[1]] = binding;
-                }
+                var binding = new _nodeBinding2.default(tpl, node);
+                addBindings(bindings, node.data, binding);
             }
         } else if (node.nodeType === 1) {
             for (var j = 0, length = node.attributes.length, attr; j < length; j++) {
                 attr = node.attributes[j];
                 if (hasInterpolation(attr.value)) {
-                    matcherRe.lastIndex = 0;
-                    binding = new _attrBinding2.default(tpl, node, attr.name, attr.value);
-                    while (match = matcherRe.exec(attr.value)) {
-                        bindings[match[1]] = binding;
-                    }
+                    var _binding = new _attrBinding2.default(tpl, node, attr.name, attr.value);
+                    addBindings(bindings, attr.value, _binding);
                 }
             }
             if (node.hasChildNodes()) {
@@ -8501,7 +8517,9 @@ var Templar = function () {
             }
             if (value != null) {
                 this.data[token] = value;
-                this.bindings[token].render();
+                this.bindings[token].forEach(function (binding) {
+                    return binding.render();
+                });
             }
         }
 
@@ -8587,6 +8605,13 @@ describe('templar', function () {
         tpl.set('class1', 'baz');
         tpl.set('class2', 'qux');
         (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
+    });
+
+    it('should support multiple token interpolation', function () {
+        var tpl = (0, _templar2.default)('<div id="{{value}}">{{value}}</div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
     it('should support multiple interpolation via key/value map', function () {

@@ -68,7 +68,7 @@ class Templar {
         }
         if (value != null) {
             this.data[token] = value;
-            this.bindings[token].render();
+            this.bindings[token].forEach((binding) => binding.render());
         }
     }
 
