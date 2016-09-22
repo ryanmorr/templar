@@ -152,6 +152,7 @@ class Templar {
         this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
         this.data = {};
+        this.rendered = false;
     }
 
     /**
@@ -162,6 +163,7 @@ class Templar {
      */
     render(root) {
         if (this.frag) {
+            this.rendered = true;
             root.appendChild(this.frag);
             this.frag = null;
         }
@@ -180,6 +182,17 @@ class Templar {
             this.data[token] = value;
             this.bindings[token]();
         }
+    }
+
+    /**
+     * Is the template rendered to
+     * the DOM
+     *
+     * @return {Boolean}
+     * @api public
+     */
+    isRendered() {
+        return this.rendered;
     }
 }
 

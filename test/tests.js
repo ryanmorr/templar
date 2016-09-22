@@ -8237,6 +8237,7 @@ var Templar = function () {
         this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
         this.data = {};
+        this.rendered = false;
     }
 
     /**
@@ -8251,6 +8252,7 @@ var Templar = function () {
         key: 'render',
         value: function render(root) {
             if (this.frag) {
+                this.rendered = true;
                 root.appendChild(this.frag);
                 this.frag = null;
             }
@@ -8272,6 +8274,20 @@ var Templar = function () {
                 this.data[token] = value;
                 this.bindings[token]();
             }
+        }
+
+        /**
+         * Is the template rendered to
+         * the DOM
+         *
+         * @return {Boolean}
+         * @api public
+         */
+
+    }, {
+        key: 'isRendered',
+        value: function isRendered() {
+            return this.rendered;
         }
     }]);
 
@@ -8350,6 +8366,14 @@ describe('templar', function () {
         tpl.render(container);
         (0, _chai.expect)(container.firstChild.tagName.toLowerCase()).to.equal('div');
         (0, _chai.expect)(container.firstChild.textContent).to.equal('foo');
+    });
+
+    it('should know whether the template has been appended to the DOM or not', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var container = document.createElement('div');
+        (0, _chai.expect)(tpl.isRendered()).to.equal(false);
+        tpl.render(container);
+        (0, _chai.expect)(tpl.isRendered()).to.equal(true);
     });
 });
 

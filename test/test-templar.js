@@ -48,4 +48,12 @@ describe('templar', () => {
         expect(container.firstChild.tagName.toLowerCase()).to.equal('div');
         expect(container.firstChild.textContent).to.equal('foo');
     });
+
+    it('should know whether the template has been appended to the DOM or not', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        const container = document.createElement('div');
+        expect(tpl.isRendered()).to.equal(false);
+        tpl.render(container);
+        expect(tpl.isRendered()).to.equal(true);
+    });
 });
