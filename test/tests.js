@@ -15576,9 +15576,22 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Import binding classes
  */
 var slice = [].slice;
+var toString = {}.toString;
 var div = document.createElement('div');
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 var rootRe = /^([^.]+)/;
+
+/**
+ * Check if the provided object is
+ * a function
+ *
+ * @param {*} obj
+ * @return {Boolean}
+ * @api private
+ */
+function isFunction(obj) {
+    return toString.call(obj) === '[object Function]';
+}
 
 /**
  * Map tokens to a `Binding` instance
@@ -15586,7 +15599,6 @@ var rootRe = /^([^.]+)/;
  * @param {Object} bindings
  * @param {String} text
  * @param {Binding} binding
- * @return {Boolean}
  * @api private
  */
 function addBindings(bindings, text, binding) {
@@ -15613,6 +15625,23 @@ function hasInterpolation(str) {
 }
 
 /**
+ * Get the value of a token
+ *
+ * @param {String} token
+ * @param {Object} values
+ * @return {String}
+ * @api private
+ */
+function resolveToken(token, values) {
+    if (token.indexOf('.') !== -1) {
+        return token.split('.').reduce(function (val, ns) {
+            return val ? val[ns] : values[ns];
+        }, null);
+    }
+    return token in values ? values[token] : '';
+}
+
+/**
  * Supplant the placeholders of a string
  * with the corresponding value in an
  * object literal
@@ -15624,12 +15653,8 @@ function hasInterpolation(str) {
  */
 function interpolate(tpl, values) {
     return tpl.replace(matcherRe, function (all, token) {
-        if (token.indexOf('.') !== -1) {
-            return token.split('.').reduce(function (val, ns) {
-                return val ? val[ns] : values[ns];
-            }, null);
-        }
-        return token in values ? values[token] : '';
+        token = resolveToken(token, values);
+        return isFunction(token) ? token() : token;
     });
 }
 
@@ -15932,6 +15957,20 @@ describe('templar', function () {
         });
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
         (0, _chai.expect)(tpl.frag.childNodes[1].textContent).to.equal('bar');
+    });
+
+    it('should support function callbacks for tokens', function () {
+        var tpl = (0, _templar2.default)('<div id="{{id}}">{{obj.content}}</div>');
+        tpl.set('id', function () {
+            return 'foo';
+        });
+        tpl.set('obj', {
+            content: function content() {
+                return 'bar';
+            }
+        });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('bar');
     });
 
     it('should schedule a frame to make dynamic updates in the DOM', function (done) {

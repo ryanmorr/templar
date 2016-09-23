@@ -8,9 +8,22 @@ import AttrBinding from './attr-binding';
  * Common variables
  */
 const slice = [].slice;
+const toString = {}.toString;
 const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 const rootRe = /^([^.]+)/;
+
+/**
+ * Check if the provided object is
+ * a function
+ *
+ * @param {*} obj
+ * @return {Boolean}
+ * @api private
+ */
+function isFunction(obj) {
+    return toString.call(obj) === '[object Function]';
+}
 
 /**
  * Map tokens to a `Binding` instance
@@ -18,7 +31,6 @@ const rootRe = /^([^.]+)/;
  * @param {Object} bindings
  * @param {String} text
  * @param {Binding} binding
- * @return {Boolean}
  * @api private
  */
 function addBindings(bindings, text, binding) {
@@ -45,6 +57,21 @@ function hasInterpolation(str) {
 }
 
 /**
+ * Get the value of a token
+ *
+ * @param {String} token
+ * @param {Object} values
+ * @return {String}
+ * @api private
+ */
+function resolveToken(token, values) {
+    if (token.indexOf('.') !== -1) {
+        return token.split('.').reduce((val, ns) => val ? val[ns] : values[ns], null);
+    }
+    return token in values ? values[token] : '';
+}
+
+/**
  * Supplant the placeholders of a string
  * with the corresponding value in an
  * object literal
@@ -56,10 +83,8 @@ function hasInterpolation(str) {
  */
 export function interpolate(tpl, values) {
     return tpl.replace(matcherRe, (all, token) => {
-        if (token.indexOf('.') !== -1) {
-            return token.split('.').reduce((val, ns) => val ? val[ns] : values[ns], null);
-        }
-        return token in values ? values[token] : '';
+        token = resolveToken(token, values);
+        return isFunction(token) ? token() : token;
     });
 }
 

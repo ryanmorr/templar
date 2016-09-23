@@ -96,6 +96,16 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[1].textContent).to.equal('bar');
     });
 
+    it('should support setting tokens to functions for computed values', () => {
+        const tpl = templar('<div id="{{id}}">{{obj.content}}</div>');
+        tpl.set('id', () => 'foo');
+        tpl.set('obj', {
+            content: () => 'bar'
+        });
+        expect(tpl.frag.childNodes[0].id).to.equal('foo');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
+    });
+
     it('should schedule a frame to make dynamic updates in the DOM', (done) => {
         const tpl = templar('<div>{{foo}}</div>');
         const container = document.createElement('div');
