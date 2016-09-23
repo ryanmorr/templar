@@ -15734,15 +15734,19 @@ var Templar = function () {
      *
      * @constructor
      * @param {String} tpl
+     * @param {Object} data (optional)
      * @api public
      */
-    function Templar(tpl) {
+    function Templar(tpl, data) {
         _classCallCheck(this, Templar);
 
         this.frag = (0, _parser.parseHTML)(tpl);
         this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes);
         this.data = Object.create(null);
         this.mounted = false;
+        if (data) {
+            this.set(data);
+        }
     }
 
     /**
@@ -15846,13 +15850,14 @@ var Templar = function () {
  * `Templar` instances
  *
  * @param {String} tpl
+ * @param {Object} data (optional)
  * @return {Templar}
  * @api public
  */
 
 
-function templar(tpl) {
-    return new Templar(tpl);
+function templar(tpl, data) {
+    return new Templar(tpl, data);
 }
 module.exports = exports['default'];
 
@@ -15923,7 +15928,7 @@ window.cancelAnimationFrame = window.cancelAnimationFrame || function cancelAnim
 };
 
 describe('templar', function () {
-    it('should implicitly parse the HTML template string to a DOM fragment', function () {
+    it('should implicitly parse the HTML template string to a DOM fragment on initialization', function () {
         var tpl = (0, _templar2.default)('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
         var el = tpl.frag.childNodes[0];
         var children = el.childNodes;
@@ -16111,6 +16116,12 @@ describe('templar', function () {
     it('should return null if trying to retrieve a non-existent token', function () {
         var tpl = (0, _templar2.default)('<div></div>');
         (0, _chai.expect)(tpl.get('value')).to.equal(null);
+    });
+
+    it('should support default interpolation on initialization', function () {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>', { foo: 123, bar: 456 });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('456');
     });
 
     it('should support appending a template to the DOM', function () {

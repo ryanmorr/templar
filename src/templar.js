@@ -18,13 +18,17 @@ class Templar {
      *
      * @constructor
      * @param {String} tpl
+     * @param {Object} data (optional)
      * @api public
      */
-    constructor(tpl) {
+    constructor(tpl, data) {
         this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
         this.data = Object.create(null);
         this.mounted = false;
+        if (data) {
+            this.set(data);
+        }
     }
 
     /**
@@ -105,9 +109,10 @@ class Templar {
  * `Templar` instances
  *
  * @param {String} tpl
+ * @param {Object} data (optional)
  * @return {Templar}
  * @api public
  */
-export default function templar(tpl) {
-    return new Templar(tpl);
+export default function templar(tpl, data) {
+    return new Templar(tpl, data);
 }

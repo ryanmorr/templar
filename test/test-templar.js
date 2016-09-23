@@ -200,6 +200,12 @@ describe('templar', () => {
         expect(tpl.get('value')).to.equal(null);
     });
 
+    it('should support default interpolation on initialization', () => {
+        const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {foo: 123, bar: 456});
+        expect(tpl.frag.childNodes[0].id).to.equal('123');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('456');
+    });
+
     it('should support appending a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
