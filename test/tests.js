@@ -15757,9 +15757,26 @@ var Templar = function () {
         key: 'mount',
         value: function mount(root) {
             if (this.frag) {
+                this.root = root;
                 this.mounted = true;
                 root.appendChild(this.frag);
-                this.frag = null;
+            }
+        }
+
+        /**
+         * Remove the template from the DOM
+         *
+         * @api public
+         */
+
+    }, {
+        key: 'unmount',
+        value: function unmount() {
+            if (this.isMounted()) {
+                while (this.root.firstChild) {
+                    this.frag.appendChild(this.root.firstChild);
+                }
+                this.mounted = false;
             }
         }
 
@@ -16092,12 +16109,24 @@ describe('templar', function () {
         (0, _chai.expect)(container.firstChild.textContent).to.equal('foo');
     });
 
+    it('should support removing the template from the DOM', function () {
+        var tpl = (0, _templar2.default)('<div>foo</div>');
+        var container = document.createElement('div');
+        var div = tpl.frag.childNodes[0];
+        tpl.mount(container);
+        tpl.unmount();
+        (0, _chai.expect)(container.contains(div)).to.equal(false);
+        (0, _chai.expect)(container.childNodes).to.have.length(0);
+    });
+
     it('should know whether the template has been appended to the DOM or not', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         var container = document.createElement('div');
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
         tpl.mount(container);
         (0, _chai.expect)(tpl.isMounted()).to.equal(true);
+        tpl.unmount();
+        (0, _chai.expect)(tpl.isMounted()).to.equal(false);
     });
 });
 

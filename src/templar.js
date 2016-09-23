@@ -35,9 +35,23 @@ class Templar {
      */
     mount(root) {
         if (this.frag) {
+            this.root = root;
             this.mounted = true;
             root.appendChild(this.frag);
-            this.frag = null;
+        }
+    }
+
+    /**
+     * Remove the template from the DOM
+     *
+     * @api public
+     */
+    unmount() {
+        if (this.isMounted()) {
+            while (this.root.firstChild) {
+                this.frag.appendChild(this.root.firstChild);
+            }
+            this.mounted = false;
         }
     }
 

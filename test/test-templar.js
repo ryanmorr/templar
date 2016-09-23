@@ -196,11 +196,23 @@ describe('templar', () => {
         expect(container.firstChild.textContent).to.equal('foo');
     });
 
+    it('should support removing the template from the DOM', () => {
+        const tpl = templar('<div>foo</div>');
+        const container = document.createElement('div');
+        const div = tpl.frag.childNodes[0];
+        tpl.mount(container);
+        tpl.unmount();
+        expect(container.contains(div)).to.equal(false);
+        expect(container.childNodes).to.have.length(0);
+    });
+
     it('should know whether the template has been appended to the DOM or not', () => {
         const tpl = templar('<div>{{value}}</div>');
         const container = document.createElement('div');
         expect(tpl.isMounted()).to.equal(false);
         tpl.mount(container);
         expect(tpl.isMounted()).to.equal(true);
+        tpl.unmount();
+        expect(tpl.isMounted()).to.equal(false);
     });
 });
