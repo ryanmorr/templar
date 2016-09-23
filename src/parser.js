@@ -3,27 +3,14 @@
  */
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
+import { isFunction, toArray } from './util';
 
 /**
  * Common variables
  */
-const slice = [].slice;
-const toString = {}.toString;
 const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 const rootRe = /^([^.]+)/;
-
-/**
- * Check if the provided object is
- * a function
- *
- * @param {*} obj
- * @return {Boolean}
- * @api private
- */
-function isFunction(obj) {
-    return toString.call(obj) === '[object Function]';
-}
 
 /**
  * Map tokens to a `Binding` instance
@@ -102,7 +89,7 @@ export function interpolate(tpl, values) {
  * @api private
  */
 export function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
-    return slice.call(nodes).reduce((bindings, node) => {
+    return toArray(nodes).reduce((bindings, node) => {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 const binding = new NodeBinding(tpl, node);

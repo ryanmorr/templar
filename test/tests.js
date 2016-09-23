@@ -15567,31 +15567,19 @@ var _attrBinding = require('./attr-binding');
 
 var _attrBinding2 = _interopRequireDefault(_attrBinding);
 
+var _util = require('./util');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Common variables
  */
-/**
- * Import binding classes
- */
-var slice = [].slice;
-var toString = {}.toString;
-var div = document.createElement('div');
+var div = document.createElement('div'); /**
+                                          * Import binding classes
+                                          */
+
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 var rootRe = /^([^.]+)/;
-
-/**
- * Check if the provided object is
- * a function
- *
- * @param {*} obj
- * @return {Boolean}
- * @api private
- */
-function isFunction(obj) {
-    return toString.call(obj) === '[object Function]';
-}
 
 /**
  * Map tokens to a `Binding` instance
@@ -15654,7 +15642,7 @@ function resolveToken(token, values) {
 function interpolate(tpl, values) {
     return tpl.replace(matcherRe, function (all, token) {
         token = resolveToken(token, values);
-        return isFunction(token) ? token() : token;
+        return (0, _util.isFunction)(token) ? token() : token;
     });
 }
 
@@ -15674,7 +15662,7 @@ function interpolate(tpl, values) {
 function parseTemplate(tpl, nodes) {
     var bindings = arguments.length <= 2 || arguments[2] === undefined ? Object.create(null) : arguments[2];
 
-    return slice.call(nodes).reduce(function (bindings, node) {
+    return (0, _util.toArray)(nodes).reduce(function (bindings, node) {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 var binding = new _nodeBinding2.default(tpl, node);
@@ -15713,7 +15701,7 @@ function parseHTML(html) {
     return frag;
 }
 
-},{"./attr-binding":73,"./node-binding":75}],77:[function(require,module,exports){
+},{"./attr-binding":73,"./node-binding":75,"./util":78}],77:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15854,6 +15842,47 @@ module.exports = exports['default'];
 },{"./parser":76}],78:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.isFunction = isFunction;
+exports.toArray = toArray;
+/**
+ * Common variables
+ */
+var slice = [].slice;
+var toString = {}.toString;
+
+/**
+ * Check if the provided object is
+ * a function
+ *
+ * @param {*} obj
+ * @return {Boolean}
+ * @api private
+ */
+function isFunction(obj) {
+  return toString.call(obj) === '[object Function]';
+}
+
+/**
+ * Convert an array-like object to
+ * an array
+ *
+ * @param {ArrayLike} obj
+ * @return {Array}
+ * @api private
+ */
+function toArray(obj) {
+  if ('from' in Array) {
+    return Array.from(obj);
+  }
+  return slice.call(obj);
+}
+
+},{}],79:[function(require,module,exports){
+'use strict';
+
 var _chai = require('chai');
 
 var _sinon = require('sinon');
@@ -15959,7 +15988,7 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[1].textContent).to.equal('bar');
     });
 
-    it('should support function callbacks for tokens', function () {
+    it('should support setting tokens to functions for computed values', function () {
         var tpl = (0, _templar2.default)('<div id="{{id}}">{{obj.content}}</div>');
         tpl.set('id', function () {
             return 'foo';
@@ -16072,4 +16101,4 @@ describe('templar', function () {
     });
 });
 
-},{"../src/templar":77,"chai":9,"sinon":45}]},{},[78]);
+},{"../src/templar":77,"chai":9,"sinon":45}]},{},[79]);
