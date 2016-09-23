@@ -7,6 +7,7 @@ import AttrBinding from './attr-binding';
 /**
  * Common variables
  */
+const slice = [].slice;
 const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 
@@ -70,27 +71,26 @@ export function interpolate(tpl, values) {
  * @api private
  */
 export function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
-    for (let i = 0, len = nodes.length, node; i < len; i++) {
-        node = nodes[i];
+    return slice.call(nodes).reduce((bindings, node) => {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 const binding = new NodeBinding(tpl, node);
                 addBindings(bindings, node.data, binding);
             }
         } else if (node.nodeType === 1) {
-            for (let j = 0, length = node.attributes.length, attr; j < length; j++) {
-                attr = node.attributes[j];
+            for (let i = 0, length = node.attributes.length, attr; i < length; i++) {
+                attr = node.attributes[i];
                 if (hasInterpolation(attr.value)) {
                     const binding = new AttrBinding(tpl, node, attr.name, attr.value);
                     addBindings(bindings, attr.value, binding);
                 }
             }
             if (node.hasChildNodes()) {
-                bindings = parseTemplate(tpl, node.childNodes, bindings);
+                parseTemplate(tpl, node.childNodes, bindings);
             }
+            return bindings;
         }
-    }
-    return bindings;
+    }, bindings);
 }
 
 /**

@@ -15575,6 +15575,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * Import binding classes
  */
+var slice = [].slice;
 var div = document.createElement('div');
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 
@@ -15642,27 +15643,26 @@ function interpolate(tpl, values) {
 function parseTemplate(tpl, nodes) {
     var bindings = arguments.length <= 2 || arguments[2] === undefined ? Object.create(null) : arguments[2];
 
-    for (var i = 0, len = nodes.length, node; i < len; i++) {
-        node = nodes[i];
+    return slice.call(nodes).reduce(function (bindings, node) {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 var binding = new _nodeBinding2.default(tpl, node);
                 addBindings(bindings, node.data, binding);
             }
         } else if (node.nodeType === 1) {
-            for (var j = 0, length = node.attributes.length, attr; j < length; j++) {
-                attr = node.attributes[j];
+            for (var i = 0, length = node.attributes.length, attr; i < length; i++) {
+                attr = node.attributes[i];
                 if (hasInterpolation(attr.value)) {
                     var _binding = new _attrBinding2.default(tpl, node, attr.name, attr.value);
                     addBindings(bindings, attr.value, _binding);
                 }
             }
             if (node.hasChildNodes()) {
-                bindings = parseTemplate(tpl, node.childNodes, bindings);
+                parseTemplate(tpl, node.childNodes, bindings);
             }
+            return bindings;
         }
-    }
-    return bindings;
+    }, bindings);
 }
 
 /**
