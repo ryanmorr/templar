@@ -15923,6 +15923,18 @@ window.cancelAnimationFrame = window.cancelAnimationFrame || function cancelAnim
 };
 
 describe('templar', function () {
+    it('should implicitly parse the HTML template string to a DOM fragment', function () {
+        var tpl = (0, _templar2.default)('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
+        var el = tpl.frag.childNodes[0];
+        var children = el.childNodes;
+        (0, _chai.expect)(el.tagName.toLowerCase()).to.equal('section');
+        (0, _chai.expect)(children).to.have.length(2);
+        (0, _chai.expect)(children[0].tagName.toLowerCase()).to.equal('div');
+        (0, _chai.expect)(children[0].textContent).to.equal('{{foo}}');
+        (0, _chai.expect)(children[1].tagName.toLowerCase()).to.equal('span');
+        (0, _chai.expect)(children[1].textContent).to.equal('{{bar}}');
+    });
+
     it('should support node content interpolation', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         var div = tpl.frag.childNodes[0];

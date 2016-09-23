@@ -14,6 +14,18 @@ window.cancelAnimationFrame = window.cancelAnimationFrame
     || function cancelAnimationFrame(id) { window.clearTimeout(id); };
 
 describe('templar', () => {
+    it('should implicitly parse the HTML template string to a DOM fragment on initialization', () => {
+        const tpl = templar('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
+        const el = tpl.frag.childNodes[0];
+        const children = el.childNodes;
+        expect(el.tagName.toLowerCase()).to.equal('section');
+        expect(children).to.have.length(2);
+        expect(children[0].tagName.toLowerCase()).to.equal('div');
+        expect(children[0].textContent).to.equal('{{foo}}');
+        expect(children[1].tagName.toLowerCase()).to.equal('span');
+        expect(children[1].textContent).to.equal('{{bar}}');
+    });
+
     it('should support node content interpolation', () => {
         const tpl = templar('<div>{{value}}</div>');
         const div = tpl.frag.childNodes[0];
