@@ -1,5 +1,5 @@
 /**
- * Import `Binding` abstract class
+ * Import dependencies
  */
 import Binding from './binding';
 

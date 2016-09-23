@@ -1,7 +1,8 @@
 /**
- * Import `Binding` abstract class
+ * Import dependencies
  */
 import Binding from './binding';
+import { escapeEntities } from './util';
 
 /**
  * Bind a token to a DOM text node
@@ -33,7 +34,7 @@ export default class NodeBinding extends Binding {
      */
     render() {
         const value = super.render();
-        const node = document.createTextNode(value);
+        const node = document.createTextNode(escapeEntities(value));
         this.node.parentNode.replaceChild(node, this.node);
         this.node = node;
     }

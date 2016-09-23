@@ -3,6 +3,14 @@
  */
 const slice = [].slice;
 const toString = {}.toString;
+const escapeRe = /[<>&"']/g;
+const escapeMap = {
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&#39;',
+    '\'': '&quot;'
+};
 
 /**
  * Check if the provided object is
@@ -29,4 +37,15 @@ export function toArray(obj) {
         return Array.from(obj);
     }
     return slice.call(obj);
+}
+
+/**
+ * Escape HTML characters
+ *
+ * @param {String} str
+ * @return {String}
+ * @api private
+ */
+export function escapeEntities(str) {
+    return (str == null ? '' : '' + str).replace(escapeRe, (c) => escapeMap[c] || '');
 }

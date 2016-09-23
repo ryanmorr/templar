@@ -118,6 +118,12 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
     });
 
+    it('should escape HTML characters by default', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+    });
+
     it('should schedule a frame to make dynamic updates in the DOM', (done) => {
         const tpl = templar('<div>{{foo}}</div>');
         const container = document.createElement('div');

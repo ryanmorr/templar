@@ -15303,7 +15303,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Import `Binding` abstract class
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Import dependencies
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */
 
 
@@ -15489,6 +15489,8 @@ var _binding = require('./binding');
 
 var _binding2 = _interopRequireDefault(_binding);
 
+var _util = require('./util');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -15496,7 +15498,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Import `Binding` abstract class
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Import dependencies
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */
 
 
@@ -15537,7 +15539,7 @@ var NodeBinding = function (_Binding) {
     key: 'render',
     value: function render() {
       var value = _get(NodeBinding.prototype.__proto__ || Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this);
-      var node = document.createTextNode(value);
+      var node = document.createTextNode((0, _util.escapeEntities)(value));
       this.node.parentNode.replaceChild(node, this.node);
       this.node = node;
     }
@@ -15549,7 +15551,7 @@ var NodeBinding = function (_Binding) {
 exports.default = NodeBinding;
 module.exports = exports['default'];
 
-},{"./binding":74}],76:[function(require,module,exports){
+},{"./binding":74,"./util":78}],76:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15575,7 +15577,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Common variables
  */
 var div = document.createElement('div'); /**
-                                          * Import binding classes
+                                          * Import dependencies
                                           */
 
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
@@ -15720,7 +15722,7 @@ var _parser = require('./parser');
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * Simple DOM templating class
+ * DOM templating class
  *
  * @class Templar
  * @api public
@@ -15865,15 +15867,24 @@ module.exports = exports['default'];
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 exports.isFunction = isFunction;
 exports.toArray = toArray;
+exports.escapeEntities = escapeEntities;
 /**
  * Common variables
  */
 var slice = [].slice;
 var toString = {}.toString;
+var escapeRe = /[<>&"']/g;
+var escapeMap = {
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&#39;',
+    '\'': '&quot;'
+};
 
 /**
  * Check if the provided object is
@@ -15884,7 +15895,7 @@ var toString = {}.toString;
  * @api private
  */
 function isFunction(obj) {
-  return toString.call(obj) === '[object Function]';
+    return toString.call(obj) === '[object Function]';
 }
 
 /**
@@ -15896,10 +15907,23 @@ function isFunction(obj) {
  * @api private
  */
 function toArray(obj) {
-  if ('from' in Array) {
-    return Array.from(obj);
-  }
-  return slice.call(obj);
+    if ('from' in Array) {
+        return Array.from(obj);
+    }
+    return slice.call(obj);
+}
+
+/**
+ * Escape HTML characters
+ *
+ * @param {String} str
+ * @return {String}
+ * @api private
+ */
+function escapeEntities(str) {
+    return (str == null ? '' : '' + str).replace(escapeRe, function (c) {
+        return escapeMap[c] || '';
+    });
 }
 
 },{}],79:[function(require,module,exports){
@@ -16034,6 +16058,12 @@ describe('templar', function () {
         });
         (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('bar');
+    });
+
+    it('should escape HTML characters by default', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should schedule a frame to make dynamic updates in the DOM', function (done) {
