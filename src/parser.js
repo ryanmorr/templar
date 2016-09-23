@@ -10,6 +10,7 @@ import AttrBinding from './attr-binding';
 const slice = [].slice;
 const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+const rootRe = /^([^.]+)/;
 
 /**
  * Map tokens to a `Binding` instance
@@ -24,7 +25,7 @@ function addBindings(bindings, text, binding) {
     let match;
     matcherRe.lastIndex = 0;
     while ((match = matcherRe.exec(text))) {
-        const token = match[1];
+        const token = match[1].match(rootRe)[1];
         if (!(token in bindings)) {
             bindings[token] = [];
         }
@@ -54,7 +55,18 @@ function hasInterpolation(str) {
  * @api private
  */
 export function interpolate(tpl, values) {
-    return tpl.replace(matcherRe, (all, token) => values[token] || '');
+    return tpl.replace(matcherRe, (all, token) => {
+        if (token.indexOf('.') !== -1) {
+            const namespaces = token.split('.');
+            const len = namespaces.length;
+            let value = values[namespaces[0]], i = 1;
+            while (i < len && value) {
+                value = value[namespaces[i++]];
+            }
+            return value || '';
+        }
+        return token in values ? values[token] : '';
+    });
 }
 
 /**

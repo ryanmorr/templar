@@ -84,6 +84,18 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
+    it('should support dot-notation interpolation', () => {
+        const tpl = templar('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
+        tpl.set('object', {
+            key: 'foo',
+            data: {
+                value: 'bar'
+            }
+        });
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+        expect(tpl.frag.childNodes[1].textContent).to.equal('bar');
+    });
+
     it('should schedule a frame to make dynamic updates in the DOM', (done) => {
         const tpl = templar('<div>{{foo}}</div>');
         const container = document.createElement('div');

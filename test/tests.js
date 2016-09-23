@@ -15578,6 +15578,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var slice = [].slice;
 var div = document.createElement('div');
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+var rootRe = /^([^.]+)/;
 
 /**
  * Map tokens to a `Binding` instance
@@ -15592,7 +15593,7 @@ function addBindings(bindings, text, binding) {
     var match = void 0;
     matcherRe.lastIndex = 0;
     while (match = matcherRe.exec(text)) {
-        var token = match[1];
+        var token = match[1].match(rootRe)[1];
         if (!(token in bindings)) {
             bindings[token] = [];
         }
@@ -15623,7 +15624,17 @@ function hasInterpolation(str) {
  */
 function interpolate(tpl, values) {
     return tpl.replace(matcherRe, function (all, token) {
-        return values[token] || '';
+        if (token.indexOf('.') !== -1) {
+            var namespaces = token.split('.');
+            var len = namespaces.length;
+            var value = values[namespaces[0]],
+                i = 1;
+            while (i < len && value) {
+                value = value[namespaces[i++]];
+            }
+            return value || '';
+        }
+        return token in values ? values[token] : '';
     });
 }
 
@@ -15914,6 +15925,18 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
         tpl.set('value', void 0);
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
+    });
+
+    it('should support dot-notation interpolation', function () {
+        var tpl = (0, _templar2.default)('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
+        tpl.set('object', {
+            key: 'foo',
+            data: {
+                value: 'bar'
+            }
+        });
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
+        (0, _chai.expect)(tpl.frag.childNodes[1].textContent).to.equal('bar');
     });
 
     it('should schedule a frame to make dynamic updates in the DOM', function (done) {
