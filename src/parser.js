@@ -57,13 +57,7 @@ function hasInterpolation(str) {
 export function interpolate(tpl, values) {
     return tpl.replace(matcherRe, (all, token) => {
         if (token.indexOf('.') !== -1) {
-            const namespaces = token.split('.');
-            const len = namespaces.length;
-            let value = values[namespaces[0]], i = 1;
-            while (i < len && value) {
-                value = value[namespaces[i++]];
-            }
-            return value || '';
+            return token.split('.').reduce((val, ns) => val ? val[ns] : values[ns], null);
         }
         return token in values ? values[token] : '';
     });

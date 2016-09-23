@@ -15625,14 +15625,9 @@ function hasInterpolation(str) {
 function interpolate(tpl, values) {
     return tpl.replace(matcherRe, function (all, token) {
         if (token.indexOf('.') !== -1) {
-            var namespaces = token.split('.');
-            var len = namespaces.length;
-            var value = values[namespaces[0]],
-                i = 1;
-            while (i < len && value) {
-                value = value[namespaces[i++]];
-            }
-            return value || '';
+            return token.split('.').reduce(function (val, ns) {
+                return val ? val[ns] : values[ns];
+            }, null);
         }
         return token in values ? values[token] : '';
     });
