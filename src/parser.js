@@ -1,5 +1,5 @@
 /**
- * Import binding classes
+ * Import dependencies
  */
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';

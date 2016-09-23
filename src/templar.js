@@ -4,7 +4,7 @@
 import { parseHTML, parseTemplate } from './parser';
 
 /**
- * Simple DOM templating class
+ * DOM templating class
  *
  * @class Templar
  * @api public
