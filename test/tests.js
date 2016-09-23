@@ -15575,7 +15575,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * Import binding classes
  */
-var has = {}.hasOwnProperty;
 var div = document.createElement('div');
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 
@@ -15593,7 +15592,7 @@ function addBindings(bindings, text, binding) {
     matcherRe.lastIndex = 0;
     while (match = matcherRe.exec(text)) {
         var token = match[1];
-        if (!has.call(bindings, token)) {
+        if (!(token in bindings)) {
             bindings[token] = [];
         }
         bindings[token].push(binding);

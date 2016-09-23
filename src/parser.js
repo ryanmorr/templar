@@ -7,7 +7,6 @@ import AttrBinding from './attr-binding';
 /**
  * Common variables
  */
-const has = {}.hasOwnProperty;
 const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 
@@ -25,7 +24,7 @@ function addBindings(bindings, text, binding) {
     matcherRe.lastIndex = 0;
     while ((match = matcherRe.exec(text))) {
         const token = match[1];
-        if (!has.call(bindings, token)) {
+        if (!(token in bindings)) {
             bindings[token] = [];
         }
         bindings[token].push(binding);
