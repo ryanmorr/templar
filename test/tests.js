@@ -15539,7 +15539,7 @@ var NodeBinding = function (_Binding) {
     key: 'render',
     value: function render() {
       var value = _get(NodeBinding.prototype.__proto__ || Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this);
-      var node = document.createTextNode((0, _util.escapeEntities)(value));
+      var node = document.createTextNode((0, _util.escapeHTML)(value));
       this.node.parentNode.replaceChild(node, this.node);
       this.node = node;
     }
@@ -15906,7 +15906,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.isFunction = isFunction;
 exports.toArray = toArray;
-exports.escapeEntities = escapeEntities;
+exports.escapeHTML = escapeHTML;
 /**
  * Common variables
  */
@@ -15955,10 +15955,16 @@ function toArray(obj) {
  * @return {String}
  * @api private
  */
-function escapeEntities(str) {
-    return (str == null ? '' : '' + str).replace(escapeRe, function (c) {
-        return escapeMap[c] || '';
-    });
+function escapeHTML(str) {
+    if (str == null) {
+        return '';
+    }
+    if (typeof str === 'string') {
+        return str.replace(escapeRe, function (c) {
+            return escapeMap[c] || '';
+        });
+    }
+    return str;
 }
 
 },{}],79:[function(require,module,exports){
@@ -15976,7 +15982,7 @@ var _templar2 = _interopRequireDefault(_templar);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-describe('attr interpolation', function () {
+describe('attribute interpolation', function () {
     it('should support interpolation', function () {
         var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
         tpl.set('id', 'foo');

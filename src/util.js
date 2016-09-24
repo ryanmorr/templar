@@ -46,6 +46,12 @@ export function toArray(obj) {
  * @return {String}
  * @api private
  */
-export function escapeEntities(str) {
-    return (str == null ? '' : '' + str).replace(escapeRe, (c) => escapeMap[c] || '');
+export function escapeHTML(str) {
+    if (str == null) {
+        return '';
+    }
+    if (typeof str === 'string') {
+        return str.replace(escapeRe, (c) => escapeMap[c] || '');
+    }
+    return str;
 }
