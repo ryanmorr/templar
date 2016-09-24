@@ -15824,7 +15824,7 @@ var Templar = function () {
                 });
                 return;
             }
-            if (value != null) {
+            if (value != null && token in this.bindings) {
                 this.data[token] = value;
                 this.bindings[token].forEach(function (binding) {
                     binding[_this.isMounted() ? 'update' : 'render']();

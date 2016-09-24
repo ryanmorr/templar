@@ -86,7 +86,7 @@ class Templar {
             Object.keys(token).forEach((name) => this.set(name, token[name]));
             return;
         }
-        if (value != null) {
+        if (value != null && token in this.bindings) {
             this.data[token] = value;
             this.bindings[token].forEach((binding) => {
                 binding[this.isMounted() ? 'update' : 'render']();
