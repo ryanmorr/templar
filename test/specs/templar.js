@@ -48,4 +48,44 @@ describe('templar', () => {
         const tpl = templar('<div></div>');
         expect(tpl.get('value')).to.equal(null);
     });
+
+    it('should support querying the template for a single element', () => {
+        const tpl = templar('<div></div>');
+        const container = document.createElement('div');
+        expect(tpl.find('div')).to.equal(tpl.root.childNodes[0]);
+        tpl.mount(container);
+        expect(tpl.find('div')).to.equal(tpl.root.childNodes[0]);
+    });
+
+    it('should support querying the template for a single element before it has been mounted to the DOM', () => {
+        const tpl = templar('<div></div>');
+        const el = tpl.find('div');
+        expect(el.nodeType).to.equal(1);
+        expect(el).to.equal(tpl.root.childNodes[0]);
+    });
+
+    it('should support querying the template for a single element after it has been mounted to the DOM', () => {
+        const tpl = templar('<div></div>');
+        const container = document.createElement('div');
+        tpl.mount(container);
+        const el = tpl.find('div');
+        expect(el.nodeType).to.equal(1);
+        expect(el).to.equal(tpl.root.childNodes[0]);
+    });
+
+    it('should support querying the template for an array of elements before it has been mounted to the DOM', () => {
+        const tpl = templar('<div></div>');
+        const els = tpl.query('div');
+        expect(els).to.be.an('array');
+        expect(els).to.deep.equal([].slice.call(tpl.root.querySelectorAll('div')));
+    });
+
+    it('should support querying the template for an array of elements after it has been mounted to the DOM', () => {
+        const tpl = templar('<div></div>');
+        const container = document.createElement('div');
+        tpl.mount(container);
+        const els = tpl.query('div');
+        expect(els).to.be.an('array');
+        expect(els).to.deep.equal([].slice.call(container.querySelectorAll('div')));
+    });
 });

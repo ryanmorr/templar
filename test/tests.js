@@ -15719,6 +15719,8 @@ exports.default = templar;
 
 var _parser = require('./parser');
 
+var _util = require('./util');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
@@ -15742,7 +15744,7 @@ var Templar = function () {
     function Templar(tpl, data) {
         _classCallCheck(this, Templar);
 
-        this.frag = (0, _parser.parseHTML)(tpl);
+        this.root = this.frag = (0, _parser.parseHTML)(tpl);
         this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes);
         this.data = Object.create(null);
         this.mounted = false;
@@ -15782,6 +15784,7 @@ var Templar = function () {
                 while (this.root.firstChild) {
                     this.frag.appendChild(this.root.firstChild);
                 }
+                this.root = this.frag;
                 this.mounted = false;
             }
         }
@@ -15830,6 +15833,38 @@ var Templar = function () {
         }
 
         /**
+         * Query the template for a single
+         * element matching the provided
+         * selector string
+         *
+         * @param {String} selector
+         * @return {Element|Null}
+         * @api public
+         */
+
+    }, {
+        key: 'find',
+        value: function find(selector) {
+            return this.root.querySelector(selector);
+        }
+
+        /**
+         * Query the template for all the
+         * elements matching the provided
+         * selector string
+         *
+         * @param {String} selector
+         * @return {Array}
+         * @api public
+         */
+
+    }, {
+        key: 'query',
+        value: function query(selector) {
+            return (0, _util.toArray)(this.root.querySelectorAll(selector));
+        }
+
+        /**
          * Is the template mounted to
          * the DOM
          *
@@ -15863,7 +15898,7 @@ function templar(tpl, data) {
 }
 module.exports = exports['default'];
 
-},{"./parser":76}],78:[function(require,module,exports){
+},{"./parser":76,"./util":78}],78:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16349,6 +16384,46 @@ describe('templar', function () {
     it('should return null for the value of a non-existent token', function () {
         var tpl = (0, _templar2.default)('<div></div>');
         (0, _chai.expect)(tpl.get('value')).to.equal(null);
+    });
+
+    it('should support querying the template for a single element', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        var container = document.createElement('div');
+        (0, _chai.expect)(tpl.find('div')).to.equal(tpl.root.childNodes[0]);
+        tpl.mount(container);
+        (0, _chai.expect)(tpl.find('div')).to.equal(tpl.root.childNodes[0]);
+    });
+
+    it('should support querying the template for a single element before it has been mounted to the DOM', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        var el = tpl.find('div');
+        (0, _chai.expect)(el.nodeType).to.equal(1);
+        (0, _chai.expect)(el).to.equal(tpl.root.childNodes[0]);
+    });
+
+    it('should support querying the template for a single element after it has been mounted to the DOM', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        var container = document.createElement('div');
+        tpl.mount(container);
+        var el = tpl.find('div');
+        (0, _chai.expect)(el.nodeType).to.equal(1);
+        (0, _chai.expect)(el).to.equal(tpl.root.childNodes[0]);
+    });
+
+    it('should support querying the template for an array of elements before it has been mounted to the DOM', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        var els = tpl.query('div');
+        (0, _chai.expect)(els).to.be.an('array');
+        (0, _chai.expect)(els).to.deep.equal([].slice.call(tpl.root.querySelectorAll('div')));
+    });
+
+    it('should support querying the template for an array of elements after it has been mounted to the DOM', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        var container = document.createElement('div');
+        tpl.mount(container);
+        var els = tpl.query('div');
+        (0, _chai.expect)(els).to.be.an('array');
+        (0, _chai.expect)(els).to.deep.equal([].slice.call(container.querySelectorAll('div')));
     });
 });
 

@@ -2,6 +2,7 @@
  * Import dependencies
  */
 import { parseHTML, parseTemplate } from './parser';
+import { toArray } from './util';
 
 /**
  * DOM templating class
@@ -22,7 +23,7 @@ class Templar {
      * @api public
      */
     constructor(tpl, data) {
-        this.frag = parseHTML(tpl);
+        this.root = this.frag = parseHTML(tpl);
         this.bindings = parseTemplate(this, this.frag.childNodes);
         this.data = Object.create(null);
         this.mounted = false;
@@ -55,6 +56,7 @@ class Templar {
             while (this.root.firstChild) {
                 this.frag.appendChild(this.root.firstChild);
             }
+            this.root = this.frag;
             this.mounted = false;
         }
     }
@@ -90,6 +92,32 @@ class Templar {
                 binding[this.isMounted() ? 'update' : 'render']();
             });
         }
+    }
+
+    /**
+     * Query the template for a single
+     * element matching the provided
+     * selector string
+     *
+     * @param {String} selector
+     * @return {Element|Null}
+     * @api public
+     */
+    find(selector) {
+        return this.root.querySelector(selector);
+    }
+
+    /**
+     * Query the template for all the
+     * elements matching the provided
+     * selector string
+     *
+     * @param {String} selector
+     * @return {Array}
+     * @api public
+     */
+    query(selector) {
+        return toArray(this.root.querySelectorAll(selector));
     }
 
     /**
