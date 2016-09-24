@@ -16340,19 +16340,21 @@ describe('templar', function () {
     it('should support appending a template to the DOM', function () {
         var tpl = (0, _templar2.default)('<div>foo</div>');
         var container = document.createElement('div');
+        var div = tpl.getRoot().childNodes[0];
         tpl.mount(container);
-        (0, _chai.expect)(container.firstChild.tagName.toLowerCase()).to.equal('div');
-        (0, _chai.expect)(container.firstChild.textContent).to.equal('foo');
+        (0, _chai.expect)(container.contains(div)).to.equal(true);
     });
 
     it('should support removing the template from the DOM', function () {
         var tpl = (0, _templar2.default)('<div>foo</div>');
         var container = document.createElement('div');
-        var div = tpl.getRoot().childNodes[0];
+        var frag = tpl.frag;
+        var div = frag.childNodes[0];
         tpl.mount(container);
         tpl.unmount();
         (0, _chai.expect)(container.contains(div)).to.equal(false);
-        (0, _chai.expect)(container.childNodes).to.have.length(0);
+        (0, _chai.expect)(frag.contains(div)).to.equal(true);
+        (0, _chai.expect)(frag.childNodes.length).to.equal(1);
     });
 
     it('should know whether the template has been mounted to a parent element', function () {

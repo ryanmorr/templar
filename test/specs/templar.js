@@ -19,19 +19,21 @@ describe('templar', () => {
     it('should support appending a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
+        const div = tpl.getRoot().childNodes[0];
         tpl.mount(container);
-        expect(container.firstChild.tagName.toLowerCase()).to.equal('div');
-        expect(container.firstChild.textContent).to.equal('foo');
+        expect(container.contains(div)).to.equal(true);
     });
 
     it('should support removing the template from the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
-        const div = tpl.getRoot().childNodes[0];
+        const frag = tpl.frag;
+        const div = frag.childNodes[0];
         tpl.mount(container);
         tpl.unmount();
         expect(container.contains(div)).to.equal(false);
-        expect(container.childNodes).to.have.length(0);
+        expect(frag.contains(div)).to.equal(true);
+        expect(frag.childNodes.length).to.equal(1);
     });
 
     it('should know whether the template has been mounted to a parent element', () => {
