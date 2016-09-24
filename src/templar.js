@@ -139,7 +139,7 @@ class Templar {
      * @api public
      */
     isRendered() {
-        return this.isMounted() && this.doc.documentElement.contains(this.root);
+        return this.isMounted() && this.doc.contains(this.root);
     }
 }
 
