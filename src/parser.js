@@ -8,7 +8,6 @@ import { isFunction, toArray } from './util';
 /**
  * Common variables
  */
-const div = document.createElement('div');
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 const rootRe = /^([^.]+)/;
 
@@ -109,21 +108,4 @@ export function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
             return bindings;
         }
     }, bindings);
-}
-
-/**
- * Convert an HTML string into a
- * document fragment
- *
- * @param {String} html
- * @return {DocumentFragment}
- * @api private
- */
-export function parseHTML(html) {
-    const frag = document.createDocumentFragment();
-    div.innerHTML = html;
-    while (div.firstChild) {
-        frag.appendChild(div.firstChild);
-    }
-    return frag;
 }

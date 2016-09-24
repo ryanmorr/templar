@@ -1,8 +1,8 @@
 /**
  * Import dependencies
  */
-import { parseHTML, parseTemplate } from './parser';
-import { toArray } from './util';
+import { parseTemplate } from './parser';
+import { toArray, parseHTML } from './util';
 
 /**
  * DOM templating class

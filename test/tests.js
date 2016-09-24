@@ -15559,7 +15559,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.interpolate = interpolate;
 exports.parseTemplate = parseTemplate;
-exports.parseHTML = parseHTML;
 
 var _nodeBinding = require('./node-binding');
 
@@ -15576,11 +15575,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * Common variables
  */
-var div = document.createElement('div'); /**
-                                          * Import dependencies
-                                          */
+var matcherRe = /\{\{\s*(.+?)\s*\}\}/g; /**
+                                         * Import dependencies
+                                         */
 
-var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 var rootRe = /^([^.]+)/;
 
 /**
@@ -15686,23 +15684,6 @@ function parseTemplate(tpl, nodes) {
     }, bindings);
 }
 
-/**
- * Convert an HTML string into a
- * document fragment
- *
- * @param {String} html
- * @return {DocumentFragment}
- * @api private
- */
-function parseHTML(html) {
-    var frag = document.createDocumentFragment();
-    div.innerHTML = html;
-    while (div.firstChild) {
-        frag.appendChild(div.firstChild);
-    }
-    return frag;
-}
-
 },{"./attr-binding":73,"./node-binding":75,"./util":78}],77:[function(require,module,exports){
 'use strict';
 
@@ -15744,7 +15725,7 @@ var Templar = function () {
     function Templar(tpl, data) {
         _classCallCheck(this, Templar);
 
-        this.root = this.frag = (0, _parser.parseHTML)(tpl);
+        this.root = this.frag = (0, _util.parseHTML)(tpl);
         this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes);
         this.data = Object.create(null);
         this.mounted = false;
@@ -15907,11 +15888,13 @@ Object.defineProperty(exports, "__esModule", {
 exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.escapeHTML = escapeHTML;
+exports.parseHTML = parseHTML;
 /**
  * Common variables
  */
 var slice = [].slice;
 var toString = {}.toString;
+var div = document.createElement('div');
 var escapeRe = /[<>&"']/g;
 var escapeMap = {
     '<': '&lt;',
@@ -15965,6 +15948,23 @@ function escapeHTML(str) {
         });
     }
     return str;
+}
+
+/**
+ * Convert an HTML string into a
+ * document fragment
+ *
+ * @param {String} html
+ * @return {DocumentFragment}
+ * @api private
+ */
+function parseHTML(html) {
+    var frag = document.createDocumentFragment();
+    div.innerHTML = html;
+    while (div.firstChild) {
+        frag.appendChild(div.firstChild);
+    }
+    return frag;
 }
 
 },{}],79:[function(require,module,exports){

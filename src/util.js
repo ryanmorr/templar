@@ -3,6 +3,7 @@
  */
 const slice = [].slice;
 const toString = {}.toString;
+const div = document.createElement('div');
 const escapeRe = /[<>&"']/g;
 const escapeMap = {
     '<': '&lt;',
@@ -54,4 +55,21 @@ export function escapeHTML(str) {
         return str.replace(escapeRe, (c) => escapeMap[c] || '');
     }
     return str;
+}
+
+/**
+ * Convert an HTML string into a
+ * document fragment
+ *
+ * @param {String} html
+ * @return {DocumentFragment}
+ * @api private
+ */
+export function parseHTML(html) {
+    const frag = document.createDocumentFragment();
+    div.innerHTML = html;
+    while (div.firstChild) {
+        frag.appendChild(div.firstChild);
+    }
+    return frag;
 }
