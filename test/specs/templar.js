@@ -6,7 +6,7 @@ import templar from '../../src/templar';
 describe('templar', () => {
     it('should implicitly parse the HTML template string to a DOM fragment on initialization', () => {
         const tpl = templar('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
-        const el = tpl.frag.childNodes[0];
+        const el = tpl.getRoot().childNodes[0];
         const children = el.childNodes;
         expect(el.tagName.toLowerCase()).to.equal('section');
         expect(children).to.have.length(2);
@@ -27,7 +27,7 @@ describe('templar', () => {
     it('should support removing the template from the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
-        const div = tpl.frag.childNodes[0];
+        const div = tpl.getRoot().childNodes[0];
         tpl.mount(container);
         tpl.unmount();
         expect(container.contains(div)).to.equal(false);
@@ -61,6 +61,17 @@ describe('templar', () => {
         document.body.removeChild(container);
     });
 
+    it('should support getting the template\'s root element', () => {
+        const tpl = templar('<div>foo</div>');
+        const frag = tpl.frag;
+        const container = document.createElement('div');
+        expect(tpl.getRoot()).to.equal(frag);
+        tpl.mount(container);
+        expect(tpl.getRoot()).to.equal(container);
+        tpl.unmount();
+        expect(tpl.getRoot()).to.equal(frag);
+    });
+
     it('should return null for the value of a non-existent token', () => {
         const tpl = templar('<div></div>');
         expect(tpl.get('value')).to.equal(null);
@@ -69,16 +80,16 @@ describe('templar', () => {
     it('should support querying the template for a single element', () => {
         const tpl = templar('<div></div>');
         const container = document.createElement('div');
-        expect(tpl.find('div')).to.equal(tpl.root.childNodes[0]);
+        expect(tpl.find('div')).to.equal(tpl.getRoot().childNodes[0]);
         tpl.mount(container);
-        expect(tpl.find('div')).to.equal(tpl.root.childNodes[0]);
+        expect(tpl.find('div')).to.equal(tpl.getRoot().childNodes[0]);
     });
 
     it('should support querying the template for a single element before it has been mounted to the DOM', () => {
         const tpl = templar('<div></div>');
         const el = tpl.find('div');
         expect(el.nodeType).to.equal(1);
-        expect(el).to.equal(tpl.root.childNodes[0]);
+        expect(el).to.equal(tpl.getRoot().childNodes[0]);
     });
 
     it('should support querying the template for a single element after it has been mounted to the DOM', () => {
@@ -87,14 +98,14 @@ describe('templar', () => {
         tpl.mount(container);
         const el = tpl.find('div');
         expect(el.nodeType).to.equal(1);
-        expect(el).to.equal(tpl.root.childNodes[0]);
+        expect(el).to.equal(tpl.getRoot().childNodes[0]);
     });
 
     it('should support querying the template for an array of elements before it has been mounted to the DOM', () => {
         const tpl = templar('<div></div>');
         const els = tpl.query('div');
         expect(els).to.be.an('array');
-        expect(els).to.deep.equal([].slice.call(tpl.root.querySelectorAll('div')));
+        expect(els).to.deep.equal([].slice.call(tpl.getRoot().querySelectorAll('div')));
     });
 
     it('should support querying the template for an array of elements after it has been mounted to the DOM', () => {

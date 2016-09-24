@@ -54,8 +54,9 @@ class Templar {
      */
     unmount() {
         if (this.isMounted()) {
-            while (this.root.firstChild) {
-                this.frag.appendChild(this.root.firstChild);
+            const root = this.getRoot();
+            while (root.firstChild) {
+                this.frag.appendChild(root.firstChild);
             }
             this.root = this.frag;
             this.mounted = false;
@@ -104,7 +105,7 @@ class Templar {
      * @api public
      */
     find(selector) {
-        return this.root.querySelector(selector);
+        return this.getRoot().querySelector(selector);
     }
 
     /**
@@ -117,7 +118,17 @@ class Templar {
      * @api public
      */
     query(selector) {
-        return toArray(this.root.querySelectorAll(selector));
+        return toArray(this.getRoot().querySelectorAll(selector));
+    }
+
+    /**
+     * Get the root element
+     *
+     * @return {Element}
+     * @api public
+     */
+    getRoot() {
+        return this.root;
     }
 
     /**
@@ -139,7 +150,7 @@ class Templar {
      * @api public
      */
     isRendered() {
-        return this.isMounted() && this.doc.contains(this.root);
+        return this.isMounted() && this.doc.contains(this.getRoot());
     }
 }
 
