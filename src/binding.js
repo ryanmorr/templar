@@ -2,34 +2,7 @@
  * Import dependencies
  */
 import { interpolate } from './parser';
-
-/**
- * Common variables
- */
-let frame;
-const batch = [];
-
-/**
- * Use `requestAnimationFrame` to
- * optimize DOM updates and avoid
- * dropped frames
- *
- * @param {Function} fn
- * @api private
- */
-function updateDOM(fn) {
-    if (frame) {
-        cancelAnimationFrame(frame);
-    }
-    batch.push(fn);
-    frame = requestAnimationFrame(() => {
-        frame = null;
-        let render;
-        while ((render = batch.shift())) {
-            render();
-        }
-    });
-}
+import { updateDOM } from './util';
 
 /**
  * Abstract class that binds a token

@@ -1,6 +1,8 @@
 /**
  * Common variables
  */
+let frame;
+const batch = [];
 const slice = [].slice;
 const toString = {}.toString;
 const div = document.createElement('div');
@@ -72,4 +74,26 @@ export function parseHTML(html) {
         frag.appendChild(div.firstChild);
     }
     return frag;
+}
+
+/**
+ * Use `requestAnimationFrame` to
+ * optimize DOM updates and avoid
+ * dropped frames
+ *
+ * @param {Function} fn
+ * @api private
+ */
+export function updateDOM(fn) {
+    if (frame) {
+        cancelAnimationFrame(frame);
+    }
+    batch.push(fn);
+    frame = requestAnimationFrame(() => {
+        frame = null;
+        let render;
+        while ((render = batch.shift())) {
+            render();
+        }
+    });
 }

@@ -15376,35 +15376,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _parser = require('./parser');
 
+var _util = require('./util');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Common variables
- */
-var frame = void 0;
-var batch = [];
-
-/**
- * Use `requestAnimationFrame` to
- * optimize DOM updates and avoid
- * dropped frames
- *
- * @param {Function} fn
- * @api private
- */
-function updateDOM(fn) {
-    if (frame) {
-        cancelAnimationFrame(frame);
-    }
-    batch.push(fn);
-    frame = requestAnimationFrame(function () {
-        frame = null;
-        var render = void 0;
-        while (render = batch.shift()) {
-            render();
-        }
-    });
-}
 
 /**
  * Abstract class that binds a token
@@ -15413,7 +15387,6 @@ function updateDOM(fn) {
  * @class Binding
  * @api private
  */
-
 var Binding = function () {
 
     /**
@@ -15447,7 +15420,7 @@ var Binding = function () {
         value: function update() {
             if (!this.renderer) {
                 this.renderer = this.render.bind(this);
-                updateDOM(this.renderer);
+                (0, _util.updateDOM)(this.renderer);
             }
         }
 
@@ -15474,7 +15447,7 @@ var Binding = function () {
 exports.default = Binding;
 module.exports = exports['default'];
 
-},{"./parser":76}],75:[function(require,module,exports){
+},{"./parser":76,"./util":78}],75:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15889,9 +15862,12 @@ exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.escapeHTML = escapeHTML;
 exports.parseHTML = parseHTML;
+exports.updateDOM = updateDOM;
 /**
  * Common variables
  */
+var frame = void 0;
+var batch = [];
 var slice = [].slice;
 var toString = {}.toString;
 var div = document.createElement('div');
@@ -15965,6 +15941,28 @@ function parseHTML(html) {
         frag.appendChild(div.firstChild);
     }
     return frag;
+}
+
+/**
+ * Use `requestAnimationFrame` to
+ * optimize DOM updates and avoid
+ * dropped frames
+ *
+ * @param {Function} fn
+ * @api private
+ */
+function updateDOM(fn) {
+    if (frame) {
+        cancelAnimationFrame(frame);
+    }
+    batch.push(fn);
+    frame = requestAnimationFrame(function () {
+        frame = null;
+        var render = void 0;
+        while (render = batch.shift()) {
+            render();
+        }
+    });
 }
 
 },{}],79:[function(require,module,exports){
