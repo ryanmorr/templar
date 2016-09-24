@@ -15719,9 +15719,20 @@ var Templar = function () {
         key: 'mount',
         value: function mount(root) {
             if (this.frag) {
-                this.root = root;
+                /* this.root = root;
                 root.appendChild(this.frag);
                 this.doc = root.ownerDocument;
+                this.mounted = true; */
+
+                var frag = this.frag;
+                var doc = root.ownerDocument;
+                if (doc !== frag.ownerDocument) {
+                    console.log('yo');
+                    frag = this.frag = doc.adoptNode(frag);
+                }
+                root.appendChild(frag);
+                this.doc = doc;
+                this.root = root;
                 this.mounted = true;
             }
         }
@@ -16382,6 +16393,19 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
         (0, _chai.expect)(tpl.isRendered()).to.equal(false);
         document.body.removeChild(container);
+    });
+
+    it('should support appending a template to a document from another context', function () {
+        var tpl = (0, _templar2.default)('<div>foo</div>');
+        // Create another context
+        var iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        var win = iframe.contentWindow;
+        var doc = iframe.contentDocument || win.document;
+        // Append the template to the iframe's document
+        tpl.mount(doc.body);
+        (0, _chai.expect)(doc.contains(tpl.getRoot())).to.equal(true);
+        (0, _chai.expect)(tpl.getRoot().ownerDocument).to.not.equal(document);
     });
 
     it('should support getting the template\'s root element', function () {

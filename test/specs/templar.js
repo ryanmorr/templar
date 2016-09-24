@@ -63,6 +63,19 @@ describe('templar', () => {
         document.body.removeChild(container);
     });
 
+    it('should support appending a template to a document from another context', () => {
+        const tpl = templar('<div>foo</div>');
+        // Create another context
+        const iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        const win = iframe.contentWindow;
+        const doc = iframe.contentDocument || win.document;
+        // Append the template to the iframe's document
+        tpl.mount(doc.body);
+        expect(doc.contains(tpl.getRoot())).to.equal(true);
+        expect(tpl.getRoot().ownerDocument).to.not.equal(document);
+    });
+
     it('should support getting the template\'s root element', () => {
         const tpl = templar('<div>foo</div>');
         const frag = tpl.frag;

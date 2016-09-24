@@ -40,9 +40,14 @@ class Templar {
      */
     mount(root) {
         if (this.frag) {
+            let frag = this.frag;
+            const doc = root.ownerDocument;
+            if (doc !== frag.ownerDocument) {
+                frag = this.frag = doc.adoptNode(frag);
+            }
+            root.appendChild(frag);
+            this.doc = doc;
             this.root = root;
-            root.appendChild(this.frag);
-            this.doc = root.ownerDocument;
             this.mounted = true;
         }
     }
