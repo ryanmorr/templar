@@ -88,9 +88,8 @@ class Templar {
         }
         if (value != null && token in this.bindings) {
             this.data[token] = value;
-            this.bindings[token].forEach((binding) => {
-                binding[this.isMounted() ? 'update' : 'render']();
-            });
+            const method = this.isRendered() ? 'update' : 'render';
+            this.bindings[token].forEach((binding) => binding[method]());
         }
     }
 
@@ -122,13 +121,24 @@ class Templar {
 
     /**
      * Is the template mounted to
-     * the DOM
+     * a parent element
      *
      * @return {Boolean}
      * @api public
      */
     isMounted() {
         return this.mounted;
+    }
+
+    /**
+     * Is the template rendered within
+     * the DOM
+     *
+     * @return {Boolean}
+     * @api public
+     */
+    isRendered() {
+        return this.isMounted() && document.documentElement.contains(this.root);
     }
 }
 

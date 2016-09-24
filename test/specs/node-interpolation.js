@@ -98,10 +98,23 @@ describe('node interpolation', () => {
         expect(tpl.get('value')).to.equal('foo');
     });
 
-    it('should schedule a frame to make dynamic updates in the DOM', (done) => {
+    it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', () => {
         const tpl = templar('<div>{{foo}}</div>');
-        const container = document.createElement('div');
         const spy = sinon.spy(window, 'requestAnimationFrame');
+        const container = document.createElement('div');
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        expect(spy.called).to.equal(false);
+        expect(container.firstChild.textContent).to.equal('aaa');
+        spy.restore();
+    });
+
+    it('should schedule a frame to update the template if it is rendered within the DOM', (done) => {
+        const tpl = templar('<div>{{foo}}</div>');
+        const spy = sinon.spy(window, 'requestAnimationFrame');
+        // Append to the DOM
+        const container = document.createElement('div');
+        document.body.appendChild(container);
         // Mount the template to a parent element, which should
         // use `requestAnimationFrame` for updates
         tpl.mount(container);
@@ -110,6 +123,7 @@ describe('node interpolation', () => {
         // Check the updates in the next frame
         requestAnimationFrame(() => {
             expect(container.firstChild.textContent).to.equal('aaa');
+            document.body.removeChild(container);
             spy.restore();
             done();
         });
@@ -117,10 +131,13 @@ describe('node interpolation', () => {
 
     it('should only schedule one callback per frame per binding', (done) => {
         const tpl = templar('<div>{{foo}} {{bar}}</div>');
-        const container = document.createElement('div');
         const requestSpy = sinon.spy(window, 'requestAnimationFrame');
         const renderSpy = sinon.spy(tpl.bindings.foo[0], 'render');
-
+        // Append to the DOM
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        // Once the template has been mounted and rendered to the
+        // DOM, an animation frame should be requested for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         expect(requestSpy.callCount).to.equal(1);
@@ -136,17 +153,20 @@ describe('node interpolation', () => {
             // The actual render method should only be called once
             expect(renderSpy.callCount).to.equal(1);
             expect(container.firstChild.textContent).to.equal('aaa bbb');
+            document.body.removeChild(container);
             done();
         });
     });
 
     it('should only schedule one frame per cycle', (done) => {
         const tpl = templar('<div>{{foo}}</div><div>{{bar}}</div>');
-        const container = document.createElement('div');
         const requestSpy = sinon.spy(window, 'requestAnimationFrame');
         const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
-        // Mount the template to a parent element, which should
-        // use `requestAnimationFrame` for updates
+        // Append to the DOM
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        // Once the template has been mounted and rendered to the
+        // DOM, an animation frame should be requested for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         expect(requestSpy.callCount).to.equal(1);
@@ -165,6 +185,7 @@ describe('node interpolation', () => {
             expect(cancelSpy.callCount).to.equal(1);
             expect(container.firstChild.textContent).to.equal('aaa');
             expect(container.lastChild.textContent).to.equal('bbb');
+            document.body.removeChild(container);
             done();
         });
     });

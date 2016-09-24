@@ -15779,10 +15779,13 @@ var Templar = function () {
                 return;
             }
             if (value != null && token in this.bindings) {
-                this.data[token] = value;
-                this.bindings[token].forEach(function (binding) {
-                    binding[_this.isMounted() ? 'update' : 'render']();
-                });
+                (function () {
+                    _this.data[token] = value;
+                    var method = _this.isRendered() ? 'update' : 'render';
+                    _this.bindings[token].forEach(function (binding) {
+                        return binding[method]();
+                    });
+                })();
             }
         }
 
@@ -15820,7 +15823,7 @@ var Templar = function () {
 
         /**
          * Is the template mounted to
-         * the DOM
+         * a parent element
          *
          * @return {Boolean}
          * @api public
@@ -15830,6 +15833,20 @@ var Templar = function () {
         key: 'isMounted',
         value: function isMounted() {
             return this.mounted;
+        }
+
+        /**
+         * Is the template rendered within
+         * the DOM
+         *
+         * @return {Boolean}
+         * @api public
+         */
+
+    }, {
+        key: 'isRendered',
+        value: function isRendered() {
+            return this.isMounted() && document.documentElement.contains(this.root);
         }
     }]);
 
@@ -15970,15 +15987,13 @@ function updateDOM(fn) {
 
 var _chai = require('chai');
 
-var _sinon = require('sinon');
-
-var _sinon2 = _interopRequireDefault(_sinon);
-
 var _templar = require('../../src/templar');
 
 var _templar2 = _interopRequireDefault(_templar);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/* eslint-disable max-len */
 
 describe('attribute interpolation', function () {
     it('should support interpolation', function () {
@@ -16066,80 +16081,9 @@ describe('attribute interpolation', function () {
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
+});
 
-    it('should schedule a frame to make dynamic updates in the DOM', function (done) {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}"></div>');
-        var container = document.createElement('div');
-        var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
-        // Mount the template to a parent element, which should
-        // use `requestAnimationFrame` for updates
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        (0, _chai.expect)(spy.called).to.equal(true);
-        // Check the updates in the next frame
-        requestAnimationFrame(function () {
-            (0, _chai.expect)(container.firstChild.id).to.equal('aaa');
-            spy.restore();
-            done();
-        });
-    });
-
-    it('should only schedule one callback per frame per binding', function (done) {
-        var tpl = (0, _templar2.default)('<div class="{{foo}} {{bar}}"></div>');
-        var container = document.createElement('div');
-        var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
-        var renderSpy = _sinon2.default.spy(tpl.bindings.foo[0], 'render');
-
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
-        // Updating a binding more than once in succession should
-        // not schedule another frame
-        tpl.set('bar', 'bbb');
-        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
-        // Restore the original methods
-        requestSpy.restore();
-        renderSpy.restore();
-        // Check the updates in the next frame
-        requestAnimationFrame(function () {
-            // The actual render method should only be called once
-            (0, _chai.expect)(renderSpy.callCount).to.equal(1);
-            (0, _chai.expect)(container.firstChild.className).to.equal('aaa bbb');
-            done();
-        });
-    });
-
-    it('should only schedule one frame per cycle', function (done) {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}"></div><div id="{{bar}}"></div>');
-        var container = document.createElement('div');
-        var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
-        var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
-        // Mount the template to a parent element, which should
-        // use `requestAnimationFrame` for updates
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
-        (0, _chai.expect)(cancelSpy.callCount).to.equal(0);
-        // Immediately updating one binding after another should cancel
-        // the current frame and start a new one
-        tpl.set('bar', 'bbb');
-        (0, _chai.expect)(requestSpy.callCount).to.equal(2);
-        (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
-        // Restore the original methods
-        requestSpy.restore();
-        cancelSpy.restore();
-        // Check the updates in the next frame
-        requestAnimationFrame(function () {
-            (0, _chai.expect)(requestSpy.callCount).to.equal(2);
-            (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
-            (0, _chai.expect)(container.firstChild.id).to.equal('aaa');
-            (0, _chai.expect)(container.lastChild.id).to.equal('bbb');
-            done();
-        });
-    });
-}); /* eslint-disable max-len */
-
-},{"../../src/templar":77,"chai":9,"sinon":45}],80:[function(require,module,exports){
+},{"../../src/templar":77,"chai":9}],80:[function(require,module,exports){
 'use strict';
 
 require('./templar.js');
@@ -16259,10 +16203,23 @@ describe('node interpolation', function () {
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 
-    it('should schedule a frame to make dynamic updates in the DOM', function (done) {
+    it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', function () {
         var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
-        var container = document.createElement('div');
         var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        var container = document.createElement('div');
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        (0, _chai.expect)(spy.called).to.equal(false);
+        (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa');
+        spy.restore();
+    });
+
+    it('should schedule a frame to update the template if it is rendered within the DOM', function (done) {
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
+        var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        // Append to the DOM
+        var container = document.createElement('div');
+        document.body.appendChild(container);
         // Mount the template to a parent element, which should
         // use `requestAnimationFrame` for updates
         tpl.mount(container);
@@ -16271,6 +16228,7 @@ describe('node interpolation', function () {
         // Check the updates in the next frame
         requestAnimationFrame(function () {
             (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa');
+            document.body.removeChild(container);
             spy.restore();
             done();
         });
@@ -16278,10 +16236,13 @@ describe('node interpolation', function () {
 
     it('should only schedule one callback per frame per binding', function (done) {
         var tpl = (0, _templar2.default)('<div>{{foo}} {{bar}}</div>');
-        var container = document.createElement('div');
         var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
         var renderSpy = _sinon2.default.spy(tpl.bindings.foo[0], 'render');
-
+        // Append to the DOM
+        var container = document.createElement('div');
+        document.body.appendChild(container);
+        // Once the template has been mounted and rendered to the
+        // DOM, an animation frame should be requested for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         (0, _chai.expect)(requestSpy.callCount).to.equal(1);
@@ -16297,17 +16258,20 @@ describe('node interpolation', function () {
             // The actual render method should only be called once
             (0, _chai.expect)(renderSpy.callCount).to.equal(1);
             (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa bbb');
+            document.body.removeChild(container);
             done();
         });
     });
 
     it('should only schedule one frame per cycle', function (done) {
         var tpl = (0, _templar2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
-        var container = document.createElement('div');
         var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
         var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
-        // Mount the template to a parent element, which should
-        // use `requestAnimationFrame` for updates
+        // Append to the DOM
+        var container = document.createElement('div');
+        document.body.appendChild(container);
+        // Once the template has been mounted and rendered to the
+        // DOM, an animation frame should be requested for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         (0, _chai.expect)(requestSpy.callCount).to.equal(1);
@@ -16326,6 +16290,7 @@ describe('node interpolation', function () {
             (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
             (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa');
             (0, _chai.expect)(container.lastChild.textContent).to.equal('bbb');
+            document.body.removeChild(container);
             done();
         });
     });
@@ -16375,7 +16340,7 @@ describe('templar', function () {
         (0, _chai.expect)(container.childNodes).to.have.length(0);
     });
 
-    it('should know whether the template has been appended to the DOM or not', function () {
+    it('should know whether the template has been mounted to a parent element', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         var container = document.createElement('div');
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
@@ -16383,6 +16348,23 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.isMounted()).to.equal(true);
         tpl.unmount();
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
+    });
+
+    it('should know whether the template has been rendered to the DOM', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var container = document.createElement('div');
+        (0, _chai.expect)(tpl.isMounted()).to.equal(false);
+        (0, _chai.expect)(tpl.isRendered()).to.equal(false);
+        tpl.mount(container);
+        (0, _chai.expect)(tpl.isMounted()).to.equal(true);
+        (0, _chai.expect)(tpl.isRendered()).to.equal(false);
+        document.body.appendChild(container);
+        (0, _chai.expect)(tpl.isMounted()).to.equal(true);
+        (0, _chai.expect)(tpl.isRendered()).to.equal(true);
+        tpl.unmount();
+        (0, _chai.expect)(tpl.isMounted()).to.equal(false);
+        (0, _chai.expect)(tpl.isRendered()).to.equal(false);
+        document.body.removeChild(container);
     });
 
     it('should return null for the value of a non-existent token', function () {

@@ -34,7 +34,7 @@ describe('templar', () => {
         expect(container.childNodes).to.have.length(0);
     });
 
-    it('should know whether the template has been appended to the DOM or not', () => {
+    it('should know whether the template has been mounted to a parent element', () => {
         const tpl = templar('<div>{{value}}</div>');
         const container = document.createElement('div');
         expect(tpl.isMounted()).to.equal(false);
@@ -42,6 +42,23 @@ describe('templar', () => {
         expect(tpl.isMounted()).to.equal(true);
         tpl.unmount();
         expect(tpl.isMounted()).to.equal(false);
+    });
+
+    it('should know whether the template has been rendered to the DOM', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        const container = document.createElement('div');
+        expect(tpl.isMounted()).to.equal(false);
+        expect(tpl.isRendered()).to.equal(false);
+        tpl.mount(container);
+        expect(tpl.isMounted()).to.equal(true);
+        expect(tpl.isRendered()).to.equal(false);
+        document.body.appendChild(container);
+        expect(tpl.isMounted()).to.equal(true);
+        expect(tpl.isRendered()).to.equal(true);
+        tpl.unmount();
+        expect(tpl.isMounted()).to.equal(false);
+        expect(tpl.isRendered()).to.equal(false);
+        document.body.removeChild(container);
     });
 
     it('should return null for the value of a non-existent token', () => {

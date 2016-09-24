@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 
 import { expect } from 'chai';
-import sinon from 'sinon';
 import templar from '../../src/templar';
 
 describe('attribute interpolation', () => {
@@ -87,76 +86,5 @@ describe('attribute interpolation', () => {
         const tpl = templar('<div id="{{value}}"></div>');
         tpl.set('value', 'foo');
         expect(tpl.get('value')).to.equal('foo');
-    });
-
-    it('should schedule a frame to make dynamic updates in the DOM', (done) => {
-        const tpl = templar('<div id="{{foo}}"></div>');
-        const container = document.createElement('div');
-        const spy = sinon.spy(window, 'requestAnimationFrame');
-        // Mount the template to a parent element, which should
-        // use `requestAnimationFrame` for updates
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        expect(spy.called).to.equal(true);
-        // Check the updates in the next frame
-        requestAnimationFrame(() => {
-            expect(container.firstChild.id).to.equal('aaa');
-            spy.restore();
-            done();
-        });
-    });
-
-    it('should only schedule one callback per frame per binding', (done) => {
-        const tpl = templar('<div class="{{foo}} {{bar}}"></div>');
-        const container = document.createElement('div');
-        const requestSpy = sinon.spy(window, 'requestAnimationFrame');
-        const renderSpy = sinon.spy(tpl.bindings.foo[0], 'render');
-
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        expect(requestSpy.callCount).to.equal(1);
-        // Updating a binding more than once in succession should
-        // not schedule another frame
-        tpl.set('bar', 'bbb');
-        expect(requestSpy.callCount).to.equal(1);
-        // Restore the original methods
-        requestSpy.restore();
-        renderSpy.restore();
-        // Check the updates in the next frame
-        requestAnimationFrame(() => {
-            // The actual render method should only be called once
-            expect(renderSpy.callCount).to.equal(1);
-            expect(container.firstChild.className).to.equal('aaa bbb');
-            done();
-        });
-    });
-
-    it('should only schedule one frame per cycle', (done) => {
-        const tpl = templar('<div id="{{foo}}"></div><div id="{{bar}}"></div>');
-        const container = document.createElement('div');
-        const requestSpy = sinon.spy(window, 'requestAnimationFrame');
-        const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
-        // Mount the template to a parent element, which should
-        // use `requestAnimationFrame` for updates
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        expect(requestSpy.callCount).to.equal(1);
-        expect(cancelSpy.callCount).to.equal(0);
-        // Immediately updating one binding after another should cancel
-        // the current frame and start a new one
-        tpl.set('bar', 'bbb');
-        expect(requestSpy.callCount).to.equal(2);
-        expect(cancelSpy.callCount).to.equal(1);
-        // Restore the original methods
-        requestSpy.restore();
-        cancelSpy.restore();
-        // Check the updates in the next frame
-        requestAnimationFrame(() => {
-            expect(requestSpy.callCount).to.equal(2);
-            expect(cancelSpy.callCount).to.equal(1);
-            expect(container.firstChild.id).to.equal('aaa');
-            expect(container.lastChild.id).to.equal('bbb');
-            done();
-        });
     });
 });
