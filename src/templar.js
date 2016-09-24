@@ -33,7 +33,8 @@ class Templar {
     }
 
     /**
-     * Append the template to the DOM
+     * Append the template to a parent
+     * element
      *
      * @param {Element} root
      * @api public
@@ -53,7 +54,8 @@ class Templar {
     }
 
     /**
-     * Remove the template from the DOM
+     * Remove the template from it's parent
+     * element
      *
      * @api public
      */
