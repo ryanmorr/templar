@@ -41,8 +41,9 @@ class Templar {
     mount(root) {
         if (this.frag) {
             this.root = root;
-            this.mounted = true;
             root.appendChild(this.frag);
+            this.doc = root.ownerDocument;
+            this.mounted = true;
         }
     }
 
@@ -138,7 +139,7 @@ class Templar {
      * @api public
      */
     isRendered() {
-        return this.isMounted() && document.documentElement.contains(this.root);
+        return this.isMounted() && this.doc.documentElement.contains(this.root);
     }
 }
 
