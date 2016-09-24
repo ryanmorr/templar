@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import templar from '../../src/templar';
 
-describe('attr interpolation', () => {
+describe('attribute interpolation', () => {
     it('should support interpolation', () => {
         const tpl = templar('<div id="{{id}}"></div>');
         tpl.set('id', 'foo');
