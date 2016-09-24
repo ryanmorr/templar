@@ -15708,7 +15708,8 @@ var Templar = function () {
     }
 
     /**
-     * Append the template to the DOM
+     * Append the template to a parent
+     * element
      *
      * @param {Element} root
      * @api public
@@ -15719,15 +15720,9 @@ var Templar = function () {
         key: 'mount',
         value: function mount(root) {
             if (this.frag) {
-                /* this.root = root;
-                root.appendChild(this.frag);
-                this.doc = root.ownerDocument;
-                this.mounted = true; */
-
                 var frag = this.frag;
                 var doc = root.ownerDocument;
                 if (doc !== frag.ownerDocument) {
-                    console.log('yo');
                     frag = this.frag = doc.adoptNode(frag);
                 }
                 root.appendChild(frag);
@@ -15738,7 +15733,8 @@ var Templar = function () {
         }
 
         /**
-         * Remove the template from the DOM
+         * Remove the template from it's parent
+         * element
          *
          * @api public
          */
@@ -16404,6 +16400,7 @@ describe('templar', function () {
         var doc = iframe.contentDocument || win.document;
         // Append the template to the iframe's document
         tpl.mount(doc.body);
+        (0, _chai.expect)(tpl.isRendered()).to.equal(true);
         (0, _chai.expect)(doc.contains(tpl.getRoot())).to.equal(true);
         (0, _chai.expect)(tpl.getRoot().ownerDocument).to.not.equal(document);
     });

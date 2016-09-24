@@ -72,6 +72,7 @@ describe('templar', () => {
         const doc = iframe.contentDocument || win.document;
         // Append the template to the iframe's document
         tpl.mount(doc.body);
+        expect(tpl.isRendered()).to.equal(true);
         expect(doc.contains(tpl.getRoot())).to.equal(true);
         expect(tpl.getRoot().ownerDocument).to.not.equal(document);
     });
