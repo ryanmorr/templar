@@ -15935,36 +15935,197 @@ var _sinon = require('sinon');
 
 var _sinon2 = _interopRequireDefault(_sinon);
 
-var _templar = require('../src/templar');
+var _templar = require('../../src/templar');
 
 var _templar2 = _interopRequireDefault(_templar);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Polyfill `requestAnimationFrame` and 'cancelAnimationFrame'
-// for PhantomJS
-window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function requestAnimationFrame(cb) {
-    return window.setTimeout(cb, 1000 / 60);
-}; /* eslint-disable max-len */
-
-window.cancelAnimationFrame = window.cancelAnimationFrame || function cancelAnimationFrame(id) {
-    window.clearTimeout(id);
-};
-
-describe('templar', function () {
-    it('should implicitly parse the HTML template string to a DOM fragment on initialization', function () {
-        var tpl = (0, _templar2.default)('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
-        var el = tpl.frag.childNodes[0];
-        var children = el.childNodes;
-        (0, _chai.expect)(el.tagName.toLowerCase()).to.equal('section');
-        (0, _chai.expect)(children).to.have.length(2);
-        (0, _chai.expect)(children[0].tagName.toLowerCase()).to.equal('div');
-        (0, _chai.expect)(children[0].textContent).to.equal('{{foo}}');
-        (0, _chai.expect)(children[1].tagName.toLowerCase()).to.equal('span');
-        (0, _chai.expect)(children[1].textContent).to.equal('{{bar}}');
+describe('attr interpolation', function () {
+    it('should support interpolation', function () {
+        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
+        tpl.set('id', 'foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
     });
 
-    it('should support node content interpolation', function () {
+    it('should support multiple tokens within an attribute', function () {
+        var tpl = (0, _templar2.default)('<div class="foo bar {{class1}} {{class2}}"></div>');
+        tpl.set('class1', 'baz');
+        tpl.set('class2', 'qux');
+        (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
+    });
+
+    it('should support the removal of an attribute if none is defined', function () {
+        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
+        tpl.set('id', '');
+        (0, _chai.expect)(tpl.frag.childNodes[0].hasAttribute('foo')).to.equal(false);
+    });
+
+    it('should support leading and trailing spaces between delimiters of tokens', function () {
+        var tpl = (0, _templar2.default)('<div id="{{ foo }}"></div>');
+        tpl.set('foo', 'bar');
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('bar');
+    });
+
+    it('should support the same token more than once', function () {
+        var tpl = (0, _templar2.default)('<div id="{{value}}" class="{{value}}"></div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].className).to.equal('foo');
+    });
+
+    it('should support passing a key/value map', function () {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
+        tpl.set({ foo: 123, bar: 456 });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
+        (0, _chai.expect)(tpl.frag.childNodes[0].className).to.equal('456');
+    });
+
+    it('should ignore a null value', function () {
+        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+        tpl.set('value', null);
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+    });
+
+    it('should ignore an undefined value', function () {
+        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+        tpl.set('value', void 0);
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+    });
+
+    it('should support dot-notation interpolation', function () {
+        var tpl = (0, _templar2.default)('<div id="{{object.key}}" class="{{object.data.value}}"></div>');
+        tpl.set('object', {
+            key: 'foo',
+            data: {
+                value: 'bar'
+            }
+        });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+        (0, _chai.expect)(tpl.frag.childNodes[0].className).to.equal('bar');
+    });
+
+    it('should support token callback functions', function () {
+        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        tpl.set('value', function () {
+            return 'foo';
+        });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
+    });
+
+    it('should support default interpolation on initialization', function () {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}"></div>', { foo: 123 });
+        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
+    });
+
+    it('should support the retrieval of the current value of a token', function () {
+        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.get('value')).to.equal('foo');
+    });
+
+    it('should schedule a frame to make dynamic updates in the DOM', function (done) {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}"></div>');
+        var container = document.createElement('div');
+        var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        // Mount the template to a parent element, which should
+        // use `requestAnimationFrame` for updates
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        (0, _chai.expect)(spy.called).to.equal(true);
+        // Check the updates in the next frame
+        requestAnimationFrame(function () {
+            (0, _chai.expect)(container.firstChild.id).to.equal('aaa');
+            spy.restore();
+            done();
+        });
+    });
+
+    it('should only schedule one callback per frame per binding', function (done) {
+        var tpl = (0, _templar2.default)('<div class="{{foo}} {{bar}}"></div>');
+        var container = document.createElement('div');
+        var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        var renderSpy = _sinon2.default.spy(tpl.bindings.foo[0], 'render');
+
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
+        // Updating a binding more than once in succession should
+        // not schedule another frame
+        tpl.set('bar', 'bbb');
+        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
+        // Restore the original methods
+        requestSpy.restore();
+        renderSpy.restore();
+        // Check the updates in the next frame
+        requestAnimationFrame(function () {
+            // The actual render method should only be called once
+            (0, _chai.expect)(renderSpy.callCount).to.equal(1);
+            (0, _chai.expect)(container.firstChild.className).to.equal('aaa bbb');
+            done();
+        });
+    });
+
+    it('should only schedule one frame per cycle', function (done) {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}"></div><div id="{{bar}}"></div>');
+        var container = document.createElement('div');
+        var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
+        var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
+        // Mount the template to a parent element, which should
+        // use `requestAnimationFrame` for updates
+        tpl.mount(container);
+        tpl.set('foo', 'aaa');
+        (0, _chai.expect)(requestSpy.callCount).to.equal(1);
+        (0, _chai.expect)(cancelSpy.callCount).to.equal(0);
+        // Immediately updating one binding after another should cancel
+        // the current frame and start a new one
+        tpl.set('bar', 'bbb');
+        (0, _chai.expect)(requestSpy.callCount).to.equal(2);
+        (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
+        // Restore the original methods
+        requestSpy.restore();
+        cancelSpy.restore();
+        // Check the updates in the next frame
+        requestAnimationFrame(function () {
+            (0, _chai.expect)(requestSpy.callCount).to.equal(2);
+            (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
+            (0, _chai.expect)(container.firstChild.id).to.equal('aaa');
+            (0, _chai.expect)(container.lastChild.id).to.equal('bbb');
+            done();
+        });
+    });
+}); /* eslint-disable max-len */
+
+},{"../../src/templar":77,"chai":9,"sinon":45}],80:[function(require,module,exports){
+'use strict';
+
+require('./templar.js');
+
+require('./node-interpolation.js');
+
+require('./attr-interpolation.js');
+
+},{"./attr-interpolation.js":79,"./node-interpolation.js":81,"./templar.js":82}],81:[function(require,module,exports){
+'use strict';
+
+var _chai = require('chai');
+
+var _sinon = require('sinon');
+
+var _sinon2 = _interopRequireDefault(_sinon);
+
+var _templar = require('../../src/templar');
+
+var _templar2 = _interopRequireDefault(_templar);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+describe('node interpolation', function () {
+    it('should support interpolation', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         var div = tpl.frag.childNodes[0];
         var textNode = div.firstChild;
@@ -15979,23 +16140,11 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].firstChild).to.not.equal(textNode);
     });
 
-    it('should support attribute interpolation', function () {
-        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
-        tpl.set('id', 'foo');
-        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
-    });
-
-    it('should support multiple attribute interpolation', function () {
-        var tpl = (0, _templar2.default)('<div class="foo bar {{class1}} {{class2}}"></div>');
-        tpl.set('class1', 'baz');
-        tpl.set('class2', 'qux');
-        (0, _chai.expect)(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
-    });
-
-    it('should support the removal of an attribute if none is defined', function () {
-        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
-        tpl.set('id', '');
-        (0, _chai.expect)(tpl.frag.childNodes[0].hasAttribute('foo')).to.equal(false);
+    it('should support multiple tokens within an element', function () {
+        var tpl = (0, _templar2.default)('<div>{{foo}} {{bar}}</div>');
+        tpl.set('foo', 'aaa');
+        tpl.set('bar', 'bbb');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('aaa bbb');
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', function () {
@@ -16004,18 +16153,18 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('bar');
     });
 
-    it('should support multiple token interpolation', function () {
-        var tpl = (0, _templar2.default)('<div id="{{value}}">{{value}}</div>');
+    it('should support the same token more than once', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div><div>{{value}}</div>');
         tpl.set('value', 'foo');
-        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
+        (0, _chai.expect)(tpl.frag.childNodes[1].textContent).to.equal('foo');
     });
 
-    it('should support multiple interpolation via key/value map', function () {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>');
+    it('should support passing a key/value map', function () {
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
         tpl.set({ foo: 123, bar: 456 });
-        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
-        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('456');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('123');
+        (0, _chai.expect)(tpl.frag.childNodes[1].textContent).to.equal('456');
     });
 
     it('should ignore a null value', function () {
@@ -16046,24 +16195,29 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.frag.childNodes[1].textContent).to.equal('bar');
     });
 
-    it('should support setting tokens to functions for computed values', function () {
-        var tpl = (0, _templar2.default)('<div id="{{id}}">{{obj.content}}</div>');
-        tpl.set('id', function () {
+    it('should support token callback functions', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        tpl.set('value', function () {
             return 'foo';
         });
-        tpl.set('obj', {
-            content: function content() {
-                return 'bar';
-            }
-        });
-        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('foo');
-        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('bar');
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
     it('should escape HTML characters by default', function () {
         var tpl = (0, _templar2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
         (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+    });
+
+    it('should support default interpolation on initialization', function () {
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div>', { foo: 'bar' });
+        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('bar');
+    });
+
+    it('should support the retrieval of the current value of a token', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 
     it('should schedule a frame to make dynamic updates in the DOM', function (done) {
@@ -16109,7 +16263,7 @@ describe('templar', function () {
     });
 
     it('should only schedule one frame per cycle', function (done) {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>');
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
         var container = document.createElement('div');
         var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
         var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
@@ -16131,27 +16285,37 @@ describe('templar', function () {
         requestAnimationFrame(function () {
             (0, _chai.expect)(requestSpy.callCount).to.equal(2);
             (0, _chai.expect)(cancelSpy.callCount).to.equal(1);
-            (0, _chai.expect)(container.firstChild.id).to.equal('aaa');
-            (0, _chai.expect)(container.firstChild.textContent).to.equal('bbb');
+            (0, _chai.expect)(container.firstChild.textContent).to.equal('aaa');
+            (0, _chai.expect)(container.lastChild.textContent).to.equal('bbb');
             done();
         });
     });
+}); /* eslint-disable max-len */
 
-    it('should support the retrieval of the current value of a token', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
-        tpl.set('value', 'foo');
-        (0, _chai.expect)(tpl.get('value')).to.equal('foo');
-    });
+},{"../../src/templar":77,"chai":9,"sinon":45}],82:[function(require,module,exports){
+'use strict';
 
-    it('should return null if trying to retrieve a non-existent token', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
-        (0, _chai.expect)(tpl.get('value')).to.equal(null);
-    });
+var _chai = require('chai');
 
-    it('should support default interpolation on initialization', function () {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}">{{bar}}</div>', { foo: 123, bar: 456 });
-        (0, _chai.expect)(tpl.frag.childNodes[0].id).to.equal('123');
-        (0, _chai.expect)(tpl.frag.childNodes[0].textContent).to.equal('456');
+var _templar = require('../../src/templar');
+
+var _templar2 = _interopRequireDefault(_templar);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/* eslint-disable max-len */
+
+describe('templar', function () {
+    it('should implicitly parse the HTML template string to a DOM fragment on initialization', function () {
+        var tpl = (0, _templar2.default)('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
+        var el = tpl.frag.childNodes[0];
+        var children = el.childNodes;
+        (0, _chai.expect)(el.tagName.toLowerCase()).to.equal('section');
+        (0, _chai.expect)(children).to.have.length(2);
+        (0, _chai.expect)(children[0].tagName.toLowerCase()).to.equal('div');
+        (0, _chai.expect)(children[0].textContent).to.equal('{{foo}}');
+        (0, _chai.expect)(children[1].tagName.toLowerCase()).to.equal('span');
+        (0, _chai.expect)(children[1].textContent).to.equal('{{bar}}');
     });
 
     it('should support appending a template to the DOM', function () {
@@ -16181,6 +16345,11 @@ describe('templar', function () {
         tpl.unmount();
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
     });
+
+    it('should return null for the value of a non-existent token', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        (0, _chai.expect)(tpl.get('value')).to.equal(null);
+    });
 });
 
-},{"../src/templar":77,"chai":9,"sinon":45}]},{},[79]);
+},{"../../src/templar":77,"chai":9}]},{},[80]);

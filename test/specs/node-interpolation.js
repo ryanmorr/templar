@@ -2,31 +2,10 @@
 
 import { expect } from 'chai';
 import sinon from 'sinon';
-import templar from '../src/templar';
+import templar from '../../src/templar';
 
-// Polyfill `requestAnimationFrame` and 'cancelAnimationFrame'
-// for PhantomJS
-window.requestAnimationFrame = window.requestAnimationFrame
-    || window.webkitRequestAnimationFrame
-    || function requestAnimationFrame(cb) { return window.setTimeout(cb, 1000 / 60); };
-
-window.cancelAnimationFrame = window.cancelAnimationFrame
-    || function cancelAnimationFrame(id) { window.clearTimeout(id); };
-
-describe('templar', () => {
-    it('should implicitly parse the HTML template string to a DOM fragment on initialization', () => {
-        const tpl = templar('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
-        const el = tpl.frag.childNodes[0];
-        const children = el.childNodes;
-        expect(el.tagName.toLowerCase()).to.equal('section');
-        expect(children).to.have.length(2);
-        expect(children[0].tagName.toLowerCase()).to.equal('div');
-        expect(children[0].textContent).to.equal('{{foo}}');
-        expect(children[1].tagName.toLowerCase()).to.equal('span');
-        expect(children[1].textContent).to.equal('{{bar}}');
-    });
-
-    it('should support node content interpolation', () => {
+describe('node interpolation', () => {
+    it('should support interpolation', () => {
         const tpl = templar('<div>{{value}}</div>');
         const div = tpl.frag.childNodes[0];
         const textNode = div.firstChild;
@@ -41,23 +20,11 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].firstChild).to.not.equal(textNode);
     });
 
-    it('should support attribute interpolation', () => {
-        const tpl = templar('<div id="{{id}}"></div>');
-        tpl.set('id', 'foo');
-        expect(tpl.frag.childNodes[0].id).to.equal('foo');
-    });
-
-    it('should support multiple attribute interpolation', () => {
-        const tpl = templar('<div class="foo bar {{class1}} {{class2}}"></div>');
-        tpl.set('class1', 'baz');
-        tpl.set('class2', 'qux');
-        expect(tpl.frag.childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
-    });
-
-    it('should support the removal of an attribute if none is defined', () => {
-        const tpl = templar('<div id="{{id}}"></div>');
-        tpl.set('id', '');
-        expect(tpl.frag.childNodes[0].hasAttribute('foo')).to.equal(false);
+    it('should support multiple tokens within an element', () => {
+        const tpl = templar('<div>{{foo}} {{bar}}</div>');
+        tpl.set('foo', 'aaa');
+        tpl.set('bar', 'bbb');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('aaa bbb');
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', () => {
@@ -66,18 +33,18 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
     });
 
-    it('should support multiple token interpolation', () => {
-        const tpl = templar('<div id="{{value}}">{{value}}</div>');
+    it('should support the same token more than once', () => {
+        const tpl = templar('<div>{{value}}</div><div>{{value}}</div>');
         tpl.set('value', 'foo');
-        expect(tpl.frag.childNodes[0].id).to.equal('foo');
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
+        expect(tpl.frag.childNodes[1].textContent).to.equal('foo');
     });
 
-    it('should support multiple interpolation via key/value map', () => {
-        const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
+    it('should support passing a key/value map', () => {
+        const tpl = templar('<div>{{foo}}</div><div>{{bar}}</div>');
         tpl.set({foo: 123, bar: 456});
-        expect(tpl.frag.childNodes[0].id).to.equal('123');
-        expect(tpl.frag.childNodes[0].textContent).to.equal('456');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('123');
+        expect(tpl.frag.childNodes[1].textContent).to.equal('456');
     });
 
     it('should ignore a null value', () => {
@@ -108,20 +75,27 @@ describe('templar', () => {
         expect(tpl.frag.childNodes[1].textContent).to.equal('bar');
     });
 
-    it('should support setting tokens to functions for computed values', () => {
-        const tpl = templar('<div id="{{id}}">{{obj.content}}</div>');
-        tpl.set('id', () => 'foo');
-        tpl.set('obj', {
-            content: () => 'bar'
-        });
-        expect(tpl.frag.childNodes[0].id).to.equal('foo');
-        expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
+    it('should support token callback functions', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', () => 'foo');
+        expect(tpl.frag.childNodes[0].textContent).to.equal('foo');
     });
 
     it('should escape HTML characters by default', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
         expect(tpl.frag.childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+    });
+
+    it('should support default interpolation on initialization', () => {
+        const tpl = templar('<div>{{foo}}</div>', {foo: 'bar'});
+        expect(tpl.frag.childNodes[0].textContent).to.equal('bar');
+    });
+
+    it('should support the retrieval of the current value of a token', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', 'foo');
+        expect(tpl.get('value')).to.equal('foo');
     });
 
     it('should schedule a frame to make dynamic updates in the DOM', (done) => {
@@ -167,7 +141,7 @@ describe('templar', () => {
     });
 
     it('should only schedule one frame per cycle', (done) => {
-        const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
+        const tpl = templar('<div>{{foo}}</div><div>{{bar}}</div>');
         const container = document.createElement('div');
         const requestSpy = sinon.spy(window, 'requestAnimationFrame');
         const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
@@ -189,54 +163,9 @@ describe('templar', () => {
         requestAnimationFrame(() => {
             expect(requestSpy.callCount).to.equal(2);
             expect(cancelSpy.callCount).to.equal(1);
-            expect(container.firstChild.id).to.equal('aaa');
-            expect(container.firstChild.textContent).to.equal('bbb');
+            expect(container.firstChild.textContent).to.equal('aaa');
+            expect(container.lastChild.textContent).to.equal('bbb');
             done();
         });
-    });
-
-    it('should support the retrieval of the current value of a token', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        tpl.set('value', 'foo');
-        expect(tpl.get('value')).to.equal('foo');
-    });
-
-    it('should return null if trying to retrieve a non-existent token', () => {
-        const tpl = templar('<div></div>');
-        expect(tpl.get('value')).to.equal(null);
-    });
-
-    it('should support default interpolation on initialization', () => {
-        const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {foo: 123, bar: 456});
-        expect(tpl.frag.childNodes[0].id).to.equal('123');
-        expect(tpl.frag.childNodes[0].textContent).to.equal('456');
-    });
-
-    it('should support appending a template to the DOM', () => {
-        const tpl = templar('<div>foo</div>');
-        const container = document.createElement('div');
-        tpl.mount(container);
-        expect(container.firstChild.tagName.toLowerCase()).to.equal('div');
-        expect(container.firstChild.textContent).to.equal('foo');
-    });
-
-    it('should support removing the template from the DOM', () => {
-        const tpl = templar('<div>foo</div>');
-        const container = document.createElement('div');
-        const div = tpl.frag.childNodes[0];
-        tpl.mount(container);
-        tpl.unmount();
-        expect(container.contains(div)).to.equal(false);
-        expect(container.childNodes).to.have.length(0);
-    });
-
-    it('should know whether the template has been appended to the DOM or not', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        const container = document.createElement('div');
-        expect(tpl.isMounted()).to.equal(false);
-        tpl.mount(container);
-        expect(tpl.isMounted()).to.equal(true);
-        tpl.unmount();
-        expect(tpl.isMounted()).to.equal(false);
     });
 });
