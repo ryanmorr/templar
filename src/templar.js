@@ -140,7 +140,7 @@ class Templar {
 
     /**
      * Is the template mounted to
-     * a parent element
+     * a parent element?
      *
      * @return {Boolean}
      * @api public
@@ -151,7 +151,7 @@ class Templar {
 
     /**
      * Is the template rendered within
-     * the DOM
+     * the DOM?
      *
      * @return {Boolean}
      * @api public
