@@ -20,6 +20,12 @@ describe('node interpolation', () => {
         expect(tpl.getRoot().childNodes[0].firstChild).to.not.equal(textNode);
     });
 
+    it('should support only text node interpolation', () => {
+        const tpl = templar('{{foo}}');
+        tpl.set('foo', 'bar');
+        expect(tpl.getRoot().childNodes[0].data).to.equal('bar');
+    });
+
     it('should support multiple tokens within an element', () => {
         const tpl = templar('<div>{{foo}} {{bar}}</div>');
         tpl.set('foo', 'aaa');

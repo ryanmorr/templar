@@ -109,7 +109,7 @@ export function parseTemplate(tpl, nodes, id, bindings = Object.create(null)) {
             if (node.hasChildNodes()) {
                 parseTemplate(tpl, node.childNodes, id, bindings);
             }
-            return bindings;
         }
+        return bindings;
     }, bindings);
 }

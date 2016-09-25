@@ -15656,8 +15656,8 @@ function parseTemplate(tpl, nodes, id) {
             if (node.hasChildNodes()) {
                 parseTemplate(tpl, node.childNodes, id, bindings);
             }
-            return bindings;
         }
+        return bindings;
     }, bindings);
 }
 
@@ -16183,6 +16183,12 @@ describe('node interpolation', function () {
         (0, _chai.expect)(tpl.getRoot().childNodes[0]).to.equal(div);
         // Only the inner text node should be replaced
         (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild).to.not.equal(textNode);
+    });
+
+    it('should support only text node interpolation', function () {
+        var tpl = (0, _templar2.default)('{{foo}}');
+        tpl.set('foo', 'bar');
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].data).to.equal('bar');
     });
 
     it('should support multiple tokens within an element', function () {
