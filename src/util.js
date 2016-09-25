@@ -2,6 +2,7 @@
  * Common variables
  */
 let frame;
+let counter = 1;
 const batch = [];
 const slice = [].slice;
 const toString = {}.toString;
@@ -96,4 +97,35 @@ export function updateDOM(fn) {
             render();
         }
     });
+}
+
+/**
+ * Generate a unique id
+ *
+ * @return {String}
+ * @api private
+ */
+export function uid() {
+    return Math.floor((counter++ + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+/**
+ * Find the template within the provided
+ * root element matching the provided ID
+ *
+ * @param {Element} root
+ * @param {String} id
+ * @return {Array}
+ * @api private
+ */
+export function getTemplateElements(root, id) {
+    const elements = [];
+    let el = root.firstChild;
+    while (el) {
+        if (el.templar === id) {
+            elements.push(el);
+        }
+        el = el.nextSibling;
+    }
+    return elements;
 }

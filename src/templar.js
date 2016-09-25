@@ -2,7 +2,7 @@
  * Import dependencies
  */
 import { parseTemplate } from './parser';
-import { toArray, parseHTML } from './util';
+import { toArray, parseHTML, uid, getTemplateElements } from './util';
 
 /**
  * DOM templating class
@@ -23,8 +23,9 @@ class Templar {
      * @api public
      */
     constructor(tpl, data) {
+        this.id = uid();
         this.root = this.frag = parseHTML(tpl);
-        this.bindings = parseTemplate(this, this.frag.childNodes);
+        this.bindings = parseTemplate(this, this.frag.childNodes, this.id);
         this.data = Object.create(null);
         this.mounted = false;
         if (data) {
@@ -61,10 +62,9 @@ class Templar {
      */
     unmount() {
         if (this.isMounted()) {
-            const root = this.getRoot();
-            while (root.firstChild) {
-                this.frag.appendChild(root.firstChild);
-            }
+            getTemplateElements(this.getRoot(), this.id).forEach((el) => {
+                this.frag.appendChild(el);
+            });
             this.root = this.frag;
             this.mounted = false;
         }

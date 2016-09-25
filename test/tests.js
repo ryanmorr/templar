@@ -15628,14 +15628,18 @@ function interpolate(tpl, values) {
  *
  * @param {Templar} tpl
  * @param {NodeList} nodes
+ * @param {String} id
  * @param {Object} bindings
  * @return {Object}
  * @api private
  */
-function parseTemplate(tpl, nodes) {
-    var bindings = arguments.length <= 2 || arguments[2] === undefined ? Object.create(null) : arguments[2];
+function parseTemplate(tpl, nodes, id) {
+    var bindings = arguments.length <= 3 || arguments[3] === undefined ? Object.create(null) : arguments[3];
 
     return (0, _util.toArray)(nodes).reduce(function (bindings, node) {
+        if (node.parentNode.nodeType === 11) {
+            node.templar = id;
+        }
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 var binding = new _nodeBinding2.default(tpl, node);
@@ -15650,7 +15654,7 @@ function parseTemplate(tpl, nodes) {
                 }
             }
             if (node.hasChildNodes()) {
-                parseTemplate(tpl, node.childNodes, bindings);
+                parseTemplate(tpl, node.childNodes, id, bindings);
             }
             return bindings;
         }
@@ -15698,8 +15702,9 @@ var Templar = function () {
     function Templar(tpl, data) {
         _classCallCheck(this, Templar);
 
+        this.id = (0, _util.uid)();
         this.root = this.frag = (0, _util.parseHTML)(tpl);
-        this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes);
+        this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes, this.id);
         this.data = Object.create(null);
         this.mounted = false;
         if (data) {
@@ -15742,11 +15747,12 @@ var Templar = function () {
     }, {
         key: 'unmount',
         value: function unmount() {
+            var _this = this;
+
             if (this.isMounted()) {
-                var root = this.getRoot();
-                while (root.firstChild) {
-                    this.frag.appendChild(root.firstChild);
-                }
+                (0, _util.getTemplateElements)(this.getRoot(), this.id).forEach(function (el) {
+                    _this.frag.appendChild(el);
+                });
                 this.root = this.frag;
                 this.mounted = false;
             }
@@ -15779,19 +15785,19 @@ var Templar = function () {
     }, {
         key: 'set',
         value: function set(token, value) {
-            var _this = this;
+            var _this2 = this;
 
             if (typeof token !== 'string') {
                 Object.keys(token).forEach(function (name) {
-                    return _this.set(name, token[name]);
+                    return _this2.set(name, token[name]);
                 });
                 return;
             }
             if (value != null && token in this.bindings) {
                 (function () {
-                    _this.data[token] = value;
-                    var method = _this.isRendered() ? 'update' : 'render';
-                    _this.bindings[token].forEach(function (binding) {
+                    _this2.data[token] = value;
+                    var method = _this2.isRendered() ? 'update' : 'render';
+                    _this2.bindings[token].forEach(function (binding) {
                         return binding[method]();
                     });
                 })();
@@ -15845,7 +15851,7 @@ var Templar = function () {
 
         /**
          * Is the template mounted to
-         * a parent element
+         * a parent element?
          *
          * @return {Boolean}
          * @api public
@@ -15859,7 +15865,7 @@ var Templar = function () {
 
         /**
          * Is the template rendered within
-         * the DOM
+         * the DOM?
          *
          * @return {Boolean}
          * @api public
@@ -15902,10 +15908,13 @@ exports.toArray = toArray;
 exports.escapeHTML = escapeHTML;
 exports.parseHTML = parseHTML;
 exports.updateDOM = updateDOM;
+exports.uid = uid;
+exports.getTemplateElements = getTemplateElements;
 /**
  * Common variables
  */
 var frame = void 0;
+var counter = 1;
 var batch = [];
 var slice = [].slice;
 var toString = {}.toString;
@@ -16002,6 +16011,37 @@ function updateDOM(fn) {
             render();
         }
     });
+}
+
+/**
+ * Generate a unique id
+ *
+ * @return {String}
+ * @api private
+ */
+function uid() {
+    return Math.floor((counter++ + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+/**
+ * Find the template within the provided
+ * root element matching the provided ID
+ *
+ * @param {Element} root
+ * @param {String} id
+ * @return {Array}
+ * @api private
+ */
+function getTemplateElements(root, id) {
+    var elements = [];
+    var el = root.firstChild;
+    while (el) {
+        if (el.templar === id) {
+            elements.push(el);
+        }
+        el = el.nextSibling;
+    }
+    return elements;
 }
 
 },{}],79:[function(require,module,exports){
@@ -16403,6 +16443,26 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.isRendered()).to.equal(true);
         (0, _chai.expect)(doc.contains(tpl.getRoot())).to.equal(true);
         (0, _chai.expect)(tpl.getRoot().ownerDocument).to.not.equal(document);
+    });
+
+    it('should support appending and removing a template between multiple elements', function () {
+        // Create a container element with multiple child elements
+        var container = document.createElement('div');
+        for (var i = 0; i < 3; i++) {
+            container.appendChild(document.createElement('div'));
+        }
+        // Append the template to the container
+        var tpl = (0, _templar2.default)('<div>foo</div><div>bar</div><div>baz</div>');
+        var nodes = [].slice.call(tpl.frag.childNodes);
+        tpl.mount(container);
+        // Add more child elements behind the template
+        for (var _i = 0; _i < 3; _i++) {
+            container.appendChild(document.createElement('div'));
+        }
+        tpl.unmount();
+        (0, _chai.expect)(tpl.frag.childNodes.length).to.equal(3);
+        (0, _chai.expect)([].slice.call(tpl.frag.childNodes)).to.deep.equal(nodes);
+        (0, _chai.expect)(container.childNodes.length).to.equal(6);
     });
 
     it('should support getting the template\'s root element', function () {

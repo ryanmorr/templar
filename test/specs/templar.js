@@ -77,6 +77,26 @@ describe('templar', () => {
         expect(tpl.getRoot().ownerDocument).to.not.equal(document);
     });
 
+    it('should support appending and removing a template between multiple elements', () => {
+        // Create a container element with multiple child elements
+        const container = document.createElement('div');
+        for (let i = 0; i < 3; i++) {
+            container.appendChild(document.createElement('div'));
+        }
+        // Append the template to the container
+        const tpl = templar('<div>foo</div><div>bar</div><div>baz</div>');
+        const nodes = [].slice.call(tpl.frag.childNodes);
+        tpl.mount(container);
+        // Add more child elements behind the template
+        for (let i = 0; i < 3; i++) {
+            container.appendChild(document.createElement('div'));
+        }
+        tpl.unmount();
+        expect(tpl.frag.childNodes.length).to.equal(3);
+        expect([].slice.call(tpl.frag.childNodes)).to.deep.equal(nodes);
+        expect(container.childNodes.length).to.equal(6);
+    });
+
     it('should support getting the template\'s root element', () => {
         const tpl = templar('<div>foo</div>');
         const frag = tpl.frag;
