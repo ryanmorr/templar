@@ -16449,6 +16449,7 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.isRendered()).to.equal(true);
         (0, _chai.expect)(doc.contains(tpl.getRoot())).to.equal(true);
         (0, _chai.expect)(tpl.getRoot().ownerDocument).to.not.equal(document);
+        document.body.removeChild(iframe);
     });
 
     it('should support appending and removing a template between multiple elements', function () {

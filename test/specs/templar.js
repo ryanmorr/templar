@@ -75,6 +75,7 @@ describe('templar', () => {
         expect(tpl.isRendered()).to.equal(true);
         expect(doc.contains(tpl.getRoot())).to.equal(true);
         expect(tpl.getRoot().ownerDocument).to.not.equal(document);
+        document.body.removeChild(iframe);
     });
 
     it('should support appending and removing a template between multiple elements', () => {
