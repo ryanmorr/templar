@@ -86,6 +86,13 @@ describe('node interpolation', () => {
         expect(tpl.getRoot().childNodes[0].textContent).to.equal('012');
     });
 
+    it('should support parsing and interpolation of an HTML string', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', '<strong>foo</strong>');
+        expect(tpl.getRoot().childNodes[0].firstChild.nodeName).to.equal('STRONG');
+        expect(tpl.getRoot().childNodes[0].firstChild.textContent).to.equal('foo');
+    });
+
     it('should support nested templates', () => {
         const tpl = templar('<div>{{foo}}</div>');
         const tpl2 = templar('<em>{{bar}}</em>');
@@ -114,8 +121,8 @@ describe('node interpolation', () => {
         expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
     });
 
-    it('should escape HTML characters by default', () => {
-        const tpl = templar('<div>{{value}}</div>');
+    it('should support escaping HTML characters', () => {
+        const tpl = templar('<div>{{&value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
         expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });

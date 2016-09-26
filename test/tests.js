@@ -15530,10 +15530,19 @@ var NodeBinding = function (_Binding) {
             var frag = doc.createDocumentFragment();
             while (match = nodeContentRe.exec(this.text)) {
                 if (match[1] != null) {
-                    var token = match[1];
+                    var token = match[1],
+                        _escape = false;
+                    if (token[0] === '&') {
+                        _escape = true;
+                        token = token.substr(1);
+                    }
                     var value = (0, _parser.getTokenValue)(token, this.tpl.data);
                     switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
                         case 'string':
+                            if (!_escape && (0, _util.isHTML)(value)) {
+                                frag.appendChild((0, _util.parseHTML)(value, doc));
+                                break;
+                            }
                             value = (0, _util.escapeHTML)(value);
                         // falls through
                         case 'number':
@@ -15613,6 +15622,9 @@ function addBindings(bindings, text, binding) {
     matcherRe.lastIndex = 0;
     while (match = matcherRe.exec(text)) {
         var token = match[1].match(rootRe)[1];
+        if (token[0] === '&') {
+            token = token.substr(1);
+        }
         if (!(token in bindings)) {
             bindings[token] = [];
         }
@@ -15961,6 +15973,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.escapeHTML = escapeHTML;
+exports.isHTML = isHTML;
 exports.parseHTML = parseHTML;
 exports.updateDOM = updateDOM;
 exports.uid = uid;
@@ -15973,7 +15986,7 @@ var counter = 1;
 var batch = [];
 var slice = [].slice;
 var toString = {}.toString;
-var div = document.createElement('div');
+var htmlRe = /<[a-z][\s\S]*>/;
 var escapeRe = /[<>&"']/g;
 var escapeMap = {
     '<': '&lt;',
@@ -16030,15 +16043,31 @@ function escapeHTML(str) {
 }
 
 /**
+ * Is the provided string an HTML
+ * string?
+ *
+ * @param {String} str
+ * @return {Boolean}
+ * @api private
+ */
+function isHTML(str) {
+    return htmlRe.test(str);
+}
+
+/**
  * Convert an HTML string into a
  * document fragment
  *
  * @param {String} html
+ * @param {Document} doc (optional)
  * @return {DocumentFragment}
  * @api private
  */
 function parseHTML(html) {
-    var frag = document.createDocumentFragment();
+    var doc = arguments.length <= 1 || arguments[1] === undefined ? document : arguments[1];
+
+    var frag = doc.createDocumentFragment();
+    var div = doc.createElement('div');
     div.innerHTML = html;
     while (div.firstChild) {
         frag.appendChild(div.firstChild);
@@ -16306,6 +16335,13 @@ describe('node interpolation', function () {
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('012');
     });
 
+    it('should support parsing and interpolation of an HTML string', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        tpl.set('value', '<strong>foo</strong>');
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild.nodeName).to.equal('STRONG');
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild.textContent).to.equal('foo');
+    });
+
     it('should support nested templates', function () {
         var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
         var tpl2 = (0, _templar2.default)('<em>{{bar}}</em>');
@@ -16336,8 +16372,8 @@ describe('node interpolation', function () {
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
     });
 
-    it('should escape HTML characters by default', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+    it('should support escaping HTML characters', function () {
+        var tpl = (0, _templar2.default)('<div>{{&value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });

@@ -6,7 +6,7 @@ let counter = 1;
 const batch = [];
 const slice = [].slice;
 const toString = {}.toString;
-const div = document.createElement('div');
+const htmlRe = /<[a-z][\s\S]*>/;
 const escapeRe = /[<>&"']/g;
 const escapeMap = {
     '<': '&lt;',
@@ -61,15 +61,29 @@ export function escapeHTML(str) {
 }
 
 /**
+ * Is the provided string an HTML
+ * string?
+ *
+ * @param {String} str
+ * @return {Boolean}
+ * @api private
+ */
+export function isHTML(str) {
+    return htmlRe.test(str);
+}
+
+/**
  * Convert an HTML string into a
  * document fragment
  *
  * @param {String} html
+ * @param {Document} doc (optional)
  * @return {DocumentFragment}
  * @api private
  */
-export function parseHTML(html) {
-    const frag = document.createDocumentFragment();
+export function parseHTML(html, doc = document) {
+    const frag = doc.createDocumentFragment();
+    const div = doc.createElement('div');
     div.innerHTML = html;
     while (div.firstChild) {
         frag.appendChild(div.firstChild);

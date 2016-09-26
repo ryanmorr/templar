@@ -23,7 +23,10 @@ function addBindings(bindings, text, binding) {
     let match;
     matcherRe.lastIndex = 0;
     while ((match = matcherRe.exec(text))) {
-        const token = match[1].match(rootRe)[1];
+        let token = match[1].match(rootRe)[1];
+        if (token[0] === '&') {
+            token = token.substr(1);
+        }
         if (!(token in bindings)) {
             bindings[token] = [];
         }

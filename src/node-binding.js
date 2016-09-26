@@ -4,7 +4,7 @@
 import Binding from './binding';
 import { Templar } from './templar';
 import { getTokenValue } from './parser';
-import { escapeHTML } from './util';
+import { escapeHTML, parseHTML, isHTML } from './util';
 
 /**
  * Common variables
@@ -47,10 +47,18 @@ export default class NodeBinding extends Binding {
         const frag = doc.createDocumentFragment();
         while ((match = nodeContentRe.exec(this.text))) {
             if (match[1] != null) {
-                const token = match[1];
+                let token = match[1], escape = false;
+                if (token[0] === '&') {
+                    escape = true;
+                    token = token.substr(1);
+                }
                 let value = getTokenValue(token, this.tpl.data);
                 switch (typeof value) {
                     case 'string':
+                        if (!escape && isHTML(value)) {
+                            frag.appendChild(parseHTML(value, doc));
+                            break;
+                        }
                         value = escapeHTML(value);
                         // falls through
                     case 'number':
