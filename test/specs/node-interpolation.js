@@ -96,11 +96,13 @@ describe('node interpolation', () => {
     it('should support nested templates', () => {
         const tpl = templar('<div>{{foo}}</div>');
         const tpl2 = templar('<em>{{bar}}</em>');
+        const tpl3 = templar('<strong>{{baz}}</strong>');
         const container = document.createElement('div');
         tpl.mount(container);
         tpl.set('foo', tpl2);
-        tpl2.set('bar', 'baz');
-        expect(container.innerHTML).to.equal('<div><em>baz</em></div>');
+        tpl2.set('bar', tpl3);
+        tpl3.set('baz', 'qux');
+        expect(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
     });
 
     it('should support dot-notation interpolation', () => {

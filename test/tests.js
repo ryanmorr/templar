@@ -16345,11 +16345,13 @@ describe('node interpolation', function () {
     it('should support nested templates', function () {
         var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
         var tpl2 = (0, _templar2.default)('<em>{{bar}}</em>');
+        var tpl3 = (0, _templar2.default)('<strong>{{baz}}</strong>');
         var container = document.createElement('div');
         tpl.mount(container);
         tpl.set('foo', tpl2);
-        tpl2.set('bar', 'baz');
-        (0, _chai.expect)(container.innerHTML).to.equal('<div><em>baz</em></div>');
+        tpl2.set('bar', tpl3);
+        tpl3.set('baz', 'qux');
+        (0, _chai.expect)(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
     });
 
     it('should support dot-notation interpolation', function () {
