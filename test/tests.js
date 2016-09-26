@@ -15529,7 +15529,7 @@ var NodeBinding = function (_Binding) {
             var frag = document.createDocumentFragment();
             while (match = nodeContentRe.exec(this.text)) {
                 if (match[1] != null) {
-                    var token = match[1].trim();
+                    var token = match[1];
                     var value = (0, _parser.getTokenValue)(token, this.tpl.data);
                     switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
                         case 'string':

@@ -46,7 +46,7 @@ export default class NodeBinding extends Binding {
         const frag = document.createDocumentFragment();
         while ((match = nodeContentRe.exec(this.text))) {
             if (match[1] != null) {
-                const token = match[1].trim();
+                const token = match[1];
                 let value = getTokenValue(token, this.tpl.data);
                 switch (typeof value) {
                     case 'string':
