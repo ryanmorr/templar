@@ -15640,14 +15640,9 @@ function hasInterpolation(str) {
  * @api private
  */
 function getTokenValue(token, values) {
-    var value = void 0;
-    if (token.indexOf('.') !== -1) {
-        value = token.split('.').reduce(function (val, ns) {
-            return val ? val[ns] : values[ns];
-        }, null);
-    } else {
-        value = token in values ? values[token] : '';
-    }
+    var value = token.split('.').reduce(function (val, ns) {
+        return val ? val[ns] : values[ns] || '';
+    }, null);
     return (0, _util.isFunction)(value) ? value() : value;
 }
 
