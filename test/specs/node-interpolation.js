@@ -69,6 +69,33 @@ describe('node interpolation', () => {
         expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
     });
 
+    it('should support interpolation with a DOM node', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        const el = document.createElement('strong');
+        tpl.set('value', el);
+        expect(tpl.getRoot().childNodes[0].firstChild).to.equal(el);
+    });
+
+    it('should support interpolation with a DOM fragment', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < 3; i++) {
+            frag.appendChild(document.createTextNode(i));
+        }
+        tpl.set('value', frag);
+        expect(tpl.getRoot().childNodes[0].textContent).to.equal('012');
+    });
+
+    it('should support nested templates', () => {
+        const tpl = templar('<div>{{foo}}</div>');
+        const tpl2 = templar('<em>{{bar}}</em>');
+        const container = document.createElement('div');
+        tpl.mount(container);
+        tpl.set('foo', tpl2);
+        tpl2.set('bar', 'baz');
+        expect(container.innerHTML).to.equal('<div><em>baz</em></div>');
+    });
+
     it('should support dot-notation interpolation', () => {
         const tpl = templar('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
         tpl.set('object', {

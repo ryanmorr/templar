@@ -15451,16 +15451,20 @@ module.exports = exports['default'];
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _binding = require('./binding');
 
 var _binding2 = _interopRequireDefault(_binding);
+
+var _templar = require('./templar');
+
+var _parser = require('./parser');
 
 var _util = require('./util');
 
@@ -15476,60 +15480,101 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 /**
+ * Common variables
+ */
+var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|([^{]+)/g;
+
+/**
  * Bind a token to a DOM text node
  *
  * @class NodeBinding
  * @api private
  */
+
 var NodeBinding = function (_Binding) {
-  _inherits(NodeBinding, _Binding);
+    _inherits(NodeBinding, _Binding);
 
-  /**
-   * Instantiate the class
-   *
-   * @constructor
-   * @param {Templar} tpl
-   * @param {Node} node
-   * @api private
-   */
-  function NodeBinding(tpl, node) {
-    _classCallCheck(this, NodeBinding);
+    /**
+     * Instantiate the class
+     *
+     * @constructor
+     * @param {Templar} tpl
+     * @param {Node} node
+     * @api private
+     */
+    function NodeBinding(tpl, node) {
+        _classCallCheck(this, NodeBinding);
 
-    return _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this, tpl, node, node.data));
-  }
+        var _this = _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this, tpl, node, node.data));
 
-  /**
-   * Replace the current text node with a
-   * new text node containing the updated
-   * values
-   *
-   * @return {String}
-   * @api private
-   */
-
-
-  _createClass(NodeBinding, [{
-    key: 'render',
-    value: function render() {
-      var value = _get(NodeBinding.prototype.__proto__ || Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this);
-      var node = document.createTextNode((0, _util.escapeHTML)(value));
-      this.node.parentNode.replaceChild(node, this.node);
-      this.node = node;
+        _this.parent = _this.node.parentNode;
+        return _this;
     }
-  }]);
 
-  return NodeBinding;
+    /**
+     * Replace the current text node with a
+     * new text node containing the updated
+     * values
+     *
+     * @return {String}
+     * @api private
+     */
+
+
+    _createClass(NodeBinding, [{
+        key: 'render',
+        value: function render() {
+            var match = void 0;
+            nodeContentRe.lastIndex = 0;
+            var frag = document.createDocumentFragment();
+            while (match = nodeContentRe.exec(this.text)) {
+                if (match[1] != null) {
+                    var token = match[1].trim();
+                    var value = (0, _parser.getTokenValue)(token, this.tpl.data);
+                    switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
+                        case 'string':
+                            value = (0, _util.escapeHTML)(value);
+                        // falls through
+                        case 'number':
+                        case 'boolean':
+                            frag.appendChild(document.createTextNode(value));
+                            break;
+                        default:
+                            if (value instanceof _templar.Templar) {
+                                if (value.isMounted()) {
+                                    value.unmount();
+                                }
+                                value.mount(frag);
+                            } else {
+                                frag.appendChild(value);
+                            }
+                    }
+                } else if (match[2] != null) {
+                    frag.appendChild(document.createTextNode(match[2]));
+                }
+            }
+            while (this.parent.firstChild) {
+                this.parent.removeChild(this.parent.firstChild);
+            }
+            this.parent.appendChild(frag);
+            this.parent.normalize();
+            this.renderer = null;
+        }
+    }]);
+
+    return NodeBinding;
 }(_binding2.default);
 
 exports.default = NodeBinding;
 module.exports = exports['default'];
 
-},{"./binding":74,"./util":78}],76:[function(require,module,exports){
+},{"./binding":74,"./parser":76,"./templar":77,"./util":78}],76:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.getTokenValue = getTokenValue;
 exports.interpolate = interpolate;
 exports.parseTemplate = parseTemplate;
 
@@ -15593,13 +15638,16 @@ function hasInterpolation(str) {
  * @return {String}
  * @api private
  */
-function resolveToken(token, values) {
+function getTokenValue(token, values) {
+    var value = void 0;
     if (token.indexOf('.') !== -1) {
-        return token.split('.').reduce(function (val, ns) {
+        value = token.split('.').reduce(function (val, ns) {
             return val ? val[ns] : values[ns];
         }, null);
+    } else {
+        value = token in values ? values[token] : '';
     }
-    return token in values ? values[token] : '';
+    return (0, _util.isFunction)(value) ? value() : value;
 }
 
 /**
@@ -15614,8 +15662,7 @@ function resolveToken(token, values) {
  */
 function interpolate(tpl, values) {
     return tpl.replace(matcherRe, function (all, token) {
-        token = resolveToken(token, values);
-        return (0, _util.isFunction)(token) ? token() : token;
+        return getTokenValue(token, values);
     });
 }
 
@@ -15667,6 +15714,7 @@ function parseTemplate(tpl, nodes, id) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.Templar = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * Import dependencies
@@ -15687,7 +15735,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @class Templar
  * @api public
  */
-var Templar = function () {
+var Templar = exports.Templar = function () {
 
     /**
      * Instantiate the class providing a
@@ -15724,17 +15772,15 @@ var Templar = function () {
     _createClass(Templar, [{
         key: 'mount',
         value: function mount(root) {
-            if (this.frag) {
-                var frag = this.frag;
-                var doc = root.ownerDocument;
-                if (doc !== frag.ownerDocument) {
-                    frag = this.frag = doc.adoptNode(frag);
-                }
-                root.appendChild(frag);
-                this.doc = doc;
-                this.root = root;
-                this.mounted = true;
+            var frag = this.frag;
+            var doc = root.ownerDocument;
+            if (doc !== frag.ownerDocument) {
+                frag = this.frag = doc.adoptNode(frag);
             }
+            root.appendChild(frag);
+            this.doc = doc;
+            this.root = root;
+            this.mounted = true;
         }
 
         /**
@@ -15895,7 +15941,6 @@ var Templar = function () {
 function templar(tpl, data) {
     return new Templar(tpl, data);
 }
-module.exports = exports['default'];
 
 },{"./parser":76,"./util":78}],78:[function(require,module,exports){
 'use strict';
@@ -16232,6 +16277,33 @@ describe('node interpolation', function () {
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
         tpl.set('value', void 0);
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+    });
+
+    it('should support interpolation with a DOM node', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var el = document.createElement('strong');
+        tpl.set('value', el);
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild).to.equal(el);
+    });
+
+    it('should support interpolation with a DOM fragment', function () {
+        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < 3; i++) {
+            frag.appendChild(document.createTextNode(i));
+        }
+        tpl.set('value', frag);
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('012');
+    });
+
+    it('should support nested templates', function () {
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
+        var tpl2 = (0, _templar2.default)('<em>{{bar}}</em>');
+        var container = document.createElement('div');
+        tpl.mount(container);
+        tpl.set('foo', tpl2);
+        tpl2.set('bar', 'baz');
+        (0, _chai.expect)(container.innerHTML).to.equal('<div><em>baz</em></div>');
     });
 
     it('should support dot-notation interpolation', function () {

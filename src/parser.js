@@ -50,11 +50,14 @@ function hasInterpolation(str) {
  * @return {String}
  * @api private
  */
-function resolveToken(token, values) {
+export function getTokenValue(token, values) {
+    let value;
     if (token.indexOf('.') !== -1) {
-        return token.split('.').reduce((val, ns) => val ? val[ns] : values[ns], null);
+        value = token.split('.').reduce((val, ns) => val ? val[ns] : values[ns], null);
+    } else {
+        value = token in values ? values[token] : '';
     }
-    return token in values ? values[token] : '';
+    return isFunction(value) ? value() : value;
 }
 
 /**
@@ -68,10 +71,7 @@ function resolveToken(token, values) {
  * @api private
  */
 export function interpolate(tpl, values) {
-    return tpl.replace(matcherRe, (all, token) => {
-        token = resolveToken(token, values);
-        return isFunction(token) ? token() : token;
-    });
+    return tpl.replace(matcherRe, (all, token) => getTokenValue(token, values));
 }
 
 /**
