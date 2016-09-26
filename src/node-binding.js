@@ -43,7 +43,8 @@ export default class NodeBinding extends Binding {
     render() {
         let match;
         nodeContentRe.lastIndex = 0;
-        const frag = document.createDocumentFragment();
+        const doc = this.tpl.getOwnerDocument();
+        const frag = doc.createDocumentFragment();
         while ((match = nodeContentRe.exec(this.text))) {
             if (match[1] != null) {
                 const token = match[1];
@@ -54,7 +55,7 @@ export default class NodeBinding extends Binding {
                         // falls through
                     case 'number':
                     case 'boolean':
-                        frag.appendChild(document.createTextNode(value));
+                        frag.appendChild(doc.createTextNode(value));
                         break;
                     default:
                         if (value instanceof Templar) {
@@ -67,7 +68,7 @@ export default class NodeBinding extends Binding {
                         }
                 }
             } else if (match[2] != null) {
-                frag.appendChild(document.createTextNode(match[2]));
+                frag.appendChild(doc.createTextNode(match[2]));
             }
         }
         while (this.parent.firstChild) {

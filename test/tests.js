@@ -15526,7 +15526,8 @@ var NodeBinding = function (_Binding) {
         value: function render() {
             var match = void 0;
             nodeContentRe.lastIndex = 0;
-            var frag = document.createDocumentFragment();
+            var doc = this.tpl.getOwnerDocument();
+            var frag = doc.createDocumentFragment();
             while (match = nodeContentRe.exec(this.text)) {
                 if (match[1] != null) {
                     var token = match[1];
@@ -15537,7 +15538,7 @@ var NodeBinding = function (_Binding) {
                         // falls through
                         case 'number':
                         case 'boolean':
-                            frag.appendChild(document.createTextNode(value));
+                            frag.appendChild(doc.createTextNode(value));
                             break;
                         default:
                             if (value instanceof _templar.Templar) {
@@ -15550,7 +15551,7 @@ var NodeBinding = function (_Binding) {
                             }
                     }
                 } else if (match[2] != null) {
-                    frag.appendChild(document.createTextNode(match[2]));
+                    frag.appendChild(doc.createTextNode(match[2]));
                 }
             }
             while (this.parent.firstChild) {
@@ -15893,6 +15894,20 @@ var Templar = exports.Templar = function () {
         key: 'getRoot',
         value: function getRoot() {
             return this.root;
+        }
+
+        /**
+         * Get the owner document of the root
+         * element
+         *
+         * @return {Document}
+         * @api public
+         */
+
+    }, {
+        key: 'getOwnerDocument',
+        value: function getOwnerDocument() {
+            return this.getRoot().ownerDocument;
         }
 
         /**
@@ -16520,7 +16535,7 @@ describe('templar', function () {
         tpl.mount(doc.body);
         (0, _chai.expect)(tpl.isRendered()).to.equal(true);
         (0, _chai.expect)(doc.contains(tpl.getRoot())).to.equal(true);
-        (0, _chai.expect)(tpl.getRoot().ownerDocument).to.not.equal(document);
+        (0, _chai.expect)(tpl.getOwnerDocument).to.not.equal(document);
         document.body.removeChild(iframe);
     });
 

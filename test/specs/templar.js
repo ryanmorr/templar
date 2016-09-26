@@ -74,7 +74,7 @@ describe('templar', () => {
         tpl.mount(doc.body);
         expect(tpl.isRendered()).to.equal(true);
         expect(doc.contains(tpl.getRoot())).to.equal(true);
-        expect(tpl.getRoot().ownerDocument).to.not.equal(document);
+        expect(tpl.getOwnerDocument).to.not.equal(document);
         document.body.removeChild(iframe);
     });
 

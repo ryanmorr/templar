@@ -137,6 +137,17 @@ export class Templar {
     }
 
     /**
+     * Get the owner document of the root
+     * element
+     *
+     * @return {Document}
+     * @api public
+     */
+    getOwnerDocument() {
+        return this.getRoot().ownerDocument;
+    }
+
+    /**
      * Is the template mounted to
      * a parent element?
      *
