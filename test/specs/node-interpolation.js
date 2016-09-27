@@ -106,7 +106,9 @@ describe('node interpolation', () => {
     });
 
     it('should support multiple element interpolation between existing elements', () => {
-        const tpl = templar('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> fff</div>');
+        const tpl = templar('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> {{baz}} fff</div>');
+        const tpl2 = templar('<div>{{a}}</div><div>{{b}}</div>');
+        tpl2.set('a', 1);
         const frag = document.createDocumentFragment();
         for (let i = 0; i < 3; i++) {
             const div = document.createElement('div');
@@ -115,10 +117,13 @@ describe('node interpolation', () => {
         }
         tpl.set('foo', frag);
         tpl.set('bar', '<span>a</span><span>b</span>');
-        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> fff');
+        tpl.set('baz', tpl2);
+        tpl2.set('b', 2);
+        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> <div>1</div><div>2</div> fff');
         tpl.set('foo', '123');
         tpl.set('bar', '456');
-        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> fff');
+        tpl2.set('a', 3);
+        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> <div>3</div><div>2</div> fff');
     });
 
     it('should support dot-notation interpolation', () => {
