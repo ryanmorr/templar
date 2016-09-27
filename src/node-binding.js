@@ -4,7 +4,7 @@
 import Binding from './binding';
 import { Templar } from './templar';
 import { getTokenValue } from './parser';
-import { toArray, escapeHTML, parseHTML, isHTML, getNodeIndex } from './util';
+import { escapeHTML, parseHTML, isHTML, getNodeIndex } from './util';
 
 /**
  * Common variables
@@ -59,7 +59,7 @@ export default class NodeBinding extends Binding {
                     case 'string':
                         if (!escape && isHTML(value)) {
                             const el = parseHTML(value, doc);
-                            elements.push.apply(elements, toArray(el.childNodes));
+                            elements.push.apply(elements, el.childNodes);
                             frag.appendChild(el);
                             break;
                         }
@@ -80,7 +80,7 @@ export default class NodeBinding extends Binding {
                             elements.push(value);
                         } else {
                             if (value.nodeType === 11) {
-                                elements.push.apply(elements, toArray(value.childNodes));
+                                elements.push.apply(elements, value.childNodes);
                                 frag.appendChild(value);
                             } else {
                                 frag.appendChild(value);

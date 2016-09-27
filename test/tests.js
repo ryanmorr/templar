@@ -15514,7 +15514,7 @@ var NodeBinding = function (_Binding) {
                         case 'string':
                             if (!_escape && (0, _util.isHTML)(value)) {
                                 var el = (0, _util.parseHTML)(value, doc);
-                                elements.push.apply(elements, (0, _util.toArray)(el.childNodes));
+                                elements.push.apply(elements, el.childNodes);
                                 frag.appendChild(el);
                                 break;
                             }
@@ -15535,7 +15535,7 @@ var NodeBinding = function (_Binding) {
                                 elements.push(value);
                             } else {
                                 if (value.nodeType === 11) {
-                                    elements.push.apply(elements, (0, _util.toArray)(value.childNodes));
+                                    elements.push.apply(elements, value.childNodes);
                                     frag.appendChild(value);
                                 } else {
                                     frag.appendChild(value);
