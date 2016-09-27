@@ -43,6 +43,7 @@ export default class NodeBinding extends Binding {
      */
     render() {
         let match;
+        this.renderer = null;
         nodeContentRe.lastIndex = 0;
         const elements = [];
         const doc = this.tpl.getOwnerDocument();
@@ -111,6 +112,5 @@ export default class NodeBinding extends Binding {
             parent.appendChild(frag);
         }
         this.elements = elements;
-        this.renderer = null;
     }
 }

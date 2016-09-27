@@ -37,12 +37,12 @@ export default class AttrBinding extends Binding {
      * @api private
      */
     render() {
+        this.renderer = null;
         const value = interpolate(this.text, this.tpl.data);
         if (value === '') {
             this.node.removeAttribute(this.attr);
             return;
         }
         this.node.setAttribute(this.attr, value);
-        this.renderer = null;
     }
 }
