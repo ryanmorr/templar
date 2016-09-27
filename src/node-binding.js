@@ -9,7 +9,7 @@ import { escapeHTML, parseHTML, isHTML, getNodeIndex } from './util';
 /**
  * Common variables
  */
-const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|([^{]+)/g;
+const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 
 /**
  * Bind a token to a DOM text node

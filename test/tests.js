@@ -15453,7 +15453,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 /**
  * Common variables
  */
-var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|([^{]+)/g;
+var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 
 /**
  * Bind a token to a DOM text node
