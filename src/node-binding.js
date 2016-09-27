@@ -28,17 +28,17 @@ export default class NodeBinding extends Binding {
      * @api private
      */
     constructor(tpl, node) {
-        super(tpl, node, node.data);
+        super();
+        this.tpl = tpl;
+        this.text = node.data;
         this.parent = node.parentNode;
         this.elements = [node];
     }
 
     /**
-     * Replace the current text node with a
-     * new text node containing the updated
-     * values
+     * Replace the token placeholders with the
+     * current values in the `Templar` instance
      *
-     * @return {String}
      * @api private
      */
     render() {

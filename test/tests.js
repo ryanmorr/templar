@@ -15290,11 +15290,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 var _binding = require('./binding');
 
 var _binding2 = _interopRequireDefault(_binding);
+
+var _parser = require('./parser');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -15329,9 +15329,12 @@ var AttrBinding = function (_Binding) {
     function AttrBinding(tpl, node, attr, text) {
         _classCallCheck(this, AttrBinding);
 
-        var _this = _possibleConstructorReturn(this, (AttrBinding.__proto__ || Object.getPrototypeOf(AttrBinding)).call(this, tpl, node, text));
+        var _this = _possibleConstructorReturn(this, (AttrBinding.__proto__ || Object.getPrototypeOf(AttrBinding)).call(this));
 
+        _this.tpl = tpl;
+        _this.node = node;
         _this.attr = attr;
+        _this.text = text;
         return _this;
     }
 
@@ -15339,7 +15342,6 @@ var AttrBinding = function (_Binding) {
      * Update the attribute of the node,
      * if empty then remove the attribute
      *
-     * @return {String}
      * @api private
      */
 
@@ -15347,12 +15349,13 @@ var AttrBinding = function (_Binding) {
     _createClass(AttrBinding, [{
         key: 'render',
         value: function render() {
-            var value = _get(AttrBinding.prototype.__proto__ || Object.getPrototypeOf(AttrBinding.prototype), 'render', this).call(this);
+            var value = (0, _parser.interpolate)(this.text, this.tpl.data);
             if (value === '') {
                 this.node.removeAttribute(this.attr);
                 return;
             }
             this.node.setAttribute(this.attr, value);
+            this.renderer = null;
         }
     }]);
 
@@ -15362,19 +15365,17 @@ var AttrBinding = function (_Binding) {
 exports.default = AttrBinding;
 module.exports = exports['default'];
 
-},{"./binding":74}],74:[function(require,module,exports){
+},{"./binding":74,"./parser":76}],74:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * Import dependencies
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
-
-var _parser = require('./parser');
 
 var _util = require('./util');
 
@@ -15388,23 +15389,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @api private
  */
 var Binding = function () {
+  function Binding() {
+    _classCallCheck(this, Binding);
+  }
 
-    /**
-     * Instantiate the class
-     *
-     * @constructor
-     * @param {Templar} tpl
-     * @param {Node} node
-     * @param {String} text
-     * @api private
-     */
-    function Binding(tpl, node, text) {
-        _classCallCheck(this, Binding);
+  _createClass(Binding, [{
+    key: 'update',
 
-        this.tpl = tpl;
-        this.node = node;
-        this.text = text;
-    }
 
     /**
      * Schedule a frame to update the
@@ -15413,41 +15404,21 @@ var Binding = function () {
      * @return {String}
      * @api private
      */
+    value: function update() {
+      if (!this.renderer) {
+        this.renderer = this.render.bind(this);
+        (0, _util.updateDOM)(this.renderer);
+      }
+    }
+  }]);
 
-
-    _createClass(Binding, [{
-        key: 'update',
-        value: function update() {
-            if (!this.renderer) {
-                this.renderer = this.render.bind(this);
-                (0, _util.updateDOM)(this.renderer);
-            }
-        }
-
-        /**
-         * Render the template string
-         * using the current values in the
-         * `Templar` instance
-         *
-         * @return {String}
-         * @api private
-         */
-
-    }, {
-        key: 'render',
-        value: function render() {
-            this.renderer = null;
-            return (0, _parser.interpolate)(this.text, this.tpl.data);
-        }
-    }]);
-
-    return Binding;
+  return Binding;
 }();
 
 exports.default = Binding;
 module.exports = exports['default'];
 
-},{"./parser":76,"./util":78}],75:[function(require,module,exports){
+},{"./util":78}],75:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15505,19 +15476,19 @@ var NodeBinding = function (_Binding) {
     function NodeBinding(tpl, node) {
         _classCallCheck(this, NodeBinding);
 
-        var _this = _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this, tpl, node, node.data));
+        var _this = _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this));
 
+        _this.tpl = tpl;
+        _this.text = node.data;
         _this.parent = node.parentNode;
         _this.elements = [node];
         return _this;
     }
 
     /**
-     * Replace the current text node with a
-     * new text node containing the updated
-     * values
+     * Replace the token placeholders with the
+     * current values in the `Templar` instance
      *
-     * @return {String}
      * @api private
      */
 

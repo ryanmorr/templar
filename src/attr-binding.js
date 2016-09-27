@@ -2,6 +2,7 @@
  * Import dependencies
  */
 import Binding from './binding';
+import { interpolate } from './parser';
 
 /**
  * Bind a token to a DOM node attribute
@@ -22,23 +23,26 @@ export default class AttrBinding extends Binding {
      * @api private
      */
     constructor(tpl, node, attr, text) {
-        super(tpl, node, text);
+        super();
+        this.tpl = tpl;
+        this.node = node;
         this.attr = attr;
+        this.text = text;
     }
 
     /**
      * Update the attribute of the node,
      * if empty then remove the attribute
      *
-     * @return {String}
      * @api private
      */
     render() {
-        const value = super.render();
+        const value = interpolate(this.text, this.tpl.data);
         if (value === '') {
             this.node.removeAttribute(this.attr);
             return;
         }
         this.node.setAttribute(this.attr, value);
+        this.renderer = null;
     }
 }
