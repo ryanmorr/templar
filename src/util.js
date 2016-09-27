@@ -73,6 +73,22 @@ export function iterateRegExp(re, str, fn) {
 }
 
 /**
+ * Does the provided root element contain
+ * the provided node
+ *
+ * @param {Element} root
+ * @param {Element} el
+ * @return {Boolean}
+ * @api private
+ */
+export function contains(root, el) {
+    if ('contains' in root) {
+        return root.contains(el);
+    }
+    return !!(root.compareDocumentPosition(el) & 16);
+}
+
+/**
  * Escape HTML characters
  *
  * @param {String} str

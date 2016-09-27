@@ -2,7 +2,7 @@
  * Import dependencies
  */
 import { parseTemplate } from './parser';
-import { toArray, parseHTML, uid, getTemplateElements } from './util';
+import { toArray, contains, parseHTML, uid, getTemplateElements } from './util';
 
 /**
  * DOM templating class
@@ -166,7 +166,7 @@ export class Templar {
      * @api public
      */
     isRendered() {
-        return this.isMounted() && this.doc.contains(this.getRoot());
+        return this.isMounted() && contains(this.doc, this.getRoot());
     }
 }
 

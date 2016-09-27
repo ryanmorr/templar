@@ -2,6 +2,7 @@
 
 import { expect } from 'chai';
 import templar from '../../src/templar';
+import { contains } from '../../src/util';
 
 describe('templar', () => {
     it('should implicitly parse the HTML template string to a DOM fragment on initialization', () => {
@@ -21,7 +22,7 @@ describe('templar', () => {
         const container = document.createElement('div');
         const div = tpl.getRoot().childNodes[0];
         tpl.mount(container);
-        expect(container.contains(div)).to.equal(true);
+        expect(contains(container, div)).to.equal(true);
     });
 
     it('should support removing the template from the DOM', () => {
@@ -31,8 +32,8 @@ describe('templar', () => {
         const div = frag.childNodes[0];
         tpl.mount(container);
         tpl.unmount();
-        expect(container.contains(div)).to.equal(false);
-        expect(frag.contains(div)).to.equal(true);
+        expect(contains(container, div)).to.equal(false);
+        expect(contains(frag, div)).to.equal(true);
         expect(frag.childNodes.length).to.equal(1);
     });
 
@@ -73,7 +74,7 @@ describe('templar', () => {
         // Append the template to the iframe's document
         tpl.mount(doc.body);
         expect(tpl.isRendered()).to.equal(true);
-        expect(doc.contains(tpl.getRoot())).to.equal(true);
+        expect(contains(doc, tpl.getRoot())).to.equal(true);
         expect(tpl.getOwnerDocument).to.not.equal(document);
         document.body.removeChild(iframe);
     });

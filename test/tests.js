@@ -15926,7 +15926,7 @@ var Templar = exports.Templar = function () {
     }, {
         key: 'isRendered',
         value: function isRendered() {
-            return this.isMounted() && this.doc.contains(this.getRoot());
+            return this.isMounted() && (0, _util.contains)(this.doc, this.getRoot());
         }
     }]);
 
@@ -15958,6 +15958,7 @@ exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.getNodeIndex = getNodeIndex;
 exports.iterateRegExp = iterateRegExp;
+exports.contains = contains;
 exports.escapeHTML = escapeHTML;
 exports.isHTML = isHTML;
 exports.parseHTML = parseHTML;
@@ -16036,6 +16037,22 @@ function iterateRegExp(re, str, fn) {
     while (match = re.exec(str)) {
         fn(match);
     }
+}
+
+/**
+ * Does the provided root element contain
+ * the provided node
+ *
+ * @param {Element} root
+ * @param {Element} el
+ * @return {Boolean}
+ * @api private
+ */
+function contains(root, el) {
+    if ('contains' in root) {
+        return root.contains(el);
+    }
+    return !!(root.compareDocumentPosition(el) & 16);
 }
 
 /**
@@ -16549,9 +16566,9 @@ var _templar = require('../../src/templar');
 
 var _templar2 = _interopRequireDefault(_templar);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _util = require('../../src/util');
 
-/* eslint-disable max-len */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('templar', function () {
     it('should implicitly parse the HTML template string to a DOM fragment on initialization', function () {
@@ -16571,7 +16588,7 @@ describe('templar', function () {
         var container = document.createElement('div');
         var div = tpl.getRoot().childNodes[0];
         tpl.mount(container);
-        (0, _chai.expect)(container.contains(div)).to.equal(true);
+        (0, _chai.expect)((0, _util.contains)(container, div)).to.equal(true);
     });
 
     it('should support removing the template from the DOM', function () {
@@ -16581,8 +16598,8 @@ describe('templar', function () {
         var div = frag.childNodes[0];
         tpl.mount(container);
         tpl.unmount();
-        (0, _chai.expect)(container.contains(div)).to.equal(false);
-        (0, _chai.expect)(frag.contains(div)).to.equal(true);
+        (0, _chai.expect)((0, _util.contains)(container, div)).to.equal(false);
+        (0, _chai.expect)((0, _util.contains)(frag, div)).to.equal(true);
         (0, _chai.expect)(frag.childNodes.length).to.equal(1);
     });
 
@@ -16623,7 +16640,7 @@ describe('templar', function () {
         // Append the template to the iframe's document
         tpl.mount(doc.body);
         (0, _chai.expect)(tpl.isRendered()).to.equal(true);
-        (0, _chai.expect)(doc.contains(tpl.getRoot())).to.equal(true);
+        (0, _chai.expect)((0, _util.contains)(doc, tpl.getRoot())).to.equal(true);
         (0, _chai.expect)(tpl.getOwnerDocument).to.not.equal(document);
         document.body.removeChild(iframe);
     });
@@ -16703,6 +16720,6 @@ describe('templar', function () {
         (0, _chai.expect)(els).to.be.an('array');
         (0, _chai.expect)(els).to.deep.equal([].slice.call(container.querySelectorAll('div')));
     });
-});
+}); /* eslint-disable max-len */
 
-},{"../../src/templar":77,"chai":9}]},{},[80]);
+},{"../../src/templar":77,"../../src/util":78,"chai":9}]},{},[80]);
