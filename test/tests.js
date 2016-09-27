@@ -15543,15 +15543,13 @@ var NodeBinding = function (_Binding) {
             var parent = this.parent;
             var childNodes = parent.childNodes;
             var index = (0, _util.getNodeIndex)(this.elements[0]);
-            while (this.elements.length) {
-                var el = this.elements.shift();
+            this.elements.forEach(function (el) {
                 if (el instanceof _templar.Templar) {
-                    el.unmount();
-                } else {
-                    parent.removeChild(el);
+                    return el.unmount();
                 }
-            }
-            if (childNodes[index]) {
+                parent.removeChild(el);
+            });
+            if (index in childNodes) {
                 parent.insertBefore(frag, childNodes[index]);
             } else {
                 parent.appendChild(frag);

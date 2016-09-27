@@ -88,15 +88,13 @@ export default class NodeBinding extends Binding {
         const parent = this.parent;
         const childNodes = parent.childNodes;
         const index = getNodeIndex(this.elements[0]);
-        while (this.elements.length) {
-            const el = this.elements.shift();
+        this.elements.forEach((el) => {
             if (el instanceof Templar) {
-                el.unmount();
-            } else {
-                parent.removeChild(el);
+                return el.unmount();
             }
-        }
-        if (childNodes[index]) {
+            parent.removeChild(el);
+        });
+        if (index in childNodes) {
             parent.insertBefore(frag, childNodes[index]);
         } else {
             parent.appendChild(frag);
