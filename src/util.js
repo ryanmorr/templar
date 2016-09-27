@@ -54,6 +54,25 @@ export function getNodeIndex(el) {
 }
 
 /**
+ * Iterates through all the matches
+ * of the provided regex and string
+ *
+ * @param {RegExp} re
+ * @param {String} str
+ * @param {Function} fn
+ * @api private
+ */
+export function iterateRegExp(re, str, fn) {
+    let match;
+    if (re.global) {
+        re.lastIndex = 0;
+    }
+    while ((match = re.exec(str))) {
+        fn(match);
+    }
+}
+
+/**
  * Escape HTML characters
  *
  * @param {String} str

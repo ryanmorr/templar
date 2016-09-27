@@ -3,7 +3,7 @@
  */
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { isFunction, toArray } from './util';
+import { isFunction, toArray, iterateRegExp } from './util';
 
 /**
  * Common variables
@@ -20,9 +20,7 @@ const rootRe = /^([^.]+)/;
  * @api private
  */
 function addBindings(bindings, text, binding) {
-    let match;
-    matcherRe.lastIndex = 0;
-    while ((match = matcherRe.exec(text))) {
+    iterateRegExp(matcherRe, text, (match) => {
         let token = match[1].match(rootRe)[1];
         if (token[0] === '&') {
             token = token.substr(1);
@@ -31,7 +29,7 @@ function addBindings(bindings, text, binding) {
             bindings[token] = [];
         }
         bindings[token].push(binding);
-    }
+    });
 }
 
 /**

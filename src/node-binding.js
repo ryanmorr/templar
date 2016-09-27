@@ -4,7 +4,7 @@
 import Binding from './binding';
 import { Templar } from './templar';
 import { getTokenValue } from './parser';
-import { escapeHTML, parseHTML, isHTML, getNodeIndex } from './util';
+import { escapeHTML, parseHTML, isHTML, getNodeIndex, iterateRegExp } from './util';
 
 /**
  * Common variables
@@ -42,13 +42,11 @@ export default class NodeBinding extends Binding {
      * @api private
      */
     render() {
-        let match;
         this.renderer = null;
-        nodeContentRe.lastIndex = 0;
         const elements = [];
         const doc = this.tpl.getOwnerDocument();
         const frag = doc.createDocumentFragment();
-        while ((match = nodeContentRe.exec(this.text))) {
+        iterateRegExp(nodeContentRe, this.text, (match) => {
             let value;
             if (match[1] != null) {
                 let token = match[1], escape = false;
@@ -84,7 +82,7 @@ export default class NodeBinding extends Binding {
             if (nodeType) {
                 frag.appendChild(value);
             }
-        }
+        });
         const parent = this.parent;
         const childNodes = parent.childNodes;
         const index = getNodeIndex(this.elements[0]);

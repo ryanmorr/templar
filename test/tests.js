@@ -15496,13 +15496,13 @@ var NodeBinding = function (_Binding) {
     _createClass(NodeBinding, [{
         key: 'render',
         value: function render() {
-            var match = void 0;
+            var _this2 = this;
+
             this.renderer = null;
-            nodeContentRe.lastIndex = 0;
             var elements = [];
             var doc = this.tpl.getOwnerDocument();
             var frag = doc.createDocumentFragment();
-            while (match = nodeContentRe.exec(this.text)) {
+            (0, _util.iterateRegExp)(nodeContentRe, this.text, function (match) {
                 var value = void 0;
                 if (match[1] != null) {
                     var token = match[1],
@@ -15511,7 +15511,7 @@ var NodeBinding = function (_Binding) {
                         _escape = true;
                         token = token.substr(1);
                     }
-                    value = (0, _parser.getTokenValue)(token, this.tpl.data);
+                    value = (0, _parser.getTokenValue)(token, _this2.tpl.data);
                     switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
                         case 'string':
                             if (!_escape && (0, _util.isHTML)(value)) {
@@ -15539,7 +15539,7 @@ var NodeBinding = function (_Binding) {
                 if (nodeType) {
                     frag.appendChild(value);
                 }
-            }
+            });
             var parent = this.parent;
             var childNodes = parent.childNodes;
             var index = (0, _util.getNodeIndex)(this.elements[0]);
@@ -15604,9 +15604,7 @@ var rootRe = /^([^.]+)/;
  * @api private
  */
 function addBindings(bindings, text, binding) {
-    var match = void 0;
-    matcherRe.lastIndex = 0;
-    while (match = matcherRe.exec(text)) {
+    (0, _util.iterateRegExp)(matcherRe, text, function (match) {
         var token = match[1].match(rootRe)[1];
         if (token[0] === '&') {
             token = token.substr(1);
@@ -15615,7 +15613,7 @@ function addBindings(bindings, text, binding) {
             bindings[token] = [];
         }
         bindings[token].push(binding);
-    }
+    });
 }
 
 /**
@@ -15959,6 +15957,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.getNodeIndex = getNodeIndex;
+exports.iterateRegExp = iterateRegExp;
 exports.escapeHTML = escapeHTML;
 exports.isHTML = isHTML;
 exports.parseHTML = parseHTML;
@@ -16018,6 +16017,25 @@ function toArray(obj) {
  */
 function getNodeIndex(el) {
     return indexOf.call(el.parentNode.childNodes, el);
+}
+
+/**
+ * Iterates through all the matches
+ * of the provided regex and string
+ *
+ * @param {RegExp} re
+ * @param {String} str
+ * @param {Function} fn
+ * @api private
+ */
+function iterateRegExp(re, str, fn) {
+    var match = void 0;
+    if (re.global) {
+        re.lastIndex = 0;
+    }
+    while (match = re.exec(str)) {
+        fn(match);
+    }
 }
 
 /**
