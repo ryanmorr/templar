@@ -105,6 +105,22 @@ describe('node interpolation', () => {
         expect(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
     });
 
+    it('should support multiple element interpolation between existing elements', () => {
+        const tpl = templar('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> fff</div>');
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < 3; i++) {
+            const div = document.createElement('div');
+            div.textContent = i;
+            frag.appendChild(div);
+        }
+        tpl.set('foo', frag);
+        tpl.set('bar', '<span>a</span><span>b</span>');
+        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> fff');
+        tpl.set('foo', '123');
+        tpl.set('bar', '456');
+        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> fff');
+    });
+
     it('should support dot-notation interpolation', () => {
         const tpl = templar('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
         tpl.set('object', {

@@ -5,6 +5,7 @@ let frame;
 let counter = 1;
 const batch = [];
 const slice = [].slice;
+const indexOf = [].indexOf;
 const toString = {}.toString;
 const htmlRe = /<[a-z][\s\S]*>/;
 const escapeRe = /[<>&"']/g;
@@ -37,10 +38,19 @@ export function isFunction(obj) {
  * @api private
  */
 export function toArray(obj) {
-    if ('from' in Array) {
-        return Array.from(obj);
-    }
     return slice.call(obj);
+}
+
+/**
+ * Get the index of an element amongst
+ * its sibling elements
+ *
+ * @param {Element} el
+ * @return {Number}
+ * @api private
+ */
+export function getNodeIndex(el) {
+    return indexOf.call(el.parentNode.childNodes, el);
 }
 
 /**

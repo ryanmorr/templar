@@ -4,7 +4,7 @@
 import Binding from './binding';
 import { Templar } from './templar';
 import { getTokenValue } from './parser';
-import { escapeHTML, parseHTML, isHTML } from './util';
+import { toArray, escapeHTML, parseHTML, isHTML, getNodeIndex } from './util';
 
 /**
  * Common variables
@@ -29,7 +29,8 @@ export default class NodeBinding extends Binding {
      */
     constructor(tpl, node) {
         super(tpl, node, node.data);
-        this.parent = this.node.parentNode;
+        this.parent = node.parentNode;
+        this.elements = [node];
     }
 
     /**
@@ -43,6 +44,7 @@ export default class NodeBinding extends Binding {
     render() {
         let match;
         nodeContentRe.lastIndex = 0;
+        const elements = [];
         const doc = this.tpl.getOwnerDocument();
         const frag = doc.createDocumentFragment();
         while ((match = nodeContentRe.exec(this.text))) {
@@ -56,14 +58,18 @@ export default class NodeBinding extends Binding {
                 switch (typeof value) {
                     case 'string':
                         if (!escape && isHTML(value)) {
-                            frag.appendChild(parseHTML(value, doc));
+                            const el = parseHTML(value, doc);
+                            elements.push.apply(elements, toArray(el.childNodes));
+                            frag.appendChild(el);
                             break;
                         }
                         value = escapeHTML(value);
                         // falls through
                     case 'number':
                     case 'boolean':
-                        frag.appendChild(doc.createTextNode(value));
+                        const text = doc.createTextNode(value);
+                        frag.appendChild(text);
+                        elements.push(text);
                         break;
                     default:
                         if (value instanceof Templar) {
@@ -71,19 +77,40 @@ export default class NodeBinding extends Binding {
                                 value.unmount();
                             }
                             value.mount(frag);
+                            elements.push(value);
                         } else {
-                            frag.appendChild(value);
+                            if (value.nodeType === 11) {
+                                elements.push.apply(elements, toArray(value.childNodes));
+                                frag.appendChild(value);
+                            } else {
+                                frag.appendChild(value);
+                                elements.push(value);
+                            }
                         }
                 }
             } else if (match[2] != null) {
-                frag.appendChild(doc.createTextNode(match[2]));
+                const text = doc.createTextNode(match[2]);
+                frag.appendChild(text);
+                elements.push(text);
             }
         }
-        while (this.parent.firstChild) {
-            this.parent.removeChild(this.parent.firstChild);
+        const parent = this.parent;
+        const childNodes = parent.childNodes;
+        const index = getNodeIndex(this.elements[0]);
+        while (this.elements.length) {
+            const el = this.elements.shift();
+            if (el instanceof Templar) {
+                el.unmount();
+            } else {
+                parent.removeChild(el);
+            }
         }
-        this.parent.appendChild(frag);
-        this.parent.normalize();
+        if (childNodes[index]) {
+            parent.insertBefore(frag, childNodes[index]);
+        } else {
+            parent.appendChild(frag);
+        }
+        this.elements = elements;
         this.renderer = null;
     }
 }

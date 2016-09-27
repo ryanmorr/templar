@@ -15507,7 +15507,8 @@ var NodeBinding = function (_Binding) {
 
         var _this = _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this, tpl, node, node.data));
 
-        _this.parent = _this.node.parentNode;
+        _this.parent = node.parentNode;
+        _this.elements = [node];
         return _this;
     }
 
@@ -15526,6 +15527,7 @@ var NodeBinding = function (_Binding) {
         value: function render() {
             var match = void 0;
             nodeContentRe.lastIndex = 0;
+            var elements = [];
             var doc = this.tpl.getOwnerDocument();
             var frag = doc.createDocumentFragment();
             while (match = nodeContentRe.exec(this.text)) {
@@ -15540,14 +15542,18 @@ var NodeBinding = function (_Binding) {
                     switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
                         case 'string':
                             if (!_escape && (0, _util.isHTML)(value)) {
-                                frag.appendChild((0, _util.parseHTML)(value, doc));
+                                var el = (0, _util.parseHTML)(value, doc);
+                                elements.push.apply(elements, (0, _util.toArray)(el.childNodes));
+                                frag.appendChild(el);
                                 break;
                             }
                             value = (0, _util.escapeHTML)(value);
                         // falls through
                         case 'number':
                         case 'boolean':
-                            frag.appendChild(doc.createTextNode(value));
+                            var text = doc.createTextNode(value);
+                            frag.appendChild(text);
+                            elements.push(text);
                             break;
                         default:
                             if (value instanceof _templar.Templar) {
@@ -15555,19 +15561,40 @@ var NodeBinding = function (_Binding) {
                                     value.unmount();
                                 }
                                 value.mount(frag);
+                                elements.push(value);
                             } else {
-                                frag.appendChild(value);
+                                if (value.nodeType === 11) {
+                                    elements.push.apply(elements, (0, _util.toArray)(value.childNodes));
+                                    frag.appendChild(value);
+                                } else {
+                                    frag.appendChild(value);
+                                    elements.push(value);
+                                }
                             }
                     }
                 } else if (match[2] != null) {
-                    frag.appendChild(doc.createTextNode(match[2]));
+                    var _text = doc.createTextNode(match[2]);
+                    frag.appendChild(_text);
+                    elements.push(_text);
                 }
             }
-            while (this.parent.firstChild) {
-                this.parent.removeChild(this.parent.firstChild);
+            var parent = this.parent;
+            var childNodes = parent.childNodes;
+            var index = (0, _util.getNodeIndex)(this.elements[0]);
+            while (this.elements.length) {
+                var _el = this.elements.shift();
+                if (_el instanceof _templar.Templar) {
+                    _el.unmount();
+                } else {
+                    parent.removeChild(_el);
+                }
             }
-            this.parent.appendChild(frag);
-            this.parent.normalize();
+            if (childNodes[index]) {
+                parent.insertBefore(frag, childNodes[index]);
+            } else {
+                parent.appendChild(frag);
+            }
+            this.elements = elements;
             this.renderer = null;
         }
     }]);
@@ -15972,6 +15999,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.isFunction = isFunction;
 exports.toArray = toArray;
+exports.getNodeIndex = getNodeIndex;
 exports.escapeHTML = escapeHTML;
 exports.isHTML = isHTML;
 exports.parseHTML = parseHTML;
@@ -15985,6 +16013,7 @@ var frame = void 0;
 var counter = 1;
 var batch = [];
 var slice = [].slice;
+var indexOf = [].indexOf;
 var toString = {}.toString;
 var htmlRe = /<[a-z][\s\S]*>/;
 var escapeRe = /[<>&"']/g;
@@ -16017,10 +16046,19 @@ function isFunction(obj) {
  * @api private
  */
 function toArray(obj) {
-    if ('from' in Array) {
-        return Array.from(obj);
-    }
     return slice.call(obj);
+}
+
+/**
+ * Get the index of an element amongst
+ * its sibling elements
+ *
+ * @param {Element} el
+ * @return {Number}
+ * @api private
+ */
+function getNodeIndex(el) {
+    return indexOf.call(el.parentNode.childNodes, el);
 }
 
 /**
@@ -16362,6 +16400,22 @@ describe('node interpolation', function () {
         tpl2.set('bar', tpl3);
         tpl3.set('baz', 'qux');
         (0, _chai.expect)(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
+    });
+
+    it('should support multiple element interpolation between existing elements', function () {
+        var tpl = (0, _templar2.default)('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> fff</div>');
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < 3; i++) {
+            var div = document.createElement('div');
+            div.textContent = i;
+            frag.appendChild(div);
+        }
+        tpl.set('foo', frag);
+        tpl.set('bar', '<span>a</span><span>b</span>');
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> fff');
+        tpl.set('foo', '123');
+        tpl.set('bar', '456');
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> fff');
     });
 
     it('should support dot-notation interpolation', function () {
