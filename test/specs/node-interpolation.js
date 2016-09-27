@@ -123,6 +123,16 @@ describe('node interpolation', () => {
         expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
     });
 
+    it('should support passing the data object to token callback functions', () => {
+        const tpl = templar('<div>{{foo}}</div><div>{{bar}}</div>');
+        tpl.set('foo', 5);
+        tpl.set('bar', (data) => {
+            return data.foo * 2;
+        });
+        expect(tpl.getRoot().childNodes[0].textContent).to.equal('5');
+        expect(tpl.getRoot().childNodes[1].textContent).to.equal('10');
+    });
+
     it('should support escaping HTML characters', () => {
         const tpl = templar('<div>{{&value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');

@@ -73,7 +73,7 @@ export class Templar {
      * the template
      *
      * @param {String} token
-     * @return {String|Number|Boolean}
+     * @return {String|Number|Boolean|Node|Templar}
      * @api public
      */
     get(token) {
@@ -85,7 +85,7 @@ export class Templar {
      * the template
      *
      * @param {String|Object} token
-     * @param {String|Number|Boolean} value
+     * @param {String|Number|Boolean|Node|Templar} value
      * @api public
      */
     set(token, value) {

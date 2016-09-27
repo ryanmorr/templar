@@ -55,7 +55,7 @@ function hasInterpolation(str) {
  */
 export function getTokenValue(token, values) {
     const value = token.split('.').reduce((val, ns) => val ? val[ns] : (values[ns] || ''), null);
-    return isFunction(value) ? value() : value;
+    return isFunction(value) ? value(values) : value;
 }
 
 /**

@@ -15655,7 +15655,7 @@ function getTokenValue(token, values) {
     var value = token.split('.').reduce(function (val, ns) {
         return val ? val[ns] : values[ns] || '';
     }, null);
-    return (0, _util.isFunction)(value) ? value() : value;
+    return (0, _util.isFunction)(value) ? value(values) : value;
 }
 
 /**
@@ -15817,7 +15817,7 @@ var Templar = exports.Templar = function () {
          * the template
          *
          * @param {String} token
-         * @return {String|Number|Boolean}
+         * @return {String|Number|Boolean|Node|Templar}
          * @api public
          */
 
@@ -15832,7 +15832,7 @@ var Templar = exports.Templar = function () {
          * the template
          *
          * @param {String|Object} token
-         * @param {String|Number|Boolean} value
+         * @param {String|Number|Boolean|Node|Templar} value
          * @api public
          */
 
@@ -16217,6 +16217,16 @@ describe('attribute interpolation', function () {
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('foo');
     });
 
+    it('should support passing the data object to token callback functions', function () {
+        var tpl = (0, _templar2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
+        tpl.set('foo', 5);
+        tpl.set('bar', function (data) {
+            return data.foo * 2;
+        });
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('5');
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].className).to.equal('10');
+    });
+
     it('should support default interpolation on initialization', function () {
         var tpl = (0, _templar2.default)('<div id="{{foo}}"></div>', { foo: 123 });
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('123');
@@ -16372,6 +16382,16 @@ describe('node interpolation', function () {
             return 'foo';
         });
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+    });
+
+    it('should support passing the data object to token callback functions', function () {
+        var tpl = (0, _templar2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
+        tpl.set('foo', 5);
+        tpl.set('bar', function (data) {
+            return data.foo * 2;
+        });
+        (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('5');
+        (0, _chai.expect)(tpl.getRoot().childNodes[1].textContent).to.equal('10');
     });
 
     it('should support escaping HTML characters', function () {

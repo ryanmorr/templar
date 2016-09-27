@@ -77,6 +77,16 @@ describe('attribute interpolation', () => {
         expect(tpl.getRoot().childNodes[0].id).to.equal('foo');
     });
 
+    it('should support passing the data object to token callback functions', () => {
+        const tpl = templar('<div id="{{foo}}" class="{{bar}}"></div>');
+        tpl.set('foo', 5);
+        tpl.set('bar', (data) => {
+            return data.foo * 2;
+        });
+        expect(tpl.getRoot().childNodes[0].id).to.equal('5');
+        expect(tpl.getRoot().childNodes[0].className).to.equal('10');
+    });
+
     it('should support default interpolation on initialization', () => {
         const tpl = templar('<div id="{{foo}}"></div>', {foo: 123});
         expect(tpl.getRoot().childNodes[0].id).to.equal('123');
