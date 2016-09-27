@@ -15310,7 +15310,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 /**
  * Bind a token to a DOM node attribute
  *
- * @class NodeBinding
+ * @class AttrBinding
  * @api private
  */
 var AttrBinding = function (_Binding) {
@@ -15349,13 +15349,13 @@ var AttrBinding = function (_Binding) {
     _createClass(AttrBinding, [{
         key: 'render',
         value: function render() {
+            this.renderer = null;
             var value = (0, _parser.interpolate)(this.text, this.tpl.data);
             if (value === '') {
                 this.node.removeAttribute(this.attr);
                 return;
             }
             this.node.setAttribute(this.attr, value);
-            this.renderer = null;
         }
     }]);
 
@@ -15497,11 +15497,13 @@ var NodeBinding = function (_Binding) {
         key: 'render',
         value: function render() {
             var match = void 0;
+            this.renderer = null;
             nodeContentRe.lastIndex = 0;
             var elements = [];
             var doc = this.tpl.getOwnerDocument();
             var frag = doc.createDocumentFragment();
             while (match = nodeContentRe.exec(this.text)) {
+                var value = void 0;
                 if (match[1] != null) {
                     var token = match[1],
                         _escape = false;
@@ -15509,22 +15511,17 @@ var NodeBinding = function (_Binding) {
                         _escape = true;
                         token = token.substr(1);
                     }
-                    var value = (0, _parser.getTokenValue)(token, this.tpl.data);
+                    value = (0, _parser.getTokenValue)(token, this.tpl.data);
                     switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
                         case 'string':
                             if (!_escape && (0, _util.isHTML)(value)) {
-                                var el = (0, _util.parseHTML)(value, doc);
-                                elements.push.apply(elements, el.childNodes);
-                                frag.appendChild(el);
+                                value = (0, _util.parseHTML)(value, doc);
                                 break;
                             }
-                            value = (0, _util.escapeHTML)(value);
                         // falls through
                         case 'number':
                         case 'boolean':
-                            var text = doc.createTextNode(value);
-                            frag.appendChild(text);
-                            elements.push(text);
+                            value = doc.createTextNode((0, _util.escapeHTML)(value));
                             break;
                         default:
                             if (value instanceof _templar.Templar) {
@@ -15532,32 +15529,26 @@ var NodeBinding = function (_Binding) {
                                     value.unmount();
                                 }
                                 value.mount(frag);
-                                elements.push(value);
-                            } else {
-                                if (value.nodeType === 11) {
-                                    elements.push.apply(elements, value.childNodes);
-                                    frag.appendChild(value);
-                                } else {
-                                    frag.appendChild(value);
-                                    elements.push(value);
-                                }
                             }
                     }
                 } else if (match[2] != null) {
-                    var _text = doc.createTextNode(match[2]);
-                    frag.appendChild(_text);
-                    elements.push(_text);
+                    value = doc.createTextNode(match[2]);
+                }
+                var nodeType = value.nodeType;
+                elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);
+                if (nodeType) {
+                    frag.appendChild(value);
                 }
             }
             var parent = this.parent;
             var childNodes = parent.childNodes;
             var index = (0, _util.getNodeIndex)(this.elements[0]);
             while (this.elements.length) {
-                var _el = this.elements.shift();
-                if (_el instanceof _templar.Templar) {
-                    _el.unmount();
+                var el = this.elements.shift();
+                if (el instanceof _templar.Templar) {
+                    el.unmount();
                 } else {
-                    parent.removeChild(_el);
+                    parent.removeChild(el);
                 }
             }
             if (childNodes[index]) {
@@ -15566,7 +15557,6 @@ var NodeBinding = function (_Binding) {
                 parent.appendChild(frag);
             }
             this.elements = elements;
-            this.renderer = null;
         }
     }]);
 

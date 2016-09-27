@@ -49,28 +49,24 @@ export default class NodeBinding extends Binding {
         const doc = this.tpl.getOwnerDocument();
         const frag = doc.createDocumentFragment();
         while ((match = nodeContentRe.exec(this.text))) {
+            let value;
             if (match[1] != null) {
                 let token = match[1], escape = false;
                 if (token[0] === '&') {
                     escape = true;
                     token = token.substr(1);
                 }
-                let value = getTokenValue(token, this.tpl.data);
+                value = getTokenValue(token, this.tpl.data);
                 switch (typeof value) {
                     case 'string':
                         if (!escape && isHTML(value)) {
-                            const el = parseHTML(value, doc);
-                            elements.push.apply(elements, el.childNodes);
-                            frag.appendChild(el);
+                            value = parseHTML(value, doc);
                             break;
                         }
-                        value = escapeHTML(value);
                         // falls through
                     case 'number':
                     case 'boolean':
-                        const text = doc.createTextNode(value);
-                        frag.appendChild(text);
-                        elements.push(text);
+                        value = doc.createTextNode(escapeHTML(value));
                         break;
                     default:
                         if (value instanceof Templar) {
@@ -78,21 +74,15 @@ export default class NodeBinding extends Binding {
                                 value.unmount();
                             }
                             value.mount(frag);
-                            elements.push(value);
-                        } else {
-                            if (value.nodeType === 11) {
-                                elements.push.apply(elements, value.childNodes);
-                                frag.appendChild(value);
-                            } else {
-                                frag.appendChild(value);
-                                elements.push(value);
-                            }
                         }
                 }
             } else if (match[2] != null) {
-                const text = doc.createTextNode(match[2]);
-                frag.appendChild(text);
-                elements.push(text);
+                value = doc.createTextNode(match[2]);
+            }
+            const nodeType = value.nodeType;
+            elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);
+            if (nodeType) {
+                frag.appendChild(value);
             }
         }
         const parent = this.parent;
