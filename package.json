@@ -1,6 +1,6 @@
 {
   "name": "templar",
-  "description": "Simple and lightweight DOM templating library",
+  "description": "A simple, yet intuitive DOM templating engine",
   "version": "0.1.0",
   "license": "Unlicense",
   "homepage": "https://github.com/ryanmorr/templar",
