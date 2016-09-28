@@ -31,7 +31,6 @@ export default class NodeBinding extends Binding {
         super();
         this.tpl = tpl;
         this.text = node.data;
-        this.parent = node.parentNode;
         this.elements = [node];
     }
 
@@ -83,9 +82,10 @@ export default class NodeBinding extends Binding {
                 frag.appendChild(value);
             }
         });
-        const parent = this.parent;
+        const element = this.elements[0];
+        const parent = element.parentNode;
         const childNodes = parent.childNodes;
-        const index = getNodeIndex(this.elements[0]);
+        const index = getNodeIndex(element);
         this.elements.forEach((el) => {
             if (el instanceof Templar) {
                 return el.unmount();

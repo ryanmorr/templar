@@ -15480,7 +15480,6 @@ var NodeBinding = function (_Binding) {
 
         _this.tpl = tpl;
         _this.text = node.data;
-        _this.parent = node.parentNode;
         _this.elements = [node];
         return _this;
     }
@@ -15540,9 +15539,10 @@ var NodeBinding = function (_Binding) {
                     frag.appendChild(value);
                 }
             });
-            var parent = this.parent;
+            var element = this.elements[0];
+            var parent = element.parentNode;
             var childNodes = parent.childNodes;
-            var index = (0, _util.getNodeIndex)(this.elements[0]);
+            var index = (0, _util.getNodeIndex)(element);
             this.elements.forEach(function (el) {
                 if (el instanceof _templar.Templar) {
                     return el.unmount();
