@@ -154,4 +154,21 @@ describe('templar', () => {
         expect(els).to.be.an('array');
         expect(els).to.deep.equal([].slice.call(container.querySelectorAll('div')));
     });
+
+    it('should be able to destroy the templar instance', () => {
+        const tpl = templar('<div></div>');
+        const container = document.createElement('div');
+        tpl.mount(container);
+        tpl.destroy();
+        expect(tpl.isMounted()).to.equal(false);
+        expect(tpl.getRoot()).to.equal(null);
+        expect(tpl.bindings).to.equal(null);
+    });
+
+    it('should know whether the instance has been destroyed or not', () => {
+        const tpl = templar('<div></div>');
+        expect(tpl.isDestroyed()).to.equal(false);
+        tpl.destroy();
+        expect(tpl.isDestroyed()).to.equal(true);
+    });
 });

@@ -28,8 +28,24 @@ export class Templar {
         this.bindings = parseTemplate(this, this.frag.childNodes, this.id);
         this.data = Object.create(null);
         this.mounted = false;
+        this.destroyed = false;
         if (data) {
             this.set(data);
+        }
+    }
+
+    /**
+     * Destroy the instance
+     *
+     * @api public
+     */
+    destroy() {
+        if (!this.isDestroyed()) {
+            if (this.isMounted()) {
+                this.unmount();
+            }
+            this.root = this.frag = this.data = this.bindings = null;
+            this.destroyed = true;
         }
     }
 
@@ -169,6 +185,16 @@ export class Templar {
      */
     isRendered() {
         return this.isMounted() && contains(this.doc, this.getRoot());
+    }
+
+    /**
+     * Has the template been destroyed?
+     *
+     * @return {Boolean}
+     * @api public
+     */
+    isDestroyed() {
+        return this.destroyed;
     }
 }
 

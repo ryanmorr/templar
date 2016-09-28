@@ -15747,21 +15747,40 @@ var Templar = exports.Templar = function () {
         this.bindings = (0, _parser.parseTemplate)(this, this.frag.childNodes, this.id);
         this.data = Object.create(null);
         this.mounted = false;
+        this.destroyed = false;
         if (data) {
             this.set(data);
         }
     }
 
     /**
-     * Append the template to a parent
-     * element
+     * Destroy the instance
      *
-     * @param {Element} root
      * @api public
      */
 
 
     _createClass(Templar, [{
+        key: 'destroy',
+        value: function destroy() {
+            if (!this.isDestroyed()) {
+                if (this.isMounted()) {
+                    this.unmount();
+                }
+                this.root = this.frag = this.data = this.bindings = null;
+                this.destroyed = true;
+            }
+        }
+
+        /**
+         * Append the template to a parent
+         * element
+         *
+         * @param {Element} root
+         * @api public
+         */
+
+    }, {
         key: 'mount',
         value: function mount(root) {
             var frag = this.frag;
@@ -15929,6 +15948,19 @@ var Templar = exports.Templar = function () {
         key: 'isRendered',
         value: function isRendered() {
             return this.isMounted() && (0, _util.contains)(this.doc, this.getRoot());
+        }
+
+        /**
+         * Has the template been destroyed?
+         *
+         * @return {Boolean}
+         * @api public
+         */
+
+    }, {
+        key: 'isDestroyed',
+        value: function isDestroyed() {
+            return this.destroyed;
         }
     }]);
 
@@ -16720,6 +16752,23 @@ describe('templar', function () {
         var els = tpl.query('div');
         (0, _chai.expect)(els).to.be.an('array');
         (0, _chai.expect)(els).to.deep.equal([].slice.call(container.querySelectorAll('div')));
+    });
+
+    it('should be able to destroy the templar instance', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        var container = document.createElement('div');
+        tpl.mount(container);
+        tpl.destroy();
+        (0, _chai.expect)(tpl.isMounted()).to.equal(false);
+        (0, _chai.expect)(tpl.getRoot()).to.equal(null);
+        (0, _chai.expect)(tpl.bindings).to.equal(null);
+    });
+
+    it('should know whether the instance has been destroyed or not', function () {
+        var tpl = (0, _templar2.default)('<div></div>');
+        (0, _chai.expect)(tpl.isDestroyed()).to.equal(false);
+        tpl.destroy();
+        (0, _chai.expect)(tpl.isDestroyed()).to.equal(true);
     });
 }); /* eslint-disable max-len */
 
