@@ -93,10 +93,12 @@ export class Templar {
             Object.keys(token).forEach((name) => this.set(name, token[name]));
             return;
         }
-        if (value != null && token in this.bindings) {
+        if (value != null) {
             this.data[token] = value;
-            const method = this.isRendered() ? 'update' : 'render';
-            this.bindings[token].forEach((binding) => binding[method]());
+            if (token in this.bindings) {
+                const method = this.isRendered() ? 'update' : 'render';
+                this.bindings[token].forEach((binding) => binding[method]());
+            }
         }
     }
 
