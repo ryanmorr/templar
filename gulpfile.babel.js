@@ -17,7 +17,7 @@ const banner = '/*! ${pkg.name} v${pkg.version} | ${pkg.homepage} */\n';
 const config = {
     src: {
         files: './src/**/*.js',
-        entryFile: './src/templar.js',
+        entryFile: './src/index.js',
         outputFile: 'templar.js',
         outputDir: './dist/'
     },

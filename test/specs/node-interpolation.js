@@ -2,7 +2,7 @@
 
 import { expect } from 'chai';
 import sinon from 'sinon';
-import templar from '../../src/templar';
+import templar from '../../src';
 
 describe('node interpolation', () => {
     it('should support interpolation', () => {

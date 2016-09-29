@@ -1,8 +1,8 @@
 /**
  * Import dependencies
  */
+import Templar from './templar';
 import Binding from './binding';
-import { Templar } from './templar';
 import { getTokenValue } from './parser';
 import { escapeHTML, parseHTML, isHTML, getNodeIndex, iterateRegExp } from './util';
 

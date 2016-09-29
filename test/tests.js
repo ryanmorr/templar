@@ -15365,7 +15365,7 @@ var AttrBinding = function (_Binding) {
 exports.default = AttrBinding;
 module.exports = exports['default'];
 
-},{"./binding":74,"./parser":76}],74:[function(require,module,exports){
+},{"./binding":74,"./parser":77}],74:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15418,7 +15418,37 @@ var Binding = function () {
 exports.default = Binding;
 module.exports = exports['default'];
 
-},{"./util":78}],75:[function(require,module,exports){
+},{"./util":79}],75:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = templar;
+
+var _templar = require('./templar');
+
+var _templar2 = _interopRequireDefault(_templar);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Factory function for creating
+ * `Templar` instances
+ *
+ * @param {String} tpl
+ * @param {Object} data (optional)
+ * @return {Templar}
+ * @api public
+ */
+function templar(tpl, data) {
+  return new _templar2.default(tpl, data);
+} /**
+   * Import dependencies
+   */
+module.exports = exports['default'];
+
+},{"./templar":78}],76:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15429,11 +15459,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _templar = require('./templar');
+
+var _templar2 = _interopRequireDefault(_templar);
+
 var _binding = require('./binding');
 
 var _binding2 = _interopRequireDefault(_binding);
-
-var _templar = require('./templar');
 
 var _parser = require('./parser');
 
@@ -15523,7 +15555,7 @@ var NodeBinding = function (_Binding) {
                             value = doc.createTextNode((0, _util.escapeHTML)(value));
                             break;
                         default:
-                            if (value instanceof _templar.Templar) {
+                            if (value instanceof _templar2.default) {
                                 if (value.isMounted()) {
                                     value.unmount();
                                 }
@@ -15544,7 +15576,7 @@ var NodeBinding = function (_Binding) {
             var childNodes = parent.childNodes;
             var index = (0, _util.getNodeIndex)(element);
             this.elements.forEach(function (el) {
-                if (el instanceof _templar.Templar) {
+                if (el instanceof _templar2.default) {
                     return el.unmount();
                 }
                 parent.removeChild(el);
@@ -15564,7 +15596,7 @@ var NodeBinding = function (_Binding) {
 exports.default = NodeBinding;
 module.exports = exports['default'];
 
-},{"./binding":74,"./parser":76,"./templar":77,"./util":78}],76:[function(require,module,exports){
+},{"./binding":74,"./parser":77,"./templar":78,"./util":79}],77:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -15700,20 +15732,17 @@ function parseTemplate(tpl, nodes, id) {
     }, bindings);
 }
 
-},{"./attr-binding":73,"./node-binding":75,"./util":78}],77:[function(require,module,exports){
+},{"./attr-binding":73,"./node-binding":76,"./util":79}],78:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Templar = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * Import dependencies
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
-
-exports.default = templar;
 
 var _parser = require('./parser');
 
@@ -15727,7 +15756,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @class Templar
  * @api public
  */
-var Templar = exports.Templar = function () {
+var Templar = function () {
 
     /**
      * Instantiate the class providing a
@@ -15967,22 +15996,10 @@ var Templar = exports.Templar = function () {
     return Templar;
 }();
 
-/**
- * Factory function for creating
- * `Templar` instances
- *
- * @param {String} tpl
- * @param {Object} data (optional)
- * @return {Templar}
- * @api public
- */
+exports.default = Templar;
+module.exports = exports['default'];
 
-
-function templar(tpl, data) {
-    return new Templar(tpl, data);
-}
-
-},{"./parser":76,"./util":78}],78:[function(require,module,exports){
+},{"./parser":77,"./util":79}],79:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16194,14 +16211,14 @@ function getTemplateElements(root, id) {
     return elements;
 }
 
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');
 
-var _templar = require('../../src/templar');
+var _src = require('../../src');
 
-var _templar2 = _interopRequireDefault(_templar);
+var _src2 = _interopRequireDefault(_src);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -16209,46 +16226,46 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 describe('attribute interpolation', function () {
     it('should support interpolation', function () {
-        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{id}}"></div>');
         tpl.set('id', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('foo');
     });
 
     it('should support multiple tokens within an attribute', function () {
-        var tpl = (0, _templar2.default)('<div class="foo bar {{class1}} {{class2}}"></div>');
+        var tpl = (0, _src2.default)('<div class="foo bar {{class1}} {{class2}}"></div>');
         tpl.set('class1', 'baz');
         tpl.set('class2', 'qux');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
     it('should support the removal of an attribute if none is defined', function () {
-        var tpl = (0, _templar2.default)('<div id="{{id}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{id}}"></div>');
         tpl.set('id', '');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].hasAttribute('foo')).to.equal(false);
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', function () {
-        var tpl = (0, _templar2.default)('<div id="{{ foo }}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{ foo }}"></div>');
         tpl.set('foo', 'bar');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('bar');
     });
 
     it('should support the same token more than once', function () {
-        var tpl = (0, _templar2.default)('<div id="{{value}}" class="{{value}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{value}}" class="{{value}}"></div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].className).to.equal('foo');
     });
 
     it('should support passing a key/value map', function () {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
         tpl.set({ foo: 123, bar: 456 });
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('123');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].className).to.equal('456');
     });
 
     it('should ignore a null value', function () {
-        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{value}}"></div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('foo');
         tpl.set('value', null);
@@ -16256,7 +16273,7 @@ describe('attribute interpolation', function () {
     });
 
     it('should ignore an undefined value', function () {
-        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{value}}"></div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('foo');
         tpl.set('value', void 0);
@@ -16264,7 +16281,7 @@ describe('attribute interpolation', function () {
     });
 
     it('should support dot-notation interpolation', function () {
-        var tpl = (0, _templar2.default)('<div id="{{object.key}}" class="{{object.data.value}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{object.key}}" class="{{object.data.value}}"></div>');
         tpl.set('object', {
             key: 'foo',
             data: {
@@ -16276,7 +16293,7 @@ describe('attribute interpolation', function () {
     });
 
     it('should support token callback functions', function () {
-        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{value}}"></div>');
         tpl.set('value', function () {
             return 'foo';
         });
@@ -16284,7 +16301,7 @@ describe('attribute interpolation', function () {
     });
 
     it('should support passing the data object to token callback functions', function () {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
         tpl.set('foo', 5);
         tpl.set('bar', function (data) {
             return data.foo * 2;
@@ -16294,18 +16311,18 @@ describe('attribute interpolation', function () {
     });
 
     it('should support default interpolation on initialization', function () {
-        var tpl = (0, _templar2.default)('<div id="{{foo}}"></div>', { foo: 123 });
+        var tpl = (0, _src2.default)('<div id="{{foo}}"></div>', { foo: 123 });
         (0, _chai.expect)(tpl.getRoot().childNodes[0].id).to.equal('123');
     });
 
     it('should support the retrieval of the current value of a token', function () {
-        var tpl = (0, _templar2.default)('<div id="{{value}}"></div>');
+        var tpl = (0, _src2.default)('<div id="{{value}}"></div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 });
 
-},{"../../src/templar":77,"chai":9}],80:[function(require,module,exports){
+},{"../../src":75,"chai":9}],81:[function(require,module,exports){
 'use strict';
 
 require('./templar.js');
@@ -16314,7 +16331,7 @@ require('./node-interpolation.js');
 
 require('./attr-interpolation.js');
 
-},{"./attr-interpolation.js":79,"./node-interpolation.js":81,"./templar.js":82}],81:[function(require,module,exports){
+},{"./attr-interpolation.js":80,"./node-interpolation.js":82,"./templar.js":83}],82:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');
@@ -16323,15 +16340,15 @@ var _sinon = require('sinon');
 
 var _sinon2 = _interopRequireDefault(_sinon);
 
-var _templar = require('../../src/templar');
+var _src = require('../../src');
 
-var _templar2 = _interopRequireDefault(_templar);
+var _src2 = _interopRequireDefault(_src);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 describe('node interpolation', function () {
     it('should support interpolation', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         var div = tpl.getRoot().childNodes[0];
         var textNode = div.firstChild;
         tpl.set('value', 'foo');
@@ -16346,40 +16363,40 @@ describe('node interpolation', function () {
     });
 
     it('should support only text node interpolation', function () {
-        var tpl = (0, _templar2.default)('{{foo}}');
+        var tpl = (0, _src2.default)('{{foo}}');
         tpl.set('foo', 'bar');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].data).to.equal('bar');
     });
 
     it('should support multiple tokens within an element', function () {
-        var tpl = (0, _templar2.default)('<div>{{foo}} {{bar}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}} {{bar}}</div>');
         tpl.set('foo', 'aaa');
         tpl.set('bar', 'bbb');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('aaa bbb');
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', function () {
-        var tpl = (0, _templar2.default)('<div>{{ foo }}</div>');
+        var tpl = (0, _src2.default)('<div>{{ foo }}</div>');
         tpl.set('foo', 'bar');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('bar');
     });
 
     it('should support the same token more than once', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div><div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div><div>{{value}}</div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[1].textContent).to.equal('foo');
     });
 
     it('should support passing a key/value map', function () {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
         tpl.set({ foo: 123, bar: 456 });
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('123');
         (0, _chai.expect)(tpl.getRoot().childNodes[1].textContent).to.equal('456');
     });
 
     it('should ignore a null value', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
         tpl.set('value', null);
@@ -16387,7 +16404,7 @@ describe('node interpolation', function () {
     });
 
     it('should ignore an undefined value', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
         tpl.set('value', void 0);
@@ -16395,14 +16412,14 @@ describe('node interpolation', function () {
     });
 
     it('should support interpolation with a DOM node', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         var el = document.createElement('strong');
         tpl.set('value', el);
         (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild).to.equal(el);
     });
 
     it('should support interpolation with a DOM fragment', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         var frag = document.createDocumentFragment();
         for (var i = 0; i < 3; i++) {
             frag.appendChild(document.createTextNode(i));
@@ -16412,16 +16429,16 @@ describe('node interpolation', function () {
     });
 
     it('should support parsing and interpolation of an HTML string', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         tpl.set('value', '<strong>foo</strong>');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild.nodeName).to.equal('STRONG');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].firstChild.textContent).to.equal('foo');
     });
 
     it('should support nested templates', function () {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
-        var tpl2 = (0, _templar2.default)('<em>{{bar}}</em>');
-        var tpl3 = (0, _templar2.default)('<strong>{{baz}}</strong>');
+        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
+        var tpl2 = (0, _src2.default)('<em>{{bar}}</em>');
+        var tpl3 = (0, _src2.default)('<strong>{{baz}}</strong>');
         var container = document.createElement('div');
         tpl.mount(container);
         tpl.set('foo', tpl2);
@@ -16431,8 +16448,8 @@ describe('node interpolation', function () {
     });
 
     it('should support multiple element interpolation between existing elements', function () {
-        var tpl = (0, _templar2.default)('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> {{baz}} fff</div>');
-        var tpl2 = (0, _templar2.default)('<div>{{a}}</div><div>{{b}}</div>');
+        var tpl = (0, _src2.default)('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> {{baz}} fff</div>');
+        var tpl2 = (0, _src2.default)('<div>{{a}}</div><div>{{b}}</div>');
         tpl2.set('a', 1);
         var frag = document.createDocumentFragment();
         for (var i = 0; i < 3; i++) {
@@ -16452,7 +16469,7 @@ describe('node interpolation', function () {
     });
 
     it('should support dot-notation interpolation', function () {
-        var tpl = (0, _templar2.default)('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
         tpl.set('object', {
             key: 'foo',
             data: {
@@ -16464,7 +16481,7 @@ describe('node interpolation', function () {
     });
 
     it('should support token callback functions', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         tpl.set('value', function () {
             return 'foo';
         });
@@ -16472,7 +16489,7 @@ describe('node interpolation', function () {
     });
 
     it('should support passing the data object to token callback functions', function () {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
         tpl.set('num', 5);
         tpl.set('foo', function (data) {
             return data.num * 2;
@@ -16481,24 +16498,24 @@ describe('node interpolation', function () {
     });
 
     it('should support escaping HTML characters', function () {
-        var tpl = (0, _templar2.default)('<div>{{&value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{&value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support default interpolation on initialization', function () {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div>', { foo: 'bar' });
+        var tpl = (0, _src2.default)('<div>{{foo}}</div>', { foo: 'bar' });
         (0, _chai.expect)(tpl.getRoot().childNodes[0].textContent).to.equal('bar');
     });
 
     it('should support the retrieval of the current value of a token', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 
     it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', function () {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
         var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
         var container = document.createElement('div');
         tpl.mount(container);
@@ -16509,7 +16526,7 @@ describe('node interpolation', function () {
     });
 
     it('should schedule a frame to update the template if it is rendered within the DOM', function (done) {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
         var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
         // Append to the DOM
         var container = document.createElement('div');
@@ -16529,7 +16546,7 @@ describe('node interpolation', function () {
     });
 
     it('should only schedule one callback per frame per binding', function (done) {
-        var tpl = (0, _templar2.default)('<div>{{foo}} {{bar}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}} {{bar}}</div>');
         var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
         var renderSpy = _sinon2.default.spy(tpl.bindings.foo[0], 'render');
         // Append to the DOM
@@ -16558,7 +16575,7 @@ describe('node interpolation', function () {
     });
 
     it('should only schedule one frame per cycle', function (done) {
-        var tpl = (0, _templar2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo}}</div><div>{{bar}}</div>');
         var requestSpy = _sinon2.default.spy(window, 'requestAnimationFrame');
         var cancelSpy = _sinon2.default.spy(window, 'cancelAnimationFrame');
         // Append to the DOM
@@ -16590,14 +16607,14 @@ describe('node interpolation', function () {
     });
 }); /* eslint-disable max-len */
 
-},{"../../src/templar":77,"chai":9,"sinon":45}],82:[function(require,module,exports){
+},{"../../src":75,"chai":9,"sinon":45}],83:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');
 
-var _templar = require('../../src/templar');
+var _src = require('../../src');
 
-var _templar2 = _interopRequireDefault(_templar);
+var _src2 = _interopRequireDefault(_src);
 
 var _util = require('../../src/util');
 
@@ -16605,7 +16622,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 describe('templar', function () {
     it('should implicitly parse the HTML template string to a DOM fragment on initialization', function () {
-        var tpl = (0, _templar2.default)('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
+        var tpl = (0, _src2.default)('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
         var el = tpl.getRoot().childNodes[0];
         var children = el.childNodes;
         (0, _chai.expect)(el.tagName.toLowerCase()).to.equal('section');
@@ -16617,7 +16634,7 @@ describe('templar', function () {
     });
 
     it('should support appending a template to the DOM', function () {
-        var tpl = (0, _templar2.default)('<div>foo</div>');
+        var tpl = (0, _src2.default)('<div>foo</div>');
         var container = document.createElement('div');
         var div = tpl.getRoot().childNodes[0];
         tpl.mount(container);
@@ -16625,7 +16642,7 @@ describe('templar', function () {
     });
 
     it('should support removing the template from the DOM', function () {
-        var tpl = (0, _templar2.default)('<div>foo</div>');
+        var tpl = (0, _src2.default)('<div>foo</div>');
         var container = document.createElement('div');
         var frag = tpl.frag;
         var div = frag.childNodes[0];
@@ -16637,7 +16654,7 @@ describe('templar', function () {
     });
 
     it('should know whether the template has been mounted to a parent element', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         var container = document.createElement('div');
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
         tpl.mount(container);
@@ -16647,7 +16664,7 @@ describe('templar', function () {
     });
 
     it('should know whether the template has been rendered to the DOM', function () {
-        var tpl = (0, _templar2.default)('<div>{{value}}</div>');
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
         var container = document.createElement('div');
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
         (0, _chai.expect)(tpl.isRendered()).to.equal(false);
@@ -16664,7 +16681,7 @@ describe('templar', function () {
     });
 
     it('should support appending a template to a document from another context', function () {
-        var tpl = (0, _templar2.default)('<div>foo</div>');
+        var tpl = (0, _src2.default)('<div>foo</div>');
         // Create another context
         var iframe = document.createElement('iframe');
         document.body.appendChild(iframe);
@@ -16685,7 +16702,7 @@ describe('templar', function () {
             container.appendChild(document.createElement('div'));
         }
         // Append the template to the container
-        var tpl = (0, _templar2.default)('<div>foo</div><div>bar</div><div>baz</div>');
+        var tpl = (0, _src2.default)('<div>foo</div><div>bar</div><div>baz</div>');
         var nodes = [].slice.call(tpl.frag.childNodes);
         tpl.mount(container);
         // Add more child elements behind the template
@@ -16699,7 +16716,7 @@ describe('templar', function () {
     });
 
     it('should support getting the template\'s root element', function () {
-        var tpl = (0, _templar2.default)('<div>foo</div>');
+        var tpl = (0, _src2.default)('<div>foo</div>');
         var frag = tpl.frag;
         var container = document.createElement('div');
         (0, _chai.expect)(tpl.getRoot()).to.equal(frag);
@@ -16710,12 +16727,12 @@ describe('templar', function () {
     });
 
     it('should return null for the value of a non-existent token', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         (0, _chai.expect)(tpl.get('value')).to.equal(null);
     });
 
     it('should support querying the template for a single element', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         var container = document.createElement('div');
         (0, _chai.expect)(tpl.find('div')).to.equal(tpl.getRoot().childNodes[0]);
         tpl.mount(container);
@@ -16723,14 +16740,14 @@ describe('templar', function () {
     });
 
     it('should support querying the template for a single element before it has been mounted to the DOM', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         var el = tpl.find('div');
         (0, _chai.expect)(el.nodeType).to.equal(1);
         (0, _chai.expect)(el).to.equal(tpl.getRoot().childNodes[0]);
     });
 
     it('should support querying the template for a single element after it has been mounted to the DOM', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         var container = document.createElement('div');
         tpl.mount(container);
         var el = tpl.find('div');
@@ -16739,14 +16756,14 @@ describe('templar', function () {
     });
 
     it('should support querying the template for an array of elements before it has been mounted to the DOM', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         var els = tpl.query('div');
         (0, _chai.expect)(els).to.be.an('array');
         (0, _chai.expect)(els).to.deep.equal([].slice.call(tpl.getRoot().querySelectorAll('div')));
     });
 
     it('should support querying the template for an array of elements after it has been mounted to the DOM', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         var container = document.createElement('div');
         tpl.mount(container);
         var els = tpl.query('div');
@@ -16755,7 +16772,7 @@ describe('templar', function () {
     });
 
     it('should be able to destroy the templar instance', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         var container = document.createElement('div');
         tpl.mount(container);
         tpl.destroy();
@@ -16765,11 +16782,11 @@ describe('templar', function () {
     });
 
     it('should know whether the instance has been destroyed or not', function () {
-        var tpl = (0, _templar2.default)('<div></div>');
+        var tpl = (0, _src2.default)('<div></div>');
         (0, _chai.expect)(tpl.isDestroyed()).to.equal(false);
         tpl.destroy();
         (0, _chai.expect)(tpl.isDestroyed()).to.equal(true);
     });
 }); /* eslint-disable max-len */
 
-},{"../../src/templar":77,"../../src/util":78,"chai":9}]},{},[80]);
+},{"../../src":75,"../../src/util":79,"chai":9}]},{},[81]);

@@ -10,7 +10,7 @@ import { toArray, contains, parseHTML, uid, getTemplateElements } from './util';
  * @class Templar
  * @api public
  */
-export class Templar {
+export default class Templar {
 
     /**
      * Instantiate the class providing a
@@ -196,17 +196,4 @@ export class Templar {
     isDestroyed() {
         return this.destroyed;
     }
-}
-
-/**
- * Factory function for creating
- * `Templar` instances
- *
- * @param {String} tpl
- * @param {Object} data (optional)
- * @return {Templar}
- * @api public
- */
-export default function templar(tpl, data) {
-    return new Templar(tpl, data);
 }

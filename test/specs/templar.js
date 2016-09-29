@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 
 import { expect } from 'chai';
-import templar from '../../src/templar';
+import templar from '../../src';
 import { contains } from '../../src/util';
 
 describe('templar', () => {
