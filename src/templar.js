@@ -57,13 +57,10 @@ export default class Templar {
      * @api public
      */
     mount(root) {
-        let frag = this.frag;
-        const doc = root.ownerDocument;
-        if (doc !== frag.ownerDocument) {
-            frag = this.frag = doc.adoptNode(frag);
+        if (this.isMounted()) {
+            this.unmount();
         }
-        root.appendChild(frag);
-        this.doc = doc;
+        root.appendChild(this.frag);
         this.root = root;
         this.mounted = true;
     }
@@ -155,17 +152,6 @@ export default class Templar {
     }
 
     /**
-     * Get the owner document of the root
-     * element
-     *
-     * @return {Document}
-     * @api public
-     */
-    getOwnerDocument() {
-        return this.getRoot().ownerDocument;
-    }
-
-    /**
      * Is the template mounted to
      * a parent element?
      *
@@ -184,7 +170,7 @@ export default class Templar {
      * @api public
      */
     isRendered() {
-        return this.isMounted() && contains(this.doc, this.getRoot());
+        return this.isMounted() && contains(document, this.getRoot());
     }
 
     /**

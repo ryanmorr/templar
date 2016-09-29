@@ -15531,8 +15531,7 @@ var NodeBinding = function (_Binding) {
 
             this.renderer = null;
             var elements = [];
-            var doc = this.tpl.getOwnerDocument();
-            var frag = doc.createDocumentFragment();
+            var frag = document.createDocumentFragment();
             (0, _util.iterateRegExp)(nodeContentRe, this.text, function (match) {
                 var value = void 0;
                 if (match[1] != null) {
@@ -15546,13 +15545,13 @@ var NodeBinding = function (_Binding) {
                     switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
                         case 'string':
                             if (!_escape && (0, _util.isHTML)(value)) {
-                                value = (0, _util.parseHTML)(value, doc);
+                                value = (0, _util.parseHTML)(value);
                                 break;
                             }
                         // falls through
                         case 'number':
                         case 'boolean':
-                            value = doc.createTextNode((0, _util.escapeHTML)(value));
+                            value = document.createTextNode((0, _util.escapeHTML)(value));
                             break;
                         default:
                             if (value instanceof _templar2.default) {
@@ -15563,7 +15562,7 @@ var NodeBinding = function (_Binding) {
                             }
                     }
                 } else if (match[2] != null) {
-                    value = doc.createTextNode(match[2]);
+                    value = document.createTextNode(match[2]);
                 }
                 var nodeType = value.nodeType;
                 elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);
@@ -15812,13 +15811,10 @@ var Templar = function () {
     }, {
         key: 'mount',
         value: function mount(root) {
-            var frag = this.frag;
-            var doc = root.ownerDocument;
-            if (doc !== frag.ownerDocument) {
-                frag = this.frag = doc.adoptNode(frag);
+            if (this.isMounted()) {
+                this.unmount();
             }
-            root.appendChild(frag);
-            this.doc = doc;
+            root.appendChild(this.frag);
             this.root = root;
             this.mounted = true;
         }
@@ -15938,20 +15934,6 @@ var Templar = function () {
         }
 
         /**
-         * Get the owner document of the root
-         * element
-         *
-         * @return {Document}
-         * @api public
-         */
-
-    }, {
-        key: 'getOwnerDocument',
-        value: function getOwnerDocument() {
-            return this.getRoot().ownerDocument;
-        }
-
-        /**
          * Is the template mounted to
          * a parent element?
          *
@@ -15976,7 +15958,7 @@ var Templar = function () {
     }, {
         key: 'isRendered',
         value: function isRendered() {
-            return this.isMounted() && (0, _util.contains)(this.doc, this.getRoot());
+            return this.isMounted() && (0, _util.contains)(document, this.getRoot());
         }
 
         /**
@@ -16142,15 +16124,12 @@ function isHTML(str) {
  * document fragment
  *
  * @param {String} html
- * @param {Document} doc (optional)
  * @return {DocumentFragment}
  * @api private
  */
 function parseHTML(html) {
-    var doc = arguments.length <= 1 || arguments[1] === undefined ? document : arguments[1];
-
-    var frag = doc.createDocumentFragment();
-    var div = doc.createElement('div');
+    var frag = document.createDocumentFragment();
+    var div = document.createElement('div');
     div.innerHTML = html;
     while (div.firstChild) {
         frag.appendChild(div.firstChild);
@@ -16678,21 +16657,6 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.isMounted()).to.equal(false);
         (0, _chai.expect)(tpl.isRendered()).to.equal(false);
         document.body.removeChild(container);
-    });
-
-    it('should support appending a template to a document from another context', function () {
-        var tpl = (0, _src2.default)('<div>foo</div>');
-        // Create another context
-        var iframe = document.createElement('iframe');
-        document.body.appendChild(iframe);
-        var win = iframe.contentWindow;
-        var doc = iframe.contentDocument || win.document;
-        // Append the template to the iframe's document
-        tpl.mount(doc.body);
-        (0, _chai.expect)(tpl.isRendered()).to.equal(true);
-        (0, _chai.expect)((0, _util.contains)(doc, tpl.getRoot())).to.equal(true);
-        (0, _chai.expect)(tpl.getOwnerDocument).to.not.equal(document);
-        document.body.removeChild(iframe);
     });
 
     it('should support appending and removing a template between multiple elements', function () {

@@ -43,8 +43,7 @@ export default class NodeBinding extends Binding {
     render() {
         this.renderer = null;
         const elements = [];
-        const doc = this.tpl.getOwnerDocument();
-        const frag = doc.createDocumentFragment();
+        const frag = document.createDocumentFragment();
         iterateRegExp(nodeContentRe, this.text, (match) => {
             let value;
             if (match[1] != null) {
@@ -57,13 +56,13 @@ export default class NodeBinding extends Binding {
                 switch (typeof value) {
                     case 'string':
                         if (!escape && isHTML(value)) {
-                            value = parseHTML(value, doc);
+                            value = parseHTML(value);
                             break;
                         }
                         // falls through
                     case 'number':
                     case 'boolean':
-                        value = doc.createTextNode(escapeHTML(value));
+                        value = document.createTextNode(escapeHTML(value));
                         break;
                     default:
                         if (value instanceof Templar) {
@@ -74,7 +73,7 @@ export default class NodeBinding extends Binding {
                         }
                 }
             } else if (match[2] != null) {
-                value = doc.createTextNode(match[2]);
+                value = document.createTextNode(match[2]);
             }
             const nodeType = value.nodeType;
             elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);

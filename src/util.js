@@ -122,13 +122,12 @@ export function isHTML(str) {
  * document fragment
  *
  * @param {String} html
- * @param {Document} doc (optional)
  * @return {DocumentFragment}
  * @api private
  */
-export function parseHTML(html, doc = document) {
-    const frag = doc.createDocumentFragment();
-    const div = doc.createElement('div');
+export function parseHTML(html) {
+    const frag = document.createDocumentFragment();
+    const div = document.createElement('div');
     div.innerHTML = html;
     while (div.firstChild) {
         frag.appendChild(div.firstChild);

@@ -64,21 +64,6 @@ describe('templar', () => {
         document.body.removeChild(container);
     });
 
-    it('should support appending a template to a document from another context', () => {
-        const tpl = templar('<div>foo</div>');
-        // Create another context
-        const iframe = document.createElement('iframe');
-        document.body.appendChild(iframe);
-        const win = iframe.contentWindow;
-        const doc = iframe.contentDocument || win.document;
-        // Append the template to the iframe's document
-        tpl.mount(doc.body);
-        expect(tpl.isRendered()).to.equal(true);
-        expect(contains(doc, tpl.getRoot())).to.equal(true);
-        expect(tpl.getOwnerDocument).to.not.equal(document);
-        document.body.removeChild(iframe);
-    });
-
     it('should support appending and removing a template between multiple elements', () => {
         // Create a container element with multiple child elements
         const container = document.createElement('div');
