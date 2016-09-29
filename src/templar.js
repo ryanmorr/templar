@@ -13,9 +13,8 @@ import { toArray, contains, parseHTML, uid, getTemplateElements } from './util';
 export default class Templar {
 
     /**
-     * Instantiate the class providing a
-     * template string that will be converted
-     * to a DOM fragment
+     * Instantiate the class providing the
+     * template string
      *
      * @constructor
      * @param {String} tpl
@@ -35,7 +34,8 @@ export default class Templar {
     }
 
     /**
-     * Destroy the instance
+     * Unmount the template and nullify
+     * the properties
      *
      * @api public
      */
@@ -66,8 +66,8 @@ export default class Templar {
     }
 
     /**
-     * Remove the template from it's parent
-     * element
+     * Remove the template from it's
+     * parent element
      *
      * @api public
      */
@@ -86,7 +86,7 @@ export default class Templar {
      * the template
      *
      * @param {String} token
-     * @return {String|Number|Boolean|Node|Templar}
+     * @return {String|Number|Boolean|Node|Templar|Function}
      * @api public
      */
     get(token) {
@@ -98,7 +98,7 @@ export default class Templar {
      * the template
      *
      * @param {String|Object} token
-     * @param {String|Number|Boolean|Node|Templar} value
+     * @param {String|Number|Boolean|Node|Templar|Function} value
      * @api public
      */
     set(token, value) {
@@ -142,7 +142,8 @@ export default class Templar {
     }
 
     /**
-     * Get the root element
+     * Get the root element of the
+     * template
      *
      * @return {Element}
      * @api public

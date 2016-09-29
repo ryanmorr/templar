@@ -48,7 +48,7 @@ function hasInterpolation(str) {
  *
  * @param {String} token
  * @param {Object} values
- * @return {String}
+ * @return {String|Number|Boolean|Node|Templar}
  * @api private
  */
 export function getTokenValue(token, values) {
@@ -73,9 +73,9 @@ export function interpolate(tpl, values) {
 /**
  * Parses the nodes of a template to
  * create a key/value object that maps
- * the template tokens to a function
- * capable of supplanting  the value
- * in the DOM
+ * the template tokens to a `Binding`
+ * instance capable of supplanting the
+ * value in the DOM
  *
  * @param {Templar} tpl
  * @param {NodeList} nodes

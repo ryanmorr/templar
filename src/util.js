@@ -137,8 +137,8 @@ export function parseHTML(html) {
 
 /**
  * Use `requestAnimationFrame` to
- * optimize DOM updates and avoid
- * dropped frames
+ * batch DOM updates to boost
+ * performance
  *
  * @param {Function} fn
  * @api private

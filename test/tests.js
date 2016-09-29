@@ -15399,7 +15399,7 @@ var Binding = function () {
 
     /**
      * Schedule a frame to update the
-     * binding
+     * DOM node
      *
      * @return {String}
      * @api private
@@ -15488,7 +15488,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 
 /**
- * Bind a token to a DOM text node
+ * Bind a token to a DOM node
  *
  * @class NodeBinding
  * @api private
@@ -15663,7 +15663,7 @@ function hasInterpolation(str) {
  *
  * @param {String} token
  * @param {Object} values
- * @return {String}
+ * @return {String|Number|Boolean|Node|Templar|Function}
  * @api private
  */
 function getTokenValue(token, values) {
@@ -15758,9 +15758,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Templar = function () {
 
     /**
-     * Instantiate the class providing a
-     * template string that will be converted
-     * to a DOM fragment
+     * Instantiate the class providing the
+     * template string
      *
      * @constructor
      * @param {String} tpl
@@ -15782,7 +15781,8 @@ var Templar = function () {
     }
 
     /**
-     * Destroy the instance
+     * Unmount the template and nullify
+     * the properties
      *
      * @api public
      */
@@ -15820,8 +15820,8 @@ var Templar = function () {
         }
 
         /**
-         * Remove the template from it's parent
-         * element
+         * Remove the template from it's
+         * parent element
          *
          * @api public
          */
@@ -15845,7 +15845,7 @@ var Templar = function () {
          * the template
          *
          * @param {String} token
-         * @return {String|Number|Boolean|Node|Templar}
+         * @return {String|Number|Boolean|Node|Templar|Function}
          * @api public
          */
 
@@ -15860,7 +15860,7 @@ var Templar = function () {
          * the template
          *
          * @param {String|Object} token
-         * @param {String|Number|Boolean|Node|Templar} value
+         * @param {String|Number|Boolean|Node|Templar|Function} value
          * @api public
          */
 
@@ -15921,7 +15921,8 @@ var Templar = function () {
         }
 
         /**
-         * Get the root element
+         * Get the root element of the
+         * template
          *
          * @return {Element}
          * @api public
@@ -16139,8 +16140,8 @@ function parseHTML(html) {
 
 /**
  * Use `requestAnimationFrame` to
- * optimize DOM updates and avoid
- * dropped frames
+ * batch DOM updates to boost
+ * performance
  *
  * @param {Function} fn
  * @api private

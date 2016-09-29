@@ -14,7 +14,7 @@ export default class Binding {
 
     /**
      * Schedule a frame to update the
-     * binding
+     * DOM node
      *
      * @return {String}
      * @api private

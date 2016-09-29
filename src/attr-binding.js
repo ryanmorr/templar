@@ -8,6 +8,7 @@ import { interpolate } from './parser';
  * Bind a token to a DOM node attribute
  *
  * @class AttrBinding
+ * @extends Binding
  * @api private
  */
 export default class AttrBinding extends Binding {

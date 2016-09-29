@@ -12,9 +12,10 @@ import { escapeHTML, parseHTML, isHTML, getNodeIndex, iterateRegExp } from './ut
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 
 /**
- * Bind a token to a DOM text node
+ * Bind a token to a DOM node
  *
  * @class NodeBinding
+ * @extends Binding
  * @api private
  */
 export default class NodeBinding extends Binding {
