@@ -2,7 +2,7 @@
  * Import dependencies
  */
 import { parseTemplate } from './parser';
-import { toArray, contains, parseHTML, uid, getTemplateElements } from './util';
+import { toArray, contains, parseHTML, uid, wrapFragment, getTemplateElements } from './util';
 
 /**
  * DOM templating class
@@ -23,8 +23,9 @@ export default class Templar {
      */
     constructor(tpl, data) {
         this.id = uid();
-        this.root = this.frag = parseHTML(tpl);
-        this.bindings = parseTemplate(this, this.frag.childNodes, this.id);
+        const frag = parseHTML(tpl);
+        this.root = this.frag = wrapFragment(frag, this.id);
+        this.bindings = parseTemplate(this, frag.childNodes);
         this.data = Object.create(null);
         this.mounted = false;
         this.destroyed = false;

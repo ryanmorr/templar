@@ -84,11 +84,8 @@ export function interpolate(tpl, values) {
  * @return {Object}
  * @api private
  */
-export function parseTemplate(tpl, nodes, id, bindings = Object.create(null)) {
+export function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
     return toArray(nodes).reduce((bindings, node) => {
-        if (node.parentNode.nodeType === 11) {
-            node.templar = id;
-        }
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 const binding = new NodeBinding(tpl, node);
@@ -103,7 +100,7 @@ export function parseTemplate(tpl, nodes, id, bindings = Object.create(null)) {
                 }
             }
             if (node.hasChildNodes()) {
-                parseTemplate(tpl, node.childNodes, id, bindings);
+                parseTemplate(tpl, node.childNodes, bindings);
             }
         }
         return bindings;

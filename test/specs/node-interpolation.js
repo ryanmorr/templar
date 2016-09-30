@@ -7,73 +7,73 @@ import templar from '../../src';
 describe('node interpolation', () => {
     it('should support interpolation', () => {
         const tpl = templar('<div>{{value}}</div>');
-        const div = tpl.getRoot().childNodes[0];
+        const div = tpl.find('div');
         const textNode = div.firstChild;
         tpl.set('value', 'foo');
         // The template engine should not use `requestAnimationFrame` if
         // the fragment hasn't been mounted to the DOM, so these
         // assertions should work synchronously
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
         // The div should not be removed when updating its content
-        expect(tpl.getRoot().childNodes[0]).to.equal(div);
+        expect(tpl.find('div')).to.equal(div);
         // Only the inner text node should be replaced
-        expect(tpl.getRoot().childNodes[0].firstChild).to.not.equal(textNode);
+        expect(tpl.find('div').firstChild).to.not.equal(textNode);
     });
 
     it('should support only text node interpolation', () => {
         const tpl = templar('{{foo}}');
         tpl.set('foo', 'bar');
-        expect(tpl.getRoot().childNodes[0].data).to.equal('bar');
+        expect(tpl.getRoot().childNodes[1].data).to.equal('bar');
     });
 
     it('should support multiple tokens within an element', () => {
         const tpl = templar('<div>{{foo}} {{bar}}</div>');
         tpl.set('foo', 'aaa');
         tpl.set('bar', 'bbb');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('aaa bbb');
+        expect(tpl.find('div').textContent).to.equal('aaa bbb');
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', () => {
         const tpl = templar('<div>{{ foo }}</div>');
         tpl.set('foo', 'bar');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('bar');
+        expect(tpl.find('div').textContent).to.equal('bar');
     });
 
     it('should support the same token more than once', () => {
-        const tpl = templar('<div>{{value}}</div><div>{{value}}</div>');
+        const tpl = templar('<div>{{value}}</div><span>{{value}}</span>');
         tpl.set('value', 'foo');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
-        expect(tpl.getRoot().childNodes[1].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.find('span').textContent).to.equal('foo');
     });
 
     it('should support passing a key/value map', () => {
-        const tpl = templar('<div>{{foo}}</div><div>{{bar}}</div>');
+        const tpl = templar('<div>{{foo}}</div><span>{{bar}}</span>');
         tpl.set({foo: 123, bar: 456});
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('123');
-        expect(tpl.getRoot().childNodes[1].textContent).to.equal('456');
+        expect(tpl.find('div').textContent).to.equal('123');
+        expect(tpl.find('span').textContent).to.equal('456');
     });
 
     it('should ignore a null value', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
         tpl.set('value', null);
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
     });
 
     it('should ignore an undefined value', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
         tpl.set('value', void 0);
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
     });
 
     it('should support interpolation with a DOM node', () => {
         const tpl = templar('<div>{{value}}</div>');
         const el = document.createElement('strong');
         tpl.set('value', el);
-        expect(tpl.getRoot().childNodes[0].firstChild).to.equal(el);
+        expect(tpl.find('div').firstChild).to.equal(el);
     });
 
     it('should support interpolation with a DOM fragment', () => {
@@ -83,14 +83,14 @@ describe('node interpolation', () => {
             frag.appendChild(document.createTextNode(i));
         }
         tpl.set('value', frag);
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('012');
+        expect(tpl.find('div').textContent).to.equal('012');
     });
 
     it('should support parsing and interpolation of an HTML string', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', '<strong>foo</strong>');
-        expect(tpl.getRoot().childNodes[0].firstChild.nodeName).to.equal('STRONG');
-        expect(tpl.getRoot().childNodes[0].firstChild.textContent).to.equal('foo');
+        expect(tpl.find('div').firstChild.nodeName).to.equal('STRONG');
+        expect(tpl.find('div').firstChild.textContent).to.equal('foo');
     });
 
     it('should support nested templates', () => {
@@ -119,47 +119,47 @@ describe('node interpolation', () => {
         tpl.set('bar', '<span>a</span><span>b</span>');
         tpl.set('baz', tpl2);
         tpl2.set('b', 2);
-        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> <div>1</div><div>2</div> fff');
+        expect(tpl.find('div').innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> <div>1</div><div>2</div> fff');
         tpl.set('foo', '123');
         tpl.set('bar', '456');
         tpl2.set('a', 3);
-        expect(tpl.getRoot().childNodes[0].innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> <div>3</div><div>2</div> fff');
+        expect(tpl.find('div').innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> <div>3</div><div>2</div> fff');
     });
 
     it('should support dot-notation interpolation', () => {
-        const tpl = templar('<div>{{object.key}}</div><div>{{object.data.value}}</div>');
+        const tpl = templar('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
         tpl.set('object', {
             key: 'foo',
             data: {
                 value: 'bar'
             }
         });
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
-        expect(tpl.getRoot().childNodes[1].textContent).to.equal('bar');
+        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.find('span').textContent).to.equal('bar');
     });
 
     it('should support token callback functions', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', () => 'foo');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
     });
 
     it('should support passing the data object to token callback functions', () => {
         const tpl = templar('<div>{{foo}}</div>');
         tpl.set('num', 5);
         tpl.set('foo', (data) => data.num * 2);
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('10');
+        expect(tpl.find('div').textContent).to.equal('10');
     });
 
     it('should support escaping HTML characters', () => {
         const tpl = templar('<div>{{&value}}</div>');
         tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+        expect(tpl.find('div').textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support default interpolation on initialization', () => {
         const tpl = templar('<div>{{foo}}</div>', {foo: 'bar'});
-        expect(tpl.getRoot().childNodes[0].textContent).to.equal('bar');
+        expect(tpl.find('div').textContent).to.equal('bar');
     });
 
     it('should support the retrieval of the current value of a token', () => {
@@ -175,7 +175,7 @@ describe('node interpolation', () => {
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         expect(spy.called).to.equal(false);
-        expect(container.firstChild.textContent).to.equal('aaa');
+        expect(container.querySelector('div').textContent).to.equal('aaa');
         spy.restore();
     });
 
@@ -192,7 +192,7 @@ describe('node interpolation', () => {
         expect(spy.called).to.equal(true);
         // Check the updates in the next frame
         requestAnimationFrame(() => {
-            expect(container.firstChild.textContent).to.equal('aaa');
+            expect(container.querySelector('div').textContent).to.equal('aaa');
             document.body.removeChild(container);
             spy.restore();
             done();
@@ -222,14 +222,14 @@ describe('node interpolation', () => {
         requestAnimationFrame(() => {
             // The actual render method should only be called once
             expect(renderSpy.callCount).to.equal(1);
-            expect(container.firstChild.textContent).to.equal('aaa bbb');
+            expect(container.querySelector('div').textContent).to.equal('aaa bbb');
             document.body.removeChild(container);
             done();
         });
     });
 
     it('should only schedule one frame per cycle', (done) => {
-        const tpl = templar('<div>{{foo}}</div><div>{{bar}}</div>');
+        const tpl = templar('<div>{{foo}}</div><span>{{bar}}</span>');
         const requestSpy = sinon.spy(window, 'requestAnimationFrame');
         const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
         // Append to the DOM
@@ -253,8 +253,8 @@ describe('node interpolation', () => {
         requestAnimationFrame(() => {
             expect(requestSpy.callCount).to.equal(2);
             expect(cancelSpy.callCount).to.equal(1);
-            expect(container.firstChild.textContent).to.equal('aaa');
-            expect(container.lastChild.textContent).to.equal('bbb');
+            expect(container.querySelector('div').textContent).to.equal('aaa');
+            expect(container.querySelector('span').textContent).to.equal('bbb');
             document.body.removeChild(container);
             done();
         });

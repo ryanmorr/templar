@@ -168,6 +168,25 @@ export function uid() {
 }
 
 /**
+ * Wrap a document fragment in empty text
+ * nodes so that the beginning and end of a
+ * template is easily identifiable in the DOM
+ *
+ * @param {DocumentFragment} frag
+ * @param {String} id
+ * @return {DocumentFragment}
+ * @api private
+ */
+export function wrapFragment(frag, id) {
+    const first = document.createTextNode('');
+    const last = document.createTextNode('');
+    first.templar = last.templar = id;
+    frag.insertBefore(first, frag.firstChild);
+    frag.appendChild(last);
+    return frag;
+}
+
+/**
  * Find the template within the provided
  * root element matching the provided ID
  *
@@ -178,9 +197,15 @@ export function uid() {
  */
 export function getTemplateElements(root, id) {
     const elements = [];
-    let el = root.firstChild;
+    let el = root.firstChild, isTpl = false;
     while (el) {
-        if (el.templar === id) {
+        if (el.templar === id && !isTpl) {
+            isTpl = true;
+        } else if (el.templar === id && isTpl) {
+            isTpl = false;
+            elements.push(el);
+        }
+        if (isTpl) {
             elements.push(el);
         }
         el = el.nextSibling;
