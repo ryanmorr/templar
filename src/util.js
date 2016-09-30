@@ -62,13 +62,13 @@ export function getNodeIndex(el) {
  * @param {Function} fn
  * @api private
  */
-export function iterateRegExp(re, str, fn) {
-    let match;
+export function getMatches(re, str, fn) {
+    let matches;
     if (re.global) {
         re.lastIndex = 0;
     }
-    while ((match = re.exec(str))) {
-        fn(match);
+    while ((matches = re.exec(str))) {
+        fn(matches);
     }
 }
 

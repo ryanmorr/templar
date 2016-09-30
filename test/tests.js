@@ -15534,10 +15534,10 @@ var NodeBinding = function (_Binding) {
             this.renderer = null;
             var elements = [];
             var frag = document.createDocumentFragment();
-            (0, _util.iterateRegExp)(nodeContentRe, this.text, function (match) {
+            (0, _util.getMatches)(nodeContentRe, this.text, function (matches) {
                 var value = void 0;
-                if (match[1] != null) {
-                    var token = match[1],
+                if (matches[1] != null) {
+                    var token = matches[1],
                         _escape = false;
                     if (token[0] === '&') {
                         _escape = true;
@@ -15563,8 +15563,8 @@ var NodeBinding = function (_Binding) {
                                 value.mount(frag);
                             }
                     }
-                } else if (match[2] != null) {
-                    value = document.createTextNode(match[2]);
+                } else if (matches[2] != null) {
+                    value = document.createTextNode(matches[2]);
                 }
                 var nodeType = value.nodeType;
                 elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);
@@ -15637,8 +15637,8 @@ var rootRe = /^([^.]+)/;
  * @api private
  */
 function addBindings(bindings, text, binding) {
-    (0, _util.iterateRegExp)(matcherRe, text, function (match) {
-        var token = match[1].match(rootRe)[1];
+    (0, _util.getMatches)(matcherRe, text, function (matches) {
+        var token = matches[1].match(rootRe)[1];
         if (token[0] === '&') {
             token = token.substr(1);
         }
@@ -15991,7 +15991,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.getNodeIndex = getNodeIndex;
-exports.iterateRegExp = iterateRegExp;
+exports.getMatches = getMatches;
 exports.contains = contains;
 exports.escapeHTML = escapeHTML;
 exports.isHTML = isHTML;
@@ -16064,13 +16064,13 @@ function getNodeIndex(el) {
  * @param {Function} fn
  * @api private
  */
-function iterateRegExp(re, str, fn) {
-    var match = void 0;
+function getMatches(re, str, fn) {
+    var matches = void 0;
     if (re.global) {
         re.lastIndex = 0;
     }
-    while (match = re.exec(str)) {
-        fn(match);
+    while (matches = re.exec(str)) {
+        fn(matches);
     }
 }
 

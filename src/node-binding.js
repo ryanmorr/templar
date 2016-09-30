@@ -4,7 +4,7 @@
 import Templar from './templar';
 import Binding from './binding';
 import { getTokenValue } from './parser';
-import { escapeHTML, parseHTML, isHTML, getNodeIndex, iterateRegExp } from './util';
+import { escapeHTML, parseHTML, isHTML, getNodeIndex, getMatches } from './util';
 
 /**
  * Common variables
@@ -45,10 +45,10 @@ export default class NodeBinding extends Binding {
         this.renderer = null;
         const elements = [];
         const frag = document.createDocumentFragment();
-        iterateRegExp(nodeContentRe, this.text, (match) => {
+        getMatches(nodeContentRe, this.text, (matches) => {
             let value;
-            if (match[1] != null) {
-                let token = match[1], escape = false;
+            if (matches[1] != null) {
+                let token = matches[1], escape = false;
                 if (token[0] === '&') {
                     escape = true;
                     token = token.substr(1);
@@ -73,8 +73,8 @@ export default class NodeBinding extends Binding {
                             value.mount(frag);
                         }
                 }
-            } else if (match[2] != null) {
-                value = document.createTextNode(match[2]);
+            } else if (matches[2] != null) {
+                value = document.createTextNode(matches[2]);
             }
             const nodeType = value.nodeType;
             elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);

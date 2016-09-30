@@ -3,7 +3,7 @@
  */
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { isFunction, toArray, iterateRegExp } from './util';
+import { isFunction, toArray, getMatches } from './util';
 
 /**
  * Common variables
@@ -20,8 +20,8 @@ const rootRe = /^([^.]+)/;
  * @api private
  */
 function addBindings(bindings, text, binding) {
-    iterateRegExp(matcherRe, text, (match) => {
-        let token = match[1].match(rootRe)[1];
+    getMatches(matcherRe, text, (matches) => {
+        let token = matches[1].match(rootRe)[1];
         if (token[0] === '&') {
             token = token.substr(1);
         }
