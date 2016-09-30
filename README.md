@@ -1,5 +1,11 @@
 # templar
 
+[![Version Badge][version-image]][project-url]
+[![Build Status][build-image]][build-url]
+[![Dependencies][dependencies-image]][project-url]
+[![License][license-image]][license-url]
+[![File Size][file-size-image]][project-url]
+
 > A simple, yet intuitive DOM templating engine
 
 ## Usage
@@ -247,3 +253,12 @@ gulp test
 ## License
 
 This project is dedicated to the public domain as described by the [Unlicense](http://unlicense.org/).
+
+[project-url]: https://github.com/ryanmorr/templar
+[version-image]: https://badge.fury.io/gh/ryanmorr%2Ftemplar.svg
+[build-url]: https://travis-ci.org/ryanmorr/templar
+[build-image]: https://travis-ci.org/ryanmorr/templar.svg
+[dependencies-image]: https://david-dm.org/ryanmorr/templar.svg
+[license-image]: https://img.shields.io/badge/license-Unlicense-blue.svg
+[license-url]: UNLICENSE
+[file-size-image]: https://badge-size.herokuapp.com/ryanmorr/templar/master/dist/templar.min.js.svg?color=blue&label=file%20size
