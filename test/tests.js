@@ -15456,8 +15456,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _templar = require('./templar');
@@ -15484,18 +15482,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 /**
- * Common variables
- */
-var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
-
-/**
  * Bind a token to a DOM node
  *
  * @class NodeBinding
  * @extends Binding
  * @api private
  */
-
 var NodeBinding = function (_Binding) {
     _inherits(NodeBinding, _Binding);
 
@@ -15551,54 +15543,22 @@ var NodeBinding = function (_Binding) {
     }, {
         key: 'render',
         value: function render() {
-            var _this2 = this;
-
             this.renderer = null;
             var nodes = [];
             var node = this.nodes[0];
             var parent = (0, _util.getParent)(node);
             var insertIndex = (0, _util.getNodeIndex)(parent, node);
             var childNodes = parent.childNodes;
-            var frag = document.createDocumentFragment();
             this.purge();
-            (0, _util.getMatches)(nodeContentRe, this.text, function (matches) {
-                var value = void 0;
-                if (matches[1] != null) {
-                    var token = matches[1],
-                        _escape = false;
-                    if (token[0] === '&') {
-                        _escape = true;
-                        token = token.substr(1);
-                    }
-                    value = (0, _parser.getTokenValue)(token, _this2.tpl.data);
-                    switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
-                        case 'string':
-                            if (!_escape && (0, _util.isHTML)(value)) {
-                                value = (0, _util.parseHTML)(value);
-                                break;
-                            }
-                        // falls through
-                        case 'number':
-                        case 'boolean':
-                            value = document.createTextNode((0, _util.escapeHTML)(value));
-                            break;
-                        default:
-                            if (value instanceof _templar2.default) {
-                                value.mount(frag);
-                                value.root = parent;
-                            }
-                    }
-                } else if (matches[2] != null) {
-                    value = document.createTextNode(matches[2]);
+            var frag = (0, _parser.interpolateDOM)(this.text, this.tpl.data, function (value) {
+                if (value instanceof _templar2.default) {
+                    value.root = parent;
                 }
                 var nodeType = value.nodeType;
                 if (nodeType === 11) {
                     nodes.push.apply(nodes, value.childNodes);
                 } else {
                     nodes.push(value);
-                }
-                if (nodeType) {
-                    frag.appendChild(value);
                 }
             });
             this.nodes = nodes;
@@ -15622,9 +15582,19 @@ module.exports = exports['default'];
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getTokenValue = getTokenValue;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                   * Import dependencies
+                                                                                                                                                                                                                                                   */
+
+
 exports.interpolate = interpolate;
+exports.interpolateDOM = interpolateDOM;
 exports.parseTemplate = parseTemplate;
+
+var _templar = require('./templar');
+
+var _templar2 = _interopRequireDefault(_templar);
 
 var _nodeBinding = require('./node-binding');
 
@@ -15639,12 +15609,10 @@ var _util = require('./util');
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Common variables
+ * Parsing regular expressions
  */
-var matcherRe = /\{\{\s*(.+?)\s*\}\}/g; /**
-                                         * Import dependencies
-                                         */
-
+var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 var rootRe = /^([^.]+)/;
 
 /**
@@ -15711,6 +15679,56 @@ function interpolate(tpl, data) {
 }
 
 /**
+ * Build a document fragment that supplants
+ * the tokens of a string with the
+ * corresponding value in an object literal
+ *
+ * @param {String} tpl
+ * @param {Object} data
+ * @param {Function} fn
+ * @return {DocumentFragment}
+ * @api private
+ */
+function interpolateDOM(tpl, data, fn) {
+    var frag = document.createDocumentFragment();
+    (0, _util.getMatches)(nodeContentRe, tpl, function (matches) {
+        var value = void 0;
+        if (matches[1] != null) {
+            var token = matches[1],
+                _escape = false;
+            if (token[0] === '&') {
+                _escape = true;
+                token = token.substr(1);
+            }
+            value = getTokenValue(token, data);
+            switch (typeof value === 'undefined' ? 'undefined' : _typeof(value)) {
+                case 'string':
+                    if (!_escape && (0, _util.isHTML)(value)) {
+                        value = (0, _util.parseHTML)(value);
+                        break;
+                    }
+                // falls through
+                case 'number':
+                case 'boolean':
+                    value = document.createTextNode((0, _util.escapeHTML)(value));
+                    break;
+                default:
+                    if (value instanceof _templar2.default) {
+                        value.mount(frag);
+                    }
+            }
+        } else if (matches[2] != null) {
+            value = document.createTextNode(matches[2]);
+        }
+        fn(value);
+        if (value.nodeName) {
+            frag.appendChild(value);
+        }
+    });
+    return frag;
+}
+
+/**
  * Parses the nodes of a template to
  * create a key/value object that maps
  * the template tokens to a `Binding`
@@ -15749,7 +15767,7 @@ function parseTemplate(tpl, nodes) {
     }, bindings);
 }
 
-},{"./attr-binding":73,"./node-binding":76,"./util":79}],78:[function(require,module,exports){
+},{"./attr-binding":73,"./node-binding":76,"./templar":78,"./util":79}],78:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

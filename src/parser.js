@@ -1,14 +1,16 @@
 /**
  * Import dependencies
  */
+import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { isFunction, toArray, getMatches } from './util';
+import { isFunction, toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 /**
- * Common variables
+ * Parsing regular expressions
  */
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 const rootRe = /^([^.]+)/;
 
 /**
@@ -51,7 +53,7 @@ function hasInterpolation(str) {
  * @return {String|Number|Boolean|Node|Templar}
  * @api private
  */
-export function getTokenValue(token, data) {
+function getTokenValue(token, data) {
     const value = token.split('.').reduce((val, ns) => val ? val[ns] : (data[ns] || ''), null);
     return isFunction(value) ? value(data) : value;
 }
@@ -68,6 +70,55 @@ export function getTokenValue(token, data) {
  */
 export function interpolate(tpl, data) {
     return tpl.replace(matcherRe, (all, token) => getTokenValue(token, data));
+}
+
+/**
+ * Build a document fragment that supplants
+ * the tokens of a string with the
+ * corresponding value in an object literal
+ *
+ * @param {String} tpl
+ * @param {Object} data
+ * @param {Function} fn
+ * @return {DocumentFragment}
+ * @api private
+ */
+export function interpolateDOM(tpl, data, fn) {
+    const frag = document.createDocumentFragment();
+    getMatches(nodeContentRe, tpl, (matches) => {
+        let value;
+        if (matches[1] != null) {
+            let token = matches[1], escape = false;
+            if (token[0] === '&') {
+                escape = true;
+                token = token.substr(1);
+            }
+            value = getTokenValue(token, data);
+            switch (typeof value) {
+                case 'string':
+                    if (!escape && isHTML(value)) {
+                        value = parseHTML(value);
+                        break;
+                    }
+                    // falls through
+                case 'number':
+                case 'boolean':
+                    value = document.createTextNode(escapeHTML(value));
+                    break;
+                default:
+                    if (value instanceof Templar) {
+                        value.mount(frag);
+                    }
+            }
+        } else if (matches[2] != null) {
+            value = document.createTextNode(matches[2]);
+        }
+        fn(value);
+        if (value.nodeName) {
+            frag.appendChild(value);
+        }
+    });
+    return frag;
 }
 
 /**
