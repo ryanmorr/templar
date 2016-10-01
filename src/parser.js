@@ -47,27 +47,27 @@ function hasInterpolation(str) {
  * Get the value of a token
  *
  * @param {String} token
- * @param {Object} values
+ * @param {Object} data
  * @return {String|Number|Boolean|Node|Templar}
  * @api private
  */
-export function getTokenValue(token, values) {
-    const value = token.split('.').reduce((val, ns) => val ? val[ns] : (values[ns] || ''), null);
-    return isFunction(value) ? value(values) : value;
+export function getTokenValue(token, data) {
+    const value = token.split('.').reduce((val, ns) => val ? val[ns] : (data[ns] || ''), null);
+    return isFunction(value) ? value(data) : value;
 }
 
 /**
- * Supplant the placeholders of a string
- * with the corresponding value in an
- * object literal
+ * Supplant the tokens of a string with
+ * the corresponding value in an object
+ * literal
  *
  * @param {String} tpl
- * @param {Object} values
+ * @param {Object} data
  * @return {String}
  * @api private
  */
-export function interpolate(tpl, values) {
-    return tpl.replace(matcherRe, (all, token) => getTokenValue(token, values));
+export function interpolate(tpl, data) {
+    return tpl.replace(matcherRe, (all, token) => getTokenValue(token, data));
 }
 
 /**

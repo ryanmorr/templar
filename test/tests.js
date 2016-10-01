@@ -15683,30 +15683,30 @@ function hasInterpolation(str) {
  * Get the value of a token
  *
  * @param {String} token
- * @param {Object} values
+ * @param {Object} data
  * @return {String|Number|Boolean|Node|Templar}
  * @api private
  */
-function getTokenValue(token, values) {
+function getTokenValue(token, data) {
     var value = token.split('.').reduce(function (val, ns) {
-        return val ? val[ns] : values[ns] || '';
+        return val ? val[ns] : data[ns] || '';
     }, null);
-    return (0, _util.isFunction)(value) ? value(values) : value;
+    return (0, _util.isFunction)(value) ? value(data) : value;
 }
 
 /**
- * Supplant the placeholders of a string
- * with the corresponding value in an
- * object literal
+ * Supplant the tokens of a string with
+ * the corresponding value in an object
+ * literal
  *
  * @param {String} tpl
- * @param {Object} values
+ * @param {Object} data
  * @return {String}
  * @api private
  */
-function interpolate(tpl, values) {
+function interpolate(tpl, data) {
     return tpl.replace(matcherRe, function (all, token) {
-        return getTokenValue(token, values);
+        return getTokenValue(token, data);
     });
 }
 
