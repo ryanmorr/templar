@@ -15514,36 +15514,53 @@ var NodeBinding = function (_Binding) {
 
         _this.tpl = tpl;
         _this.text = node.data;
-        _this.elements = [node];
+        _this.nodes = [node];
         return _this;
     }
 
     /**
-     * Replace the token placeholders with the
-     * current values in the `Templar` instance
+     * Remove all the current nodes occupying
+     * the token placeholders
      *
      * @api private
      */
 
 
     _createClass(NodeBinding, [{
+        key: 'purge',
+        value: function purge() {
+            this.nodes.forEach(function (el) {
+                if (el instanceof _templar2.default) {
+                    el.unmount();
+                    return;
+                }
+                var parent = el.parentNode;
+                if (parent) {
+                    parent.removeChild(el);
+                }
+            });
+        }
+
+        /**
+         * Replace the token placeholders with the
+         * current values in the `Templar` instance
+         *
+         * @api private
+         */
+
+    }, {
         key: 'render',
         value: function render() {
             var _this2 = this;
 
             this.renderer = null;
-            var elements = [];
-            var element = this.elements[0];
-            var parent = element.parentNode;
-            var insertIndex = (0, _util.getNodeIndex)(element);
+            var nodes = [];
+            var node = this.nodes[0];
+            var parent = (0, _util.getParent)(node);
+            var insertIndex = (0, _util.getNodeIndex)(parent, node);
             var childNodes = parent.childNodes;
             var frag = document.createDocumentFragment();
-            this.elements.forEach(function (el) {
-                if (el instanceof _templar2.default) {
-                    return el.unmount();
-                }
-                parent.removeChild(el);
-            });
+            this.purge();
             (0, _util.getMatches)(nodeContentRe, this.text, function (matches) {
                 var value = void 0;
                 if (matches[1] != null) {
@@ -15576,20 +15593,20 @@ var NodeBinding = function (_Binding) {
                 }
                 var nodeType = value.nodeType;
                 if (nodeType === 11) {
-                    elements.push.apply(elements, value.childNodes);
+                    nodes.push.apply(nodes, value.childNodes);
                 } else {
-                    elements.push(value);
+                    nodes.push(value);
                 }
                 if (nodeType) {
                     frag.appendChild(value);
                 }
             });
+            this.nodes = nodes;
             if (insertIndex in childNodes) {
                 parent.insertBefore(frag, childNodes[insertIndex]);
             } else {
                 parent.appendChild(frag);
             }
-            this.elements = elements;
         }
     }]);
 
@@ -16000,12 +16017,23 @@ exports.parseHTML = parseHTML;
 exports.updateDOM = updateDOM;
 exports.uid = uid;
 exports.getNodeIndex = getNodeIndex;
+exports.getParent = getParent;
 exports.wrapFragment = wrapFragment;
 exports.getTemplateElements = getTemplateElements;
+
+var _templar = require('./templar');
+
+var _templar2 = _interopRequireDefault(_templar);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Common variables
  */
-var frame = void 0;
+var frame = void 0; /**
+                     * Import dependencies
+                     */
+
 var counter = 1;
 var batch = [];
 var slice = [].slice;
@@ -16163,15 +16191,43 @@ function uid() {
 }
 
 /**
- * Get the index of an element or template
- * amongst its sibling elements
+ * Get the index of a node or template
+ * amongst its sibling nodes
  *
- * @param {Element} el
+ * @param {Node|Templar} node
  * @return {Number}
  * @api private
  */
-function getNodeIndex(el) {
-    return indexOf.call(el.parentNode.childNodes, el);
+function getNodeIndex(parent, node) {
+    if (node instanceof _templar2.default) {
+        var index = 0;
+        var tpl = node;
+        node = parent.firstChild;
+        while (node) {
+            if (node.templar === tpl.id) {
+                return index;
+            }
+            node = node.nextSibling;
+            index++;
+        }
+        return 0;
+    }
+    return indexOf.call(parent.childNodes, node);
+}
+
+/**
+ * Get the parent element of a node or
+ * template
+ *
+ * @param {Node|Templar} node
+ * @return {Element}
+ * @api private
+ */
+function getParent(node) {
+    if (node instanceof _templar2.default) {
+        return node.getRoot();
+    }
+    return node.parentNode;
 }
 
 /**
@@ -16221,7 +16277,7 @@ function getTemplateElements(root, id) {
     return elements;
 }
 
-},{}],80:[function(require,module,exports){
+},{"./templar":78}],80:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');

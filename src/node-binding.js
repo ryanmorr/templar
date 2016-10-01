@@ -4,7 +4,7 @@
 import Templar from './templar';
 import Binding from './binding';
 import { getTokenValue } from './parser';
-import { escapeHTML, parseHTML, isHTML, getNodeIndex, getMatches } from './util';
+import { escapeHTML, parseHTML, isHTML, getNodeIndex, getParent, getMatches } from './util';
 
 /**
  * Common variables
@@ -32,7 +32,26 @@ export default class NodeBinding extends Binding {
         super();
         this.tpl = tpl;
         this.text = node.data;
-        this.elements = [node];
+        this.nodes = [node];
+    }
+
+    /**
+     * Remove all the current nodes occupying
+     * the token placeholders
+     *
+     * @api private
+     */
+    purge() {
+        this.nodes.forEach((el) => {
+            if (el instanceof Templar) {
+                el.unmount();
+                return;
+            }
+            const parent = el.parentNode;
+            if (parent) {
+                parent.removeChild(el);
+            }
+        });
     }
 
     /**
@@ -43,18 +62,13 @@ export default class NodeBinding extends Binding {
      */
     render() {
         this.renderer = null;
-        const elements = [];
-        const element = this.elements[0];
-        const parent = element.parentNode;
-        const insertIndex = getNodeIndex(element);
+        const nodes = [];
+        const node = this.nodes[0];
+        const parent = getParent(node);
+        const insertIndex = getNodeIndex(parent, node);
         const childNodes = parent.childNodes;
         const frag = document.createDocumentFragment();
-        this.elements.forEach((el) => {
-            if (el instanceof Templar) {
-                return el.unmount();
-            }
-            parent.removeChild(el);
-        });
+        this.purge();
         getMatches(nodeContentRe, this.text, (matches) => {
             let value;
             if (matches[1] != null) {
@@ -86,19 +100,19 @@ export default class NodeBinding extends Binding {
             }
             const nodeType = value.nodeType;
             if (nodeType === 11) {
-                elements.push.apply(elements, value.childNodes);
+                nodes.push.apply(nodes, value.childNodes);
             } else {
-                elements.push(value);
+                nodes.push(value);
             }
             if (nodeType) {
                 frag.appendChild(value);
             }
         });
+        this.nodes = nodes;
         if (insertIndex in childNodes) {
             parent.insertBefore(frag, childNodes[insertIndex]);
         } else {
             parent.appendChild(frag);
         }
-        this.elements = elements;
     }
 }

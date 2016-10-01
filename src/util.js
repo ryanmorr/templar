@@ -1,4 +1,9 @@
 /**
+ * Import dependencies
+ */
+import Templar from './templar';
+
+/**
  * Common variables
  */
 let frame;
@@ -157,15 +162,43 @@ export function uid() {
 }
 
 /**
- * Get the index of an element or template
- * amongst its sibling elements
+ * Get the index of a node or template
+ * amongst its sibling nodes
  *
- * @param {Element} el
+ * @param {Node|Templar} node
  * @return {Number}
  * @api private
  */
-export function getNodeIndex(el) {
-    return indexOf.call(el.parentNode.childNodes, el);
+export function getNodeIndex(parent, node) {
+    if (node instanceof Templar) {
+        let index = 0;
+        const tpl = node;
+        node = parent.firstChild;
+        while (node) {
+            if (node.templar === tpl.id) {
+                return index;
+            }
+            node = node.nextSibling;
+            index++;
+        }
+        return 0;
+    }
+    return indexOf.call(parent.childNodes, node);
+}
+
+/**
+ * Get the parent element of a node or
+ * template
+ *
+ * @param {Node|Templar} node
+ * @return {Element}
+ * @api private
+ */
+export function getParent(node) {
+    if (node instanceof Templar) {
+        return node.getRoot();
+    }
+    return node.parentNode;
 }
 
 /**
