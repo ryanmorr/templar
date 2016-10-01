@@ -105,6 +105,43 @@ describe('node interpolation', () => {
         expect(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
     });
 
+    it('should support dot-notation interpolation', () => {
+        const tpl = templar('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
+        tpl.set('object', {
+            key: 'foo',
+            data: {
+                value: 'bar'
+            }
+        });
+        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.find('span').textContent).to.equal('bar');
+    });
+
+    it('should support token callback functions', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', () => 'foo');
+        expect(tpl.find('div').textContent).to.equal('foo');
+    });
+
+    it('should support token callback functions that return a DOM node', () => {
+        const tpl = templar('<div>{{value}}</div>');
+        tpl.set('value', () => document.createTextNode('foo'));
+        expect(tpl.find('div').textContent).to.equal('foo');
+    });
+
+    it('should support passing the data object to token callback functions', () => {
+        const tpl = templar('<div>{{foo}}</div>');
+        tpl.set('num', 5);
+        tpl.set('foo', (data) => data.num * 2);
+        expect(tpl.find('div').textContent).to.equal('10');
+    });
+
+    it('should support escaping HTML characters', () => {
+        const tpl = templar('<div>{{&value}}</div>');
+        tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
+        expect(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+    });
+
     it('should support multiple element interpolation between existing elements', () => {
         const tpl = templar('<div>123 {{foo}} 456 {{bar}} 789 {{baz}} 101112</div>');
         const tpl2 = templar('<div>{{a}}</div><div>{{b}}</div>');
@@ -127,37 +164,6 @@ describe('node interpolation', () => {
         tpl.set('foo', tpl2);
         tpl2.set('a', 3);
         expect(tpl.find('div').innerHTML).to.equal('123 <div>3</div><div>2</div> 456 efg 789 hij 101112');
-    });
-
-    it('should support dot-notation interpolation', () => {
-        const tpl = templar('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
-        tpl.set('object', {
-            key: 'foo',
-            data: {
-                value: 'bar'
-            }
-        });
-        expect(tpl.find('div').textContent).to.equal('foo');
-        expect(tpl.find('span').textContent).to.equal('bar');
-    });
-
-    it('should support token callback functions', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        tpl.set('value', () => 'foo');
-        expect(tpl.find('div').textContent).to.equal('foo');
-    });
-
-    it('should support passing the data object to token callback functions', () => {
-        const tpl = templar('<div>{{foo}}</div>');
-        tpl.set('num', 5);
-        tpl.set('foo', (data) => data.num * 2);
-        expect(tpl.find('div').textContent).to.equal('10');
-    });
-
-    it('should support escaping HTML characters', () => {
-        const tpl = templar('<div>{{&value}}</div>');
-        tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
-        expect(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support default interpolation on initialization', () => {

@@ -16531,6 +16531,49 @@ describe('node interpolation', function () {
         (0, _chai.expect)(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
     });
 
+    it('should support dot-notation interpolation', function () {
+        var tpl = (0, _src2.default)('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
+        tpl.set('object', {
+            key: 'foo',
+            data: {
+                value: 'bar'
+            }
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
+        (0, _chai.expect)(tpl.find('span').textContent).to.equal('bar');
+    });
+
+    it('should support token callback functions', function () {
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
+        tpl.set('value', function () {
+            return 'foo';
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
+    });
+
+    it('should support token callback functions that return a DOM node', function () {
+        var tpl = (0, _src2.default)('<div>{{value}}</div>');
+        tpl.set('value', function () {
+            return document.createTextNode('foo');
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
+    });
+
+    it('should support passing the data object to token callback functions', function () {
+        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
+        tpl.set('num', 5);
+        tpl.set('foo', function (data) {
+            return data.num * 2;
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('10');
+    });
+
+    it('should support escaping HTML characters', function () {
+        var tpl = (0, _src2.default)('<div>{{&value}}</div>');
+        tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+    });
+
     it('should support multiple element interpolation between existing elements', function () {
         var tpl = (0, _src2.default)('<div>123 {{foo}} 456 {{bar}} 789 {{baz}} 101112</div>');
         var tpl2 = (0, _src2.default)('<div>{{a}}</div><div>{{b}}</div>');
@@ -16553,41 +16596,6 @@ describe('node interpolation', function () {
         tpl.set('foo', tpl2);
         tpl2.set('a', 3);
         (0, _chai.expect)(tpl.find('div').innerHTML).to.equal('123 <div>3</div><div>2</div> 456 efg 789 hij 101112');
-    });
-
-    it('should support dot-notation interpolation', function () {
-        var tpl = (0, _src2.default)('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
-        tpl.set('object', {
-            key: 'foo',
-            data: {
-                value: 'bar'
-            }
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
-        (0, _chai.expect)(tpl.find('span').textContent).to.equal('bar');
-    });
-
-    it('should support token callback functions', function () {
-        var tpl = (0, _src2.default)('<div>{{value}}</div>');
-        tpl.set('value', function () {
-            return 'foo';
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
-    });
-
-    it('should support passing the data object to token callback functions', function () {
-        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
-        tpl.set('num', 5);
-        tpl.set('foo', function (data) {
-            return data.num * 2;
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('10');
-    });
-
-    it('should support escaping HTML characters', function () {
-        var tpl = (0, _src2.default)('<div>{{&value}}</div>');
-        tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support default interpolation on initialization', function () {
