@@ -15533,7 +15533,17 @@ var NodeBinding = function (_Binding) {
 
             this.renderer = null;
             var elements = [];
+            var element = this.elements[0];
+            var parent = element.parentNode;
+            var insertIndex = (0, _util.getNodeIndex)(element);
+            var childNodes = parent.childNodes;
             var frag = document.createDocumentFragment();
+            this.elements.forEach(function (el) {
+                if (el instanceof _templar2.default) {
+                    return el.unmount();
+                }
+                parent.removeChild(el);
+            });
             (0, _util.getMatches)(nodeContentRe, this.text, function (matches) {
                 var value = void 0;
                 if (matches[1] != null) {
@@ -15557,33 +15567,25 @@ var NodeBinding = function (_Binding) {
                             break;
                         default:
                             if (value instanceof _templar2.default) {
-                                if (value.isMounted()) {
-                                    value.unmount();
-                                }
                                 value.mount(frag);
+                                value.root = parent;
                             }
                     }
                 } else if (matches[2] != null) {
                     value = document.createTextNode(matches[2]);
                 }
                 var nodeType = value.nodeType;
-                elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);
+                if (nodeType === 11) {
+                    elements.push.apply(elements, value.childNodes);
+                } else {
+                    elements.push(value);
+                }
                 if (nodeType) {
                     frag.appendChild(value);
                 }
             });
-            var element = this.elements[0];
-            var parent = element.parentNode;
-            var childNodes = parent.childNodes;
-            var index = (0, _util.getNodeIndex)(element);
-            this.elements.forEach(function (el) {
-                if (el instanceof _templar2.default) {
-                    return el.unmount();
-                }
-                parent.removeChild(el);
-            });
-            if (index in childNodes) {
-                parent.insertBefore(frag, childNodes[index]);
+            if (insertIndex in childNodes) {
+                parent.insertBefore(frag, childNodes[insertIndex]);
             } else {
                 parent.appendChild(frag);
             }
@@ -15990,7 +15992,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.isFunction = isFunction;
 exports.toArray = toArray;
-exports.getNodeIndex = getNodeIndex;
 exports.getMatches = getMatches;
 exports.contains = contains;
 exports.escapeHTML = escapeHTML;
@@ -15998,6 +15999,7 @@ exports.isHTML = isHTML;
 exports.parseHTML = parseHTML;
 exports.updateDOM = updateDOM;
 exports.uid = uid;
+exports.getNodeIndex = getNodeIndex;
 exports.wrapFragment = wrapFragment;
 exports.getTemplateElements = getTemplateElements;
 /**
@@ -16044,18 +16046,6 @@ function toArray(obj) {
 }
 
 /**
- * Get the index of an element amongst
- * its sibling elements
- *
- * @param {Element} el
- * @return {Number}
- * @api private
- */
-function getNodeIndex(el) {
-    return indexOf.call(el.parentNode.childNodes, el);
-}
-
-/**
  * Iterates through all the matches
  * of the provided regex and string
  *
@@ -16069,6 +16059,7 @@ function getMatches(re, str, fn) {
     if (re.global) {
         re.lastIndex = 0;
     }
+    re.lastIndex = 0;
     while (matches = re.exec(str)) {
         fn(matches);
     }
@@ -16169,6 +16160,18 @@ function updateDOM(fn) {
  */
 function uid() {
     return Math.floor((counter++ + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+/**
+ * Get the index of an element or template
+ * amongst its sibling elements
+ *
+ * @param {Element} el
+ * @return {Number}
+ * @api private
+ */
+function getNodeIndex(el) {
+    return indexOf.call(el.parentNode.childNodes, el);
 }
 
 /**
@@ -16455,24 +16458,27 @@ describe('node interpolation', function () {
     });
 
     it('should support multiple element interpolation between existing elements', function () {
-        var tpl = (0, _src2.default)('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> {{baz}} fff</div>');
+        var tpl = (0, _src2.default)('<div>123 {{foo}} 456 {{bar}} 789 {{baz}} 101112</div>');
         var tpl2 = (0, _src2.default)('<div>{{a}}</div><div>{{b}}</div>');
         tpl2.set('a', 1);
         var frag = document.createDocumentFragment();
         for (var i = 0; i < 3; i++) {
-            var div = document.createElement('div');
+            var div = document.createElement('em');
             div.textContent = i;
             frag.appendChild(div);
         }
-        tpl.set('foo', frag);
+        tpl.set('foo', tpl2);
         tpl.set('bar', '<span>a</span><span>b</span>');
-        tpl.set('baz', tpl2);
+        tpl.set('baz', frag);
         tpl2.set('b', 2);
-        (0, _chai.expect)(tpl.find('div').innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> <div>1</div><div>2</div> fff');
-        tpl.set('foo', '123');
-        tpl.set('bar', '456');
+        (0, _chai.expect)(tpl.find('div').innerHTML).to.equal('123 <div>1</div><div>2</div> 456 <span>a</span><span>b</span> 789 <em>0</em><em>1</em><em>2</em> 101112');
+        tpl.set('foo', 'abc');
+        tpl.set('bar', 'efg');
+        tpl.set('baz', 'hij');
+        (0, _chai.expect)(tpl.find('div').innerHTML).to.equal('123 abc 456 efg 789 hij 101112');
+        tpl.set('foo', tpl2);
         tpl2.set('a', 3);
-        (0, _chai.expect)(tpl.find('div').innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> <div>3</div><div>2</div> fff');
+        (0, _chai.expect)(tpl.find('div').innerHTML).to.equal('123 <div>3</div><div>2</div> 456 efg 789 hij 101112');
     });
 
     it('should support dot-notation interpolation', function () {
@@ -16506,8 +16512,8 @@ describe('node interpolation', function () {
 
     it('should support escaping HTML characters', function () {
         var tpl = (0, _src2.default)('<div>{{&value}}</div>');
-        tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+        tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support default interpolation on initialization', function () {

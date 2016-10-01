@@ -44,7 +44,17 @@ export default class NodeBinding extends Binding {
     render() {
         this.renderer = null;
         const elements = [];
+        const element = this.elements[0];
+        const parent = element.parentNode;
+        const insertIndex = getNodeIndex(element);
+        const childNodes = parent.childNodes;
         const frag = document.createDocumentFragment();
+        this.elements.forEach((el) => {
+            if (el instanceof Templar) {
+                return el.unmount();
+            }
+            parent.removeChild(el);
+        });
         getMatches(nodeContentRe, this.text, (matches) => {
             let value;
             if (matches[1] != null) {
@@ -67,33 +77,25 @@ export default class NodeBinding extends Binding {
                         break;
                     default:
                         if (value instanceof Templar) {
-                            if (value.isMounted()) {
-                                value.unmount();
-                            }
                             value.mount(frag);
+                            value.root = parent;
                         }
                 }
             } else if (matches[2] != null) {
                 value = document.createTextNode(matches[2]);
             }
             const nodeType = value.nodeType;
-            elements.push.apply(elements, nodeType === 11 ? value.childNodes : [value]);
+            if (nodeType === 11) {
+                elements.push.apply(elements, value.childNodes);
+            } else {
+                elements.push(value);
+            }
             if (nodeType) {
                 frag.appendChild(value);
             }
         });
-        const element = this.elements[0];
-        const parent = element.parentNode;
-        const childNodes = parent.childNodes;
-        const index = getNodeIndex(element);
-        this.elements.forEach((el) => {
-            if (el instanceof Templar) {
-                return el.unmount();
-            }
-            parent.removeChild(el);
-        });
-        if (index in childNodes) {
-            parent.insertBefore(frag, childNodes[index]);
+        if (insertIndex in childNodes) {
+            parent.insertBefore(frag, childNodes[insertIndex]);
         } else {
             parent.appendChild(frag);
         }

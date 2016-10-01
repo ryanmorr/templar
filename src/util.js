@@ -42,18 +42,6 @@ export function toArray(obj) {
 }
 
 /**
- * Get the index of an element amongst
- * its sibling elements
- *
- * @param {Element} el
- * @return {Number}
- * @api private
- */
-export function getNodeIndex(el) {
-    return indexOf.call(el.parentNode.childNodes, el);
-}
-
-/**
  * Iterates through all the matches
  * of the provided regex and string
  *
@@ -67,6 +55,7 @@ export function getMatches(re, str, fn) {
     if (re.global) {
         re.lastIndex = 0;
     }
+    re.lastIndex = 0;
     while ((matches = re.exec(str))) {
         fn(matches);
     }
@@ -165,6 +154,18 @@ export function updateDOM(fn) {
  */
 export function uid() {
     return Math.floor((counter++ + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+/**
+ * Get the index of an element or template
+ * amongst its sibling elements
+ *
+ * @param {Element} el
+ * @return {Number}
+ * @api private
+ */
+export function getNodeIndex(el) {
+    return indexOf.call(el.parentNode.childNodes, el);
 }
 
 /**

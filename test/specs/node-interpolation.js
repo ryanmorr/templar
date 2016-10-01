@@ -106,24 +106,27 @@ describe('node interpolation', () => {
     });
 
     it('should support multiple element interpolation between existing elements', () => {
-        const tpl = templar('<div>aaa <em>bbb</em> {{foo}} ccc <strong>ddd</strong> {{bar}} <i>eee</i> {{baz}} fff</div>');
+        const tpl = templar('<div>123 {{foo}} 456 {{bar}} 789 {{baz}} 101112</div>');
         const tpl2 = templar('<div>{{a}}</div><div>{{b}}</div>');
         tpl2.set('a', 1);
         const frag = document.createDocumentFragment();
         for (let i = 0; i < 3; i++) {
-            const div = document.createElement('div');
+            const div = document.createElement('em');
             div.textContent = i;
             frag.appendChild(div);
         }
-        tpl.set('foo', frag);
+        tpl.set('foo', tpl2);
         tpl.set('bar', '<span>a</span><span>b</span>');
-        tpl.set('baz', tpl2);
+        tpl.set('baz', frag);
         tpl2.set('b', 2);
-        expect(tpl.find('div').innerHTML).to.equal('aaa <em>bbb</em> <div>0</div><div>1</div><div>2</div> ccc <strong>ddd</strong> <span>a</span><span>b</span> <i>eee</i> <div>1</div><div>2</div> fff');
-        tpl.set('foo', '123');
-        tpl.set('bar', '456');
+        expect(tpl.find('div').innerHTML).to.equal('123 <div>1</div><div>2</div> 456 <span>a</span><span>b</span> 789 <em>0</em><em>1</em><em>2</em> 101112');
+        tpl.set('foo', 'abc');
+        tpl.set('bar', 'efg');
+        tpl.set('baz', 'hij');
+        expect(tpl.find('div').innerHTML).to.equal('123 abc 456 efg 789 hij 101112');
+        tpl.set('foo', tpl2);
         tpl2.set('a', 3);
-        expect(tpl.find('div').innerHTML).to.equal('aaa <em>bbb</em> 123 ccc <strong>ddd</strong> 456 <i>eee</i> <div>3</div><div>2</div> fff');
+        expect(tpl.find('div').innerHTML).to.equal('123 <div>3</div><div>2</div> 456 efg 789 hij 101112');
     });
 
     it('should support dot-notation interpolation', () => {
@@ -153,8 +156,8 @@ describe('node interpolation', () => {
 
     it('should support escaping HTML characters', () => {
         const tpl = templar('<div>{{&value}}</div>');
-        tpl.set('value', 'foo <i id="foo" class=\'bar\'>bar</i>');
-        expect(tpl.find('div').textContent).to.equal('foo &lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+        tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
+        expect(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support default interpolation on initialization', () => {
