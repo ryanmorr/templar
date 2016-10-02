@@ -16268,8 +16268,9 @@ function wrapFragment(frag, id) {
 }
 
 /**
- * Find the template within the provided
- * root element matching the provided ID
+ * Find the template elements within the
+ * provided root element that match the
+ * provided template ID
  *
  * @param {Element} root
  * @param {String} id
