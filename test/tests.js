@@ -16503,6 +16503,14 @@ describe('expressions', function () {
         tpl.set('bar', 2);
         (0, _chai.expect)(tpl.find('div').textContent).to.equal('12');
     });
+
+    it('should support the ternary operator', function () {
+        var tpl = (0, _src2.default)('<input type="checkbox" checked="{{ checked ? true : false }}">');
+        tpl.set('checked', true);
+        (0, _chai.expect)(tpl.find('input').checked).to.equal(true);
+        tpl.set('checked', false);
+        (0, _chai.expect)(tpl.find('input').checked).to.equal(false);
+    });
 });
 
 },{"../../src":75,"chai":9}],82:[function(require,module,exports){

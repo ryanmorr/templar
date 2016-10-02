@@ -32,4 +32,12 @@ describe('expressions', () => {
         tpl.set('bar', 2);
         expect(tpl.find('div').textContent).to.equal('12');
     });
+
+    it('should support the ternary operator', () => {
+        const tpl = templar('<input type="checkbox" checked="{{ checked ? true : false }}">');
+        tpl.set('checked', true);
+        expect(tpl.find('input').checked).to.equal(true);
+        tpl.set('checked', false);
+        expect(tpl.find('input').checked).to.equal(false);
+    });
 });

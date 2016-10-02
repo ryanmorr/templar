@@ -44,6 +44,14 @@ export default class AttrBinding extends Binding {
             this.node.removeAttribute(this.attr);
             return;
         }
-        this.node.setAttribute(this.attr, value);
+        if (this.attr === 'checked') {
+            if (value === 'true') {
+                this.node.setAttribute('checked', 'checked');
+            } else {
+                this.node.removeAttribute('checked');
+            }
+        } else {
+            this.node.setAttribute(this.attr, value);
+        }
     }
 }
