@@ -16468,21 +16468,24 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 describe('expressions', function () {
     it('should support dot-notation interpolation', function () {
-        var tpl = (0, _src2.default)('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
+        var tpl = (0, _src2.default)('<div id="{{object.key}}">{{object.data.value}}</div>');
+        var div = tpl.find('div');
         tpl.set('object', {
             key: 'foo',
             data: {
                 value: 'bar'
             }
         });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
-        (0, _chai.expect)(tpl.find('span').textContent).to.equal('bar');
+        (0, _chai.expect)(div.id).to.equal('foo');
+        (0, _chai.expect)(div.textContent).to.equal('bar');
     });
 
     it('should support array access', function () {
-        var tpl = (0, _src2.default)('<div>{{ array[2] }}</div>');
+        var tpl = (0, _src2.default)('<div id="{{array[0]}}">{{ array[2] }}</div>');
+        var div = tpl.find('div');
         tpl.set('array', ['foo', 'bar', 'baz', 'qux']);
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('baz');
+        (0, _chai.expect)(div.id).to.equal('foo');
+        (0, _chai.expect)(div.textContent).to.equal('baz');
     });
 
     it('should support simple math expressions', function () {
@@ -16524,11 +16527,13 @@ describe('expressions', function () {
     });
 
     it('should support passing variables to functions', function () {
-        var tpl = (0, _src2.default)('<div>{{foo(2, 4)}}</div>');
+        var tpl = (0, _src2.default)('<div id="{{foo(3, 6)}}">{{foo(2, 4)}}</div>');
+        var div = tpl.find('div');
         tpl.set('foo', function (a, b) {
             return a * b;
         });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('8');
+        (0, _chai.expect)(div.id).to.equal('18');
+        (0, _chai.expect)(div.textContent).to.equal('8');
     });
 
     it('should support complex expressions', function () {

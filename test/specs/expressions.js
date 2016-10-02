@@ -5,21 +5,24 @@ import templar from '../../src';
 
 describe('expressions', () => {
     it('should support dot-notation interpolation', () => {
-        const tpl = templar('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
+        const tpl = templar('<div id="{{object.key}}">{{object.data.value}}</div>');
+        const div = tpl.find('div');
         tpl.set('object', {
             key: 'foo',
             data: {
                 value: 'bar'
             }
         });
-        expect(tpl.find('div').textContent).to.equal('foo');
-        expect(tpl.find('span').textContent).to.equal('bar');
+        expect(div.id).to.equal('foo');
+        expect(div.textContent).to.equal('bar');
     });
 
     it('should support array access', () => {
-        const tpl = templar('<div>{{ array[2] }}</div>');
+        const tpl = templar('<div id="{{array[0]}}">{{ array[2] }}</div>');
+        const div = tpl.find('div');
         tpl.set('array', ['foo', 'bar', 'baz', 'qux']);
-        expect(tpl.find('div').textContent).to.equal('baz');
+        expect(div.id).to.equal('foo');
+        expect(div.textContent).to.equal('baz');
     });
 
     it('should support simple math expressions', () => {
@@ -55,9 +58,11 @@ describe('expressions', () => {
     });
 
     it('should support passing variables to functions', () => {
-        const tpl = templar('<div>{{foo(2, 4)}}</div>');
+        const tpl = templar('<div id="{{foo(3, 6)}}">{{foo(2, 4)}}</div>');
+        const div = tpl.find('div');
         tpl.set('foo', (a, b) => a * b);
-        expect(tpl.find('div').textContent).to.equal('8');
+        expect(div.id).to.equal('18');
+        expect(div.textContent).to.equal('8');
     });
 
     it('should support complex expressions', () => {
