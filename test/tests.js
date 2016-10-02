@@ -15290,6 +15290,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _binding = require('./binding');
 
 var _binding2 = _interopRequireDefault(_binding);
@@ -15350,20 +15352,21 @@ var AttrBinding = function (_Binding) {
     _createClass(AttrBinding, [{
         key: 'render',
         value: function render() {
-            this.renderer = null;
-            var value = (0, _parser.interpolate)(this.text, this.tpl.data);
-            if (value === '') {
-                this.node.removeAttribute(this.attr);
-                return;
-            }
-            if (this.attr === 'checked') {
-                if (value === 'true') {
-                    this.node.setAttribute('checked', 'checked');
-                } else {
-                    this.node.removeAttribute('checked');
+            if (_get(AttrBinding.prototype.__proto__ || Object.getPrototypeOf(AttrBinding.prototype), 'render', this).call(this)) {
+                var value = (0, _parser.interpolate)(this.text, this.tpl.data);
+                if (value === '') {
+                    this.node.removeAttribute(this.attr);
+                    return;
                 }
-            } else {
-                this.node.setAttribute(this.attr, value);
+                if (this.attr === 'checked') {
+                    if (value === 'true') {
+                        this.node.setAttribute('checked', 'checked');
+                    } else {
+                        this.node.removeAttribute('checked');
+                    }
+                } else {
+                    this.node.setAttribute(this.attr, value);
+                }
             }
         }
     }]);
@@ -15378,7 +15381,7 @@ module.exports = exports['default'];
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
@@ -15398,30 +15401,40 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @api private
  */
 var Binding = function () {
-  function Binding() {
-    _classCallCheck(this, Binding);
-  }
-
-  _createClass(Binding, [{
-    key: 'update',
-
-
-    /**
-     * Schedule a frame to update the
-     * DOM node
-     *
-     * @return {String}
-     * @api private
-     */
-    value: function update() {
-      if (!this.renderer) {
-        this.renderer = this.render.bind(this);
-        (0, _util.updateDOM)(this.renderer);
-      }
+    function Binding() {
+        _classCallCheck(this, Binding);
     }
-  }]);
 
-  return Binding;
+    _createClass(Binding, [{
+        key: 'update',
+
+
+        /**
+         * Schedule a frame to update the
+         * DOM node
+         *
+         * @return {String}
+         * @api private
+         */
+        value: function update() {
+            if (!this.renderer) {
+                this.renderer = this.render.bind(this);
+                (0, _util.updateDOM)(this.renderer);
+            }
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _this = this;
+
+            this.renderer = null;
+            return this.tokens.every(function (token) {
+                return token in _this.tpl.data;
+            });
+        }
+    }]);
+
+    return Binding;
 }();
 
 exports.default = Binding;
@@ -15465,6 +15478,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _templar = require('./templar');
 
@@ -15551,29 +15566,34 @@ var NodeBinding = function (_Binding) {
     }, {
         key: 'render',
         value: function render() {
-            this.renderer = null;
-            var nodes = [];
-            var node = this.nodes[0];
-            var parent = (0, _util.getParent)(node);
-            var insertIndex = (0, _util.getNodeIndex)(parent, node);
-            var childNodes = parent.childNodes;
-            this.purge();
-            var frag = (0, _parser.interpolateDOM)(this.text, this.tpl.data, function (value) {
-                if (value instanceof _templar2.default) {
-                    value.root = parent;
-                }
-                var nodeType = value.nodeType;
-                if (nodeType === 11) {
-                    nodes.push.apply(nodes, value.childNodes);
-                } else {
-                    nodes.push(value);
-                }
-            });
-            this.nodes = nodes;
-            if (insertIndex in childNodes) {
-                parent.insertBefore(frag, childNodes[insertIndex]);
-            } else {
-                parent.appendChild(frag);
+            var _this2 = this;
+
+            if (_get(NodeBinding.prototype.__proto__ || Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this)) {
+                (function () {
+                    var nodes = [];
+                    var node = _this2.nodes[0];
+                    var parent = (0, _util.getParent)(node);
+                    var insertIndex = (0, _util.getNodeIndex)(parent, node);
+                    var childNodes = parent.childNodes;
+                    _this2.purge();
+                    var frag = (0, _parser.interpolateDOM)(_this2.text, _this2.tpl.data, function (value) {
+                        if (value instanceof _templar2.default) {
+                            value.root = parent;
+                        }
+                        var nodeType = value.nodeType;
+                        if (nodeType === 11) {
+                            nodes.push.apply(nodes, value.childNodes);
+                        } else {
+                            nodes.push(value);
+                        }
+                    });
+                    _this2.nodes = nodes;
+                    if (insertIndex in childNodes) {
+                        parent.insertBefore(frag, childNodes[insertIndex]);
+                    } else {
+                        parent.appendChild(frag);
+                    }
+                })();
             }
         }
     }]);
@@ -15650,6 +15670,7 @@ function addBindings(bindings, text, binding) {
     (0, _util.getMatches)(matcherRe, text, function (matches) {
         var str = matches[1];
         var tokens = extractTokens(str);
+        binding.tokens = tokens;
         if (!simpleIdentifierRe.test(str)) {
             compileExpression(str, tokens);
         }
@@ -16510,6 +16531,17 @@ describe('expressions', function () {
         (0, _chai.expect)(tpl.find('input').checked).to.equal(true);
         tpl.set('checked', false);
         (0, _chai.expect)(tpl.find('input').checked).to.equal(false);
+    });
+
+    it('should support function invocations', function () {
+        var tpl = (0, _src2.default)('<div>{{foo() * bar()}}</div>');
+        tpl.set('foo', function () {
+            return 10;
+        });
+        tpl.set('bar', function () {
+            return 12;
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('120');
     });
 });
 

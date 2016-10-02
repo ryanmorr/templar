@@ -56,29 +56,30 @@ export default class NodeBinding extends Binding {
      * @api private
      */
     render() {
-        this.renderer = null;
-        const nodes = [];
-        const node = this.nodes[0];
-        const parent = getParent(node);
-        const insertIndex = getNodeIndex(parent, node);
-        const childNodes = parent.childNodes;
-        this.purge();
-        const frag = interpolateDOM(this.text, this.tpl.data, (value) => {
-            if (value instanceof Templar) {
-                value.root = parent;
-            }
-            const nodeType = value.nodeType;
-            if (nodeType === 11) {
-                nodes.push.apply(nodes, value.childNodes);
+        if (super.render()) {
+            const nodes = [];
+            const node = this.nodes[0];
+            const parent = getParent(node);
+            const insertIndex = getNodeIndex(parent, node);
+            const childNodes = parent.childNodes;
+            this.purge();
+            const frag = interpolateDOM(this.text, this.tpl.data, (value) => {
+                if (value instanceof Templar) {
+                    value.root = parent;
+                }
+                const nodeType = value.nodeType;
+                if (nodeType === 11) {
+                    nodes.push.apply(nodes, value.childNodes);
+                } else {
+                    nodes.push(value);
+                }
+            });
+            this.nodes = nodes;
+            if (insertIndex in childNodes) {
+                parent.insertBefore(frag, childNodes[insertIndex]);
             } else {
-                nodes.push(value);
+                parent.appendChild(frag);
             }
-        });
-        this.nodes = nodes;
-        if (insertIndex in childNodes) {
-            parent.insertBefore(frag, childNodes[insertIndex]);
-        } else {
-            parent.appendChild(frag);
         }
     }
 }

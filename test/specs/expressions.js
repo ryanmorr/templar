@@ -40,4 +40,11 @@ describe('expressions', () => {
         tpl.set('checked', false);
         expect(tpl.find('input').checked).to.equal(false);
     });
+
+    it('should support function invocations', () => {
+        const tpl = templar('<div>{{foo() * bar()}}</div>');
+        tpl.set('foo', () => 10);
+        tpl.set('bar', () => 12);
+        expect(tpl.find('div').textContent).to.equal('120');
+    });
 });

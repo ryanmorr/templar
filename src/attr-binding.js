@@ -38,20 +38,21 @@ export default class AttrBinding extends Binding {
      * @api private
      */
     render() {
-        this.renderer = null;
-        const value = interpolate(this.text, this.tpl.data);
-        if (value === '') {
-            this.node.removeAttribute(this.attr);
-            return;
-        }
-        if (this.attr === 'checked') {
-            if (value === 'true') {
-                this.node.setAttribute('checked', 'checked');
-            } else {
-                this.node.removeAttribute('checked');
+        if (super.render()) {
+            const value = interpolate(this.text, this.tpl.data);
+            if (value === '') {
+                this.node.removeAttribute(this.attr);
+                return;
             }
-        } else {
-            this.node.setAttribute(this.attr, value);
+            if (this.attr === 'checked') {
+                if (value === 'true') {
+                    this.node.setAttribute('checked', 'checked');
+                } else {
+                    this.node.removeAttribute('checked');
+                }
+            } else {
+                this.node.setAttribute(this.attr, value);
+            }
         }
     }
 }

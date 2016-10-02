@@ -25,4 +25,15 @@ export default class Binding {
             updateDOM(this.renderer);
         }
     }
+
+    /**
+     * Ensure all the tokens exist before
+     * performing interpolation
+     *
+     * @api private
+     */
+    render() {
+        this.renderer = null;
+        return this.tokens.every((token) => token in this.tpl.data);
+    }
 }
