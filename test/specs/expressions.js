@@ -54,6 +54,12 @@ describe('expressions', () => {
         expect(tpl.find('div').textContent).to.equal('foo');
     });
 
+    it('should support passing variables to functions', () => {
+        const tpl = templar('<div>{{foo(2, 4)}}</div>');
+        tpl.set('foo', (a, b) => a * b);
+        expect(tpl.find('div').textContent).to.equal('8');
+    });
+
     it('should support complex expressions', () => {
         const tpl = templar('<div>{{(foo + bar) + baz.qux + 7 + array[2]}}</div>');
         tpl.set({

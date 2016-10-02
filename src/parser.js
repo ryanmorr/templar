@@ -65,7 +65,7 @@ function addBindings(bindings, text, binding) {
  */
 function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
-        const vars = tokens.map((value) => `${value} = data.${value}`);
+        const vars = tokens.map((value) => `${value} = this.${value}`);
         // eslint-disable-next-line no-new-func
         const fn = new Function('data', 'var ' + vars.join(', ') + '; return ' + expr + ';');
         exprCache[expr] = fn;
@@ -99,7 +99,7 @@ function extractTokens(expr) {
  * @api private
  */
 function getTokenValue(token, data) {
-    return (token in exprCache) ? exprCache[token](data) : data[token];
+    return (token in exprCache) ? exprCache[token].call(data) : data[token];
 }
 
 /**

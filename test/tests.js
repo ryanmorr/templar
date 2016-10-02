@@ -15710,7 +15710,7 @@ function addBindings(bindings, text, binding) {
 function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
         var vars = tokens.map(function (value) {
-            return value + ' = data.' + value;
+            return value + ' = this.' + value;
         });
         // eslint-disable-next-line no-new-func
         var fn = new Function('data', 'var ' + vars.join(', ') + '; return ' + expr + ';');
@@ -15745,7 +15745,7 @@ function extractTokens(expr) {
  * @api private
  */
 function getTokenValue(token, data) {
-    return token in exprCache ? exprCache[token](data) : data[token];
+    return token in exprCache ? exprCache[token].call(data) : data[token];
 }
 
 /**
@@ -16535,6 +16535,14 @@ describe('expressions', function () {
             return document.createTextNode('foo');
         });
         (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
+    });
+
+    it('should support passing variables to functions', function () {
+        var tpl = (0, _src2.default)('<div>{{foo(2, 4)}}</div>');
+        tpl.set('foo', function (a, b) {
+            return a * b;
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('8');
     });
 
     it('should support complex expressions', function () {
