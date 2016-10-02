@@ -15710,10 +15710,10 @@ function addBindings(bindings, text, binding) {
 function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
         var vars = tokens.map(function (value) {
-            return value + ' = this.' + value;
+            return value + ' = this[\'' + value + '\']';
         });
         // eslint-disable-next-line no-new-func
-        var fn = new Function('data', 'var ' + vars.join(', ') + '; return ' + expr + ';');
+        var fn = new Function('', 'var ' + vars.join(', ') + '; return ' + expr + ';');
         exprCache[expr] = fn;
     }
 }
