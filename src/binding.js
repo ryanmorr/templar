@@ -13,10 +13,20 @@ import { updateDOM } from './util';
 export default class Binding {
 
     /**
+     * Ensure all the tokens are defined
+     * before rendering any changes
+     *
+     * @return {Boolean}
+     * @api private
+     */
+    shouldUpdate() {
+        return this.tokens.every((token) => token in this.tpl.data);
+    }
+
+    /**
      * Schedule a frame to update the
      * DOM node
      *
-     * @return {String}
      * @api private
      */
     update() {
@@ -27,13 +37,11 @@ export default class Binding {
     }
 
     /**
-     * Ensure all the tokens exist before
-     * performing interpolation
+     * Clear `renderer`
      *
      * @api private
      */
     render() {
         this.renderer = null;
-        return this.tokens.every((token) => token in this.tpl.data);
     }
 }

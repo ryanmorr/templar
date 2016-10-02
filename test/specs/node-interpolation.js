@@ -165,6 +165,15 @@ describe('node interpolation', () => {
         expect(tpl.get('value')).to.equal('foo');
     });
 
+    it('should not render the changes until all tokens are defined', () => {
+        const tpl = templar('<div>{{foo}} {{bar}}</div>');
+        const spy = sinon.spy(tpl.bindings.foo[0], 'render');
+        tpl.set('foo', 123);
+        expect(spy.callCount).to.equal(0);
+        tpl.set('bar', 456);
+        expect(spy.callCount).to.equal(1);
+    });
+
     it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', () => {
         const tpl = templar('<div>{{foo}}</div>');
         const spy = sinon.spy(window, 'requestAnimationFrame');
@@ -207,10 +216,11 @@ describe('node interpolation', () => {
         // DOM, an animation frame should be requested for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
+        tpl.set('bar', 'bbb');
         expect(requestSpy.callCount).to.equal(1);
         // Updating a binding more than once in succession should
         // not schedule another frame
-        tpl.set('bar', 'bbb');
+        tpl.set('bar', 'ccc');
         expect(requestSpy.callCount).to.equal(1);
         // Restore the original methods
         requestSpy.restore();
@@ -219,7 +229,7 @@ describe('node interpolation', () => {
         requestAnimationFrame(() => {
             // The actual render method should only be called once
             expect(renderSpy.callCount).to.equal(1);
-            expect(container.querySelector('div').textContent).to.equal('aaa bbb');
+            expect(container.querySelector('div').textContent).to.equal('aaa ccc');
             document.body.removeChild(container);
             done();
         });

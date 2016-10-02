@@ -15352,21 +15352,20 @@ var AttrBinding = function (_Binding) {
     _createClass(AttrBinding, [{
         key: 'render',
         value: function render() {
-            if (_get(AttrBinding.prototype.__proto__ || Object.getPrototypeOf(AttrBinding.prototype), 'render', this).call(this)) {
-                var value = (0, _parser.interpolate)(this.text, this.tpl.data);
-                if (value === '') {
-                    this.node.removeAttribute(this.attr);
-                    return;
-                }
-                if (this.attr === 'checked') {
-                    if (value === 'true') {
-                        this.node.setAttribute('checked', 'checked');
-                    } else {
-                        this.node.removeAttribute('checked');
-                    }
+            _get(AttrBinding.prototype.__proto__ || Object.getPrototypeOf(AttrBinding.prototype), 'render', this).call(this);
+            var value = (0, _parser.interpolate)(this.text, this.tpl.data);
+            if (value === '') {
+                this.node.removeAttribute(this.attr);
+                return;
+            }
+            if (this.attr === 'checked') {
+                if (value === 'true') {
+                    this.node.setAttribute('checked', 'checked');
                 } else {
-                    this.node.setAttribute(this.attr, value);
+                    this.node.removeAttribute('checked');
                 }
+            } else {
+                this.node.setAttribute(this.attr, value);
             }
         }
     }]);
@@ -15406,16 +15405,33 @@ var Binding = function () {
     }
 
     _createClass(Binding, [{
-        key: 'update',
+        key: 'shouldUpdate',
 
+
+        /**
+         * Ensure all the tokens are defined
+         * before rendering any changes
+         *
+         * @return {Boolean}
+         * @api private
+         */
+        value: function shouldUpdate() {
+            var _this = this;
+
+            return this.tokens.every(function (token) {
+                return token in _this.tpl.data;
+            });
+        }
 
         /**
          * Schedule a frame to update the
          * DOM node
          *
-         * @return {String}
          * @api private
          */
+
+    }, {
+        key: 'update',
         value: function update() {
             if (!this.renderer) {
                 this.renderer = this.render.bind(this);
@@ -15424,8 +15440,7 @@ var Binding = function () {
         }
 
         /**
-         * Ensure all the tokens exist before
-         * performing interpolation
+         * Clear `renderer`
          *
          * @api private
          */
@@ -15433,12 +15448,7 @@ var Binding = function () {
     }, {
         key: 'render',
         value: function render() {
-            var _this = this;
-
             this.renderer = null;
-            return this.tokens.every(function (token) {
-                return token in _this.tpl.data;
-            });
         }
     }]);
 
@@ -15574,34 +15584,29 @@ var NodeBinding = function (_Binding) {
     }, {
         key: 'render',
         value: function render() {
-            var _this2 = this;
-
-            if (_get(NodeBinding.prototype.__proto__ || Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this)) {
-                (function () {
-                    var nodes = [];
-                    var node = _this2.nodes[0];
-                    var parent = (0, _util.getParent)(node);
-                    var insertIndex = (0, _util.getNodeIndex)(parent, node);
-                    var childNodes = parent.childNodes;
-                    _this2.purge();
-                    var frag = (0, _parser.interpolateDOM)(_this2.text, _this2.tpl.data, function (value) {
-                        if (value instanceof _templar2.default) {
-                            value.root = parent;
-                        }
-                        var nodeType = value.nodeType;
-                        if (nodeType === 11) {
-                            nodes.push.apply(nodes, value.childNodes);
-                        } else {
-                            nodes.push(value);
-                        }
-                    });
-                    _this2.nodes = nodes;
-                    if (insertIndex in childNodes) {
-                        parent.insertBefore(frag, childNodes[insertIndex]);
-                    } else {
-                        parent.appendChild(frag);
-                    }
-                })();
+            _get(NodeBinding.prototype.__proto__ || Object.getPrototypeOf(NodeBinding.prototype), 'render', this).call(this);
+            var nodes = [];
+            var node = this.nodes[0];
+            var parent = (0, _util.getParent)(node);
+            var insertIndex = (0, _util.getNodeIndex)(parent, node);
+            var childNodes = parent.childNodes;
+            this.purge();
+            var frag = (0, _parser.interpolateDOM)(this.text, this.tpl.data, function (value) {
+                if (value instanceof _templar2.default) {
+                    value.root = parent;
+                }
+                var nodeType = value.nodeType;
+                if (nodeType === 11) {
+                    nodes.push.apply(nodes, value.childNodes);
+                } else {
+                    nodes.push(value);
+                }
+            });
+            this.nodes = nodes;
+            if (insertIndex in childNodes) {
+                parent.insertBefore(frag, childNodes[insertIndex]);
+            } else {
+                parent.appendChild(frag);
             }
         }
     }]);
@@ -16001,7 +16006,9 @@ var Templar = function () {
                     (function () {
                         var method = _this2.isRendered() ? 'update' : 'render';
                         _this2.bindings[token].forEach(function (binding) {
-                            return binding[method]();
+                            if (binding.shouldUpdate()) {
+                                binding[method]();
+                            }
                         });
                     })();
                 }
@@ -16759,6 +16766,15 @@ describe('node interpolation', function () {
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
     });
 
+    it('should not render the changes until all tokens are defined', function () {
+        var tpl = (0, _src2.default)('<div>{{foo}} {{bar}}</div>');
+        var spy = _sinon2.default.spy(tpl.bindings.foo[0], 'render');
+        tpl.set('foo', 123);
+        (0, _chai.expect)(spy.callCount).to.equal(0);
+        tpl.set('bar', 456);
+        (0, _chai.expect)(spy.callCount).to.equal(1);
+    });
+
     it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', function () {
         var tpl = (0, _src2.default)('<div>{{foo}}</div>');
         var spy = _sinon2.default.spy(window, 'requestAnimationFrame');
@@ -16801,10 +16817,11 @@ describe('node interpolation', function () {
         // DOM, an animation frame should be requested for updates
         tpl.mount(container);
         tpl.set('foo', 'aaa');
+        tpl.set('bar', 'bbb');
         (0, _chai.expect)(requestSpy.callCount).to.equal(1);
         // Updating a binding more than once in succession should
         // not schedule another frame
-        tpl.set('bar', 'bbb');
+        tpl.set('bar', 'ccc');
         (0, _chai.expect)(requestSpy.callCount).to.equal(1);
         // Restore the original methods
         requestSpy.restore();
@@ -16813,7 +16830,7 @@ describe('node interpolation', function () {
         requestAnimationFrame(function () {
             // The actual render method should only be called once
             (0, _chai.expect)(renderSpy.callCount).to.equal(1);
-            (0, _chai.expect)(container.querySelector('div').textContent).to.equal('aaa bbb');
+            (0, _chai.expect)(container.querySelector('div').textContent).to.equal('aaa ccc');
             document.body.removeChild(container);
             done();
         });

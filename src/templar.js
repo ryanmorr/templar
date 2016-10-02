@@ -111,7 +111,11 @@ export default class Templar {
             this.data[token] = value;
             if (token in this.bindings) {
                 const method = this.isRendered() ? 'update' : 'render';
-                this.bindings[token].forEach((binding) => binding[method]());
+                this.bindings[token].forEach((binding) => {
+                    if (binding.shouldUpdate()) {
+                        binding[method]();
+                    }
+                });
             }
         }
     }
