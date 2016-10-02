@@ -51,16 +51,14 @@ const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
 
 Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once.
 
-Strings, numbers, and booleans are all supported, as well as object literals and dot notation:
+Simple interpolation with primitive values (strings, numbers, and booleans):
 
 ```javascript
-const tpl = templar('<div id="{{foo}}">{{object.bar}} {{object.baz}}</div>');
+const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
 
 tpl.set('foo', 'aaa');
-tpl.set('object', {
-    bar: 123,
-    baz: true
-});
+tpl.set('bar', 123);
+tpl.set('baz', true);
 ```
 
 DOM nodes are also supported, including elements, text nodes, document fragments, and HTML strings:
@@ -83,6 +81,21 @@ const tpl = templar('<div>Hello, my name is {{name}}</div>');
 tpl.set('firstName', 'John');
 tpl.set('lastName', 'Doe');
 tpl.set('name', (data) => data.firstName + data.lastName);
+```
+
+Use expressions, such as simple math, the ternary operator, array access, dot-notation, and function invocations:
+
+```javascript
+const tpl = templar('<div>{{foo ? foo + bar() + array[1] + obj.baz.qux : 0}}</div>');
+
+tpl.set('foo', 2);
+tpl.set('bar', () => 4);
+tpl.set('array', [10, 20, 30]);
+tpl.set('obj', {
+    baz: {
+        qux: 8
+    }
+});
 ```
 
 You can even nest templates within templates:
