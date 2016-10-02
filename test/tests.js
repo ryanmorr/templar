@@ -15713,8 +15713,7 @@ function compileExpression(expr, tokens) {
             return value + ' = this[\'' + value + '\']';
         });
         // eslint-disable-next-line no-new-func
-        var fn = new Function('', 'var ' + vars.join(', ') + '; return ' + expr + ';');
-        exprCache[expr] = fn;
+        exprCache[expr] = new Function('var ' + vars.join(', ') + '; return ' + expr + ';');
     }
 }
 

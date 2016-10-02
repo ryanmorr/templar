@@ -67,8 +67,7 @@ function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
         const vars = tokens.map((value) => `${value} = this['${value}']`);
         // eslint-disable-next-line no-new-func
-        const fn = new Function('', 'var ' + vars.join(', ') + '; return ' + expr + ';');
-        exprCache[expr] = fn;
+        exprCache[expr] = new Function('var ' + vars.join(', ') + '; return ' + expr + ';');
     }
 }
 
