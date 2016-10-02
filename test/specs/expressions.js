@@ -47,4 +47,17 @@ describe('expressions', () => {
         tpl.set('bar', () => 12);
         expect(tpl.find('div').textContent).to.equal('120');
     });
+
+    it('should support complex expressions', () => {
+        const tpl = templar('<div>{{(foo + bar) + baz.qux + 7 + array[2]}}</div>');
+        tpl.set({
+            foo: 1,
+            bar: 2,
+            baz: {
+                qux: 4
+            },
+            array: [1, 2, 3]
+        });
+        expect(tpl.find('div').textContent).to.equal('17');
+    });
 });

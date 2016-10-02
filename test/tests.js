@@ -15422,6 +15422,14 @@ var Binding = function () {
                 (0, _util.updateDOM)(this.renderer);
             }
         }
+
+        /**
+         * Ensure all the tokens exist before
+         * performing interpolation
+         *
+         * @api private
+         */
+
     }, {
         key: 'render',
         value: function render() {
@@ -15641,7 +15649,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
-var simpleIdentifierRe = /^\&?[A-Za-z0-9_\$]+$/;
+var simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
 var expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
 var identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 var rootRe = /^([^.]+)/;
@@ -16542,6 +16550,19 @@ describe('expressions', function () {
             return 12;
         });
         (0, _chai.expect)(tpl.find('div').textContent).to.equal('120');
+    });
+
+    it('should support complex expressions', function () {
+        var tpl = (0, _src2.default)('<div>{{(foo + bar) + baz.qux + 7 + array[2]}}</div>');
+        tpl.set({
+            foo: 1,
+            bar: 2,
+            baz: {
+                qux: 4
+            },
+            array: [1, 2, 3]
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('17');
     });
 });
 

@@ -11,7 +11,7 @@ import { isFunction, toArray, getMatches, escapeHTML, parseHTML, isHTML } from '
  */
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
-const simpleIdentifierRe = /^\&?[A-Za-z0-9_\$]+$/;
+const simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
 const expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
 const identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 const rootRe = /^([^.]+)/;
