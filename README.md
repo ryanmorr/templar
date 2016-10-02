@@ -34,24 +34,9 @@ Outputs:
 
 Internally, templar updates only the parts of the DOM that have changed and makes use of `requestAnimationFrame` to [batch DOM manipulations for increased performance](http://wilsonpage.co.uk/preventing-layout-thrashing/).
 
-## API
+## Interpolation
 
-### templar(tpl[, data])
-
-Create a new template by providing a template string and optionally provide a data object to set default values:
-
-```javascript
-const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
-    foo: 'abc',
-    bar: 123
-});
-```
-
-### templar#set(token, value)
-
-Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once.
-
-Simple interpolation with primitive values (strings, numbers, and booleans):
+Supports simple interpolation with primitive values (strings, numbers, and booleans):
 
 ```javascript
 const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
@@ -66,11 +51,9 @@ DOM nodes are also supported, including elements, text nodes, document fragments
 ```javascript
 const tpl = templar('<div>{{foo}} {{bar}} {{baz}}</div>');
 
-tpl.set({
-    foo: document.createElement('div'),
-    bar: document.createDocumentFragment(),
-    baz: '<strong>bold</strong>'
-});
+tpl.set('foo', document.createElement('div'));
+tpl.set('bar', document.createDocumentFragment());
+tpl.set('baz', '<strong>bold</strong>');
 ```
 
 Use simple expressions, such as basic arithmetics, the ternary operator, array access, dot-notation, and function invocations:
@@ -112,6 +95,37 @@ const tpl = templar('<div id="{{id}}"></div>');
 
 tpl.set('id', '');
 tpl.find('div').hasAttribute('id'); // false
+```
+
+## API
+
+### templar(tpl[, data])
+
+Create a new template by providing a template string and optionally provide a data object to set default values:
+
+```javascript
+const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
+    foo: 'abc',
+    bar: 123
+});
+```
+
+### templar#set(token, value)
+
+Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once.
+
+Simple interpolation with primitive values (strings, numbers, and booleans):
+
+```javascript
+const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
+
+// Set a single value
+tpl.set('foo', 'aaa');
+// Set multiple values
+tpl.set({
+    bar: 'bbb',
+    baz: 'ccc'
+});
 ```
 
 ### templar#get(token)
