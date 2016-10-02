@@ -7,32 +7,15 @@ import AttrBinding from './attr-binding';
 import { isFunction, toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 /**
- * Parsing regular expressions
+ * Common variables
  */
 const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
+const simpleIdentifierRe = /^\&?[A-Za-z0-9_\$]+$/;
+const expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
+const identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 const rootRe = /^([^.]+)/;
-
-/**
- * Map tokens to a `Binding` instance
- *
- * @param {Object} bindings
- * @param {String} text
- * @param {Binding} binding
- * @api private
- */
-function addBindings(bindings, text, binding) {
-    getMatches(matcherRe, text, (matches) => {
-        let token = matches[1].match(rootRe)[1];
-        if (token[0] === '&') {
-            token = token.substr(1);
-        }
-        if (!(token in bindings)) {
-            bindings[token] = [];
-        }
-        bindings[token].push(binding);
-    });
-}
+const exprCache = Object.create(null);
 
 /**
  * Check if a string has interpolation
@@ -46,6 +29,67 @@ function hasInterpolation(str) {
 }
 
 /**
+ * Map tokens to a `Binding` instance
+ *
+ * @param {Object} bindings
+ * @param {String} text
+ * @param {Binding} binding
+ * @api private
+ */
+function addBindings(bindings, text, binding) {
+    getMatches(matcherRe, text, (matches) => {
+        const str = matches[1];
+        const tokens = extractTokens(str);
+        if (!simpleIdentifierRe.test(str)) {
+            compileExpression(str, tokens);
+        }
+        tokens.forEach((token) => {
+            if (token[0] === '&') {
+                token = token.substr(1);
+            }
+            if (!(token in bindings)) {
+                bindings[token] = [];
+            }
+            bindings[token].push(binding);
+        });
+    });
+}
+
+/**
+ * Convert a string expression into
+ * a function
+ *
+ * @param {String} expr
+ * @api private
+ */
+function compileExpression(expr, tokens) {
+    if (!(expr in exprCache)) {
+        const vars = tokens.map((value) => `${value} = data.${value}`);
+        // eslint-disable-next-line no-new-func
+        const fn = new Function('data', 'var ' + vars.join(', ') + '; return ' + expr + ';');
+        exprCache[expr] = fn;
+    }
+}
+
+/**
+ * Extract the tokens from an expression
+ * string
+ *
+ * @param {String} expr
+ * @return {Array}
+ * @api private
+ */
+function extractTokens(expr) {
+    return (expr.replace(expressionsRe, '').match(identifierRe) || []).reduce((tokens, token) => {
+        token = token.match(rootRe)[1];
+        if (tokens.indexOf(token) === -1) {
+            tokens.push(token);
+        }
+        return tokens;
+    }, []);
+}
+
+/**
  * Get the value of a token
  *
  * @param {String} token
@@ -54,7 +98,7 @@ function hasInterpolation(str) {
  * @api private
  */
 function getTokenValue(token, data) {
-    const value = token.split('.').reduce((val, ns) => val ? val[ns] : (data[ns] || ''), null);
+    const value = (token in exprCache) ? exprCache[token] : data[token];
     return isFunction(value) ? value(data) : value;
 }
 
@@ -113,9 +157,11 @@ export function interpolateDOM(tpl, data, fn) {
         } else if (matches[2] != null) {
             value = document.createTextNode(matches[2]);
         }
-        fn(value);
-        if (value.nodeName) {
-            frag.appendChild(value);
+        if (value != null) {
+            fn(value);
+            if (value.nodeName) {
+                frag.appendChild(value);
+            }
         }
     });
     return frag;

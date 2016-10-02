@@ -15609,32 +15609,15 @@ var _util = require('./util');
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Parsing regular expressions
+ * Common variables
  */
 var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
 var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
+var simpleIdentifierRe = /^\&?[A-Za-z0-9_\$]+$/;
+var expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
+var identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 var rootRe = /^([^.]+)/;
-
-/**
- * Map tokens to a `Binding` instance
- *
- * @param {Object} bindings
- * @param {String} text
- * @param {Binding} binding
- * @api private
- */
-function addBindings(bindings, text, binding) {
-    (0, _util.getMatches)(matcherRe, text, function (matches) {
-        var token = matches[1].match(rootRe)[1];
-        if (token[0] === '&') {
-            token = token.substr(1);
-        }
-        if (!(token in bindings)) {
-            bindings[token] = [];
-        }
-        bindings[token].push(binding);
-    });
-}
+var exprCache = Object.create(null);
 
 /**
  * Check if a string has interpolation
@@ -15648,6 +15631,69 @@ function hasInterpolation(str) {
 }
 
 /**
+ * Map tokens to a `Binding` instance
+ *
+ * @param {Object} bindings
+ * @param {String} text
+ * @param {Binding} binding
+ * @api private
+ */
+function addBindings(bindings, text, binding) {
+    (0, _util.getMatches)(matcherRe, text, function (matches) {
+        var str = matches[1];
+        var tokens = extractTokens(str);
+        if (!simpleIdentifierRe.test(str)) {
+            compileExpression(str, tokens);
+        }
+        tokens.forEach(function (token) {
+            if (token[0] === '&') {
+                token = token.substr(1);
+            }
+            if (!(token in bindings)) {
+                bindings[token] = [];
+            }
+            bindings[token].push(binding);
+        });
+    });
+}
+
+/**
+ * Convert a string expression into
+ * a function
+ *
+ * @param {String} expr
+ * @api private
+ */
+function compileExpression(expr, tokens) {
+    if (!(expr in exprCache)) {
+        var vars = tokens.map(function (value) {
+            return value + ' = data.' + value;
+        });
+        // eslint-disable-next-line no-new-func
+        var fn = new Function('data', 'var ' + vars.join(', ') + '; return ' + expr + ';');
+        exprCache[expr] = fn;
+    }
+}
+
+/**
+ * Extract the tokens from an expression
+ * string
+ *
+ * @param {String} expr
+ * @return {Array}
+ * @api private
+ */
+function extractTokens(expr) {
+    return (expr.replace(expressionsRe, '').match(identifierRe) || []).reduce(function (tokens, token) {
+        token = token.match(rootRe)[1];
+        if (tokens.indexOf(token) === -1) {
+            tokens.push(token);
+        }
+        return tokens;
+    }, []);
+}
+
+/**
  * Get the value of a token
  *
  * @param {String} token
@@ -15656,9 +15702,7 @@ function hasInterpolation(str) {
  * @api private
  */
 function getTokenValue(token, data) {
-    var value = token.split('.').reduce(function (val, ns) {
-        return val ? val[ns] : data[ns] || '';
-    }, null);
+    var value = token in exprCache ? exprCache[token] : data[token];
     return (0, _util.isFunction)(value) ? value(data) : value;
 }
 
@@ -15720,9 +15764,11 @@ function interpolateDOM(tpl, data, fn) {
         } else if (matches[2] != null) {
             value = document.createTextNode(matches[2]);
         }
-        fn(value);
-        if (value.nodeName) {
-            frag.appendChild(value);
+        if (value != null) {
+            fn(value);
+            if (value.nodeName) {
+                frag.appendChild(value);
+            }
         }
     });
     return frag;
@@ -16410,13 +16456,42 @@ describe('attribute interpolation', function () {
 },{"../../src":75,"chai":9}],81:[function(require,module,exports){
 'use strict';
 
+var _chai = require('chai');
+
+var _src = require('../../src');
+
+var _src2 = _interopRequireDefault(_src);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/* eslint-disable max-len */
+
+describe('expressions', function () {
+    it('should support dot-notation interpolation', function () {
+        var tpl = (0, _src2.default)('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
+        tpl.set('object', {
+            key: 'foo',
+            data: {
+                value: 'bar'
+            }
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
+        (0, _chai.expect)(tpl.find('span').textContent).to.equal('bar');
+    });
+});
+
+},{"../../src":75,"chai":9}],82:[function(require,module,exports){
+'use strict';
+
 require('./templar.js');
 
 require('./node-interpolation.js');
 
 require('./attr-interpolation.js');
 
-},{"./attr-interpolation.js":80,"./node-interpolation.js":82,"./templar.js":83}],82:[function(require,module,exports){
+require('./expressions.js');
+
+},{"./attr-interpolation.js":80,"./expressions.js":81,"./node-interpolation.js":83,"./templar.js":84}],83:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');
@@ -16530,18 +16605,6 @@ describe('node interpolation', function () {
         tpl2.set('bar', tpl3);
         tpl3.set('baz', 'qux');
         (0, _chai.expect)(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
-    });
-
-    it('should support dot-notation interpolation', function () {
-        var tpl = (0, _src2.default)('<div>{{object.key}}</div><span>{{object.data.value}}</span>');
-        tpl.set('object', {
-            key: 'foo',
-            data: {
-                value: 'bar'
-            }
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
-        (0, _chai.expect)(tpl.find('span').textContent).to.equal('bar');
     });
 
     it('should support token callback functions', function () {
@@ -16703,7 +16766,7 @@ describe('node interpolation', function () {
     });
 }); /* eslint-disable max-len */
 
-},{"../../src":75,"chai":9,"sinon":45}],83:[function(require,module,exports){
+},{"../../src":75,"chai":9,"sinon":45}],84:[function(require,module,exports){
 'use strict';
 
 var _chai = require('chai');
@@ -16869,4 +16932,4 @@ describe('templar', function () {
     });
 }); /* eslint-disable max-len */
 
-},{"../../src":75,"../../src/util":79,"chai":9}]},{},[81]);
+},{"../../src":75,"../../src/util":79,"chai":9}]},{},[82]);
