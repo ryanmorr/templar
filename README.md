@@ -73,17 +73,7 @@ tpl.set({
 });
 ```
 
-Provide a callback function to support computed values. This is most useful when trying to support iterations, conditionals, and expressions. The callback function must return one of the supported value types (string, DOM node, etc.):
-
-```javascript
-const tpl = templar('<div>Hello, my name is {{name}}</div>');
-
-tpl.set('firstName', 'John');
-tpl.set('lastName', 'Doe');
-tpl.set('name', (data) => data.firstName + data.lastName);
-```
-
-Use expressions, such as simple math, the ternary operator, array access, dot-notation, and function invocations:
+Use simple expressions, such as basic arithmetics, the ternary operator, array access, dot-notation, and function invocations:
 
 ```javascript
 const tpl = templar('<div>{{foo ? foo + bar() + array[1] + obj.baz.qux : 0}}</div>');

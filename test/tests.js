@@ -15745,8 +15745,7 @@ function extractTokens(expr) {
  * @api private
  */
 function getTokenValue(token, data) {
-    var value = token in exprCache ? exprCache[token] : data[token];
-    return (0, _util.isFunction)(value) ? value(data) : value;
+    return token in exprCache ? exprCache[token](data) : data[token];
 }
 
 /**
@@ -16456,36 +16455,6 @@ describe('attribute interpolation', function () {
         (0, _chai.expect)(tpl.find('div').id).to.equal('foo');
     });
 
-    it('should support dot-notation interpolation', function () {
-        var tpl = (0, _src2.default)('<div id="{{object.key}}" class="{{object.data.value}}"></div>');
-        tpl.set('object', {
-            key: 'foo',
-            data: {
-                value: 'bar'
-            }
-        });
-        (0, _chai.expect)(tpl.find('div').id).to.equal('foo');
-        (0, _chai.expect)(tpl.find('div').className).to.equal('bar');
-    });
-
-    it('should support token callback functions', function () {
-        var tpl = (0, _src2.default)('<div id="{{value}}"></div>');
-        tpl.set('value', function () {
-            return 'foo';
-        });
-        (0, _chai.expect)(tpl.find('div').id).to.equal('foo');
-    });
-
-    it('should support passing the data object to token callback functions', function () {
-        var tpl = (0, _src2.default)('<div id="{{foo}}" class="{{bar}}"></div>');
-        tpl.set('foo', 5);
-        tpl.set('bar', function (data) {
-            return data.foo * 2;
-        });
-        (0, _chai.expect)(tpl.find('div').id).to.equal('5');
-        (0, _chai.expect)(tpl.find('div').className).to.equal('10');
-    });
-
     it('should support default interpolation on initialization', function () {
         var tpl = (0, _src2.default)('<div id="{{foo}}"></div>', { foo: 123 });
         (0, _chai.expect)(tpl.find('div').id).to.equal('123');
@@ -16558,6 +16527,14 @@ describe('expressions', function () {
             return 12;
         });
         (0, _chai.expect)(tpl.find('div').textContent).to.equal('120');
+    });
+
+    it('should support functions that return a DOM node', function () {
+        var tpl = (0, _src2.default)('<div>{{value()}}</div>');
+        tpl.set('value', function () {
+            return document.createTextNode('foo');
+        });
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
     });
 
     it('should support complex expressions', function () {
@@ -16699,31 +16676,6 @@ describe('node interpolation', function () {
         tpl2.set('bar', tpl3);
         tpl3.set('baz', 'qux');
         (0, _chai.expect)(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
-    });
-
-    it('should support token callback functions', function () {
-        var tpl = (0, _src2.default)('<div>{{value}}</div>');
-        tpl.set('value', function () {
-            return 'foo';
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
-    });
-
-    it('should support token callback functions that return a DOM node', function () {
-        var tpl = (0, _src2.default)('<div>{{value}}</div>');
-        tpl.set('value', function () {
-            return document.createTextNode('foo');
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
-    });
-
-    it('should support passing the data object to token callback functions', function () {
-        var tpl = (0, _src2.default)('<div>{{foo}}</div>');
-        tpl.set('num', 5);
-        tpl.set('foo', function (data) {
-            return data.num * 2;
-        });
-        (0, _chai.expect)(tpl.find('div').textContent).to.equal('10');
     });
 
     it('should support escaping HTML characters', function () {

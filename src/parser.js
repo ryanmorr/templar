@@ -4,7 +4,7 @@
 import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { isFunction, toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
+import { toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 /**
  * Common variables
@@ -99,8 +99,7 @@ function extractTokens(expr) {
  * @api private
  */
 function getTokenValue(token, data) {
-    const value = (token in exprCache) ? exprCache[token] : data[token];
-    return isFunction(value) ? value(data) : value;
+    return (token in exprCache) ? exprCache[token](data) : data[token];
 }
 
 /**

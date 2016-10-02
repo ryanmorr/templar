@@ -59,34 +59,6 @@ describe('attribute interpolation', () => {
         expect(tpl.find('div').id).to.equal('foo');
     });
 
-    it('should support dot-notation interpolation', () => {
-        const tpl = templar('<div id="{{object.key}}" class="{{object.data.value}}"></div>');
-        tpl.set('object', {
-            key: 'foo',
-            data: {
-                value: 'bar'
-            }
-        });
-        expect(tpl.find('div').id).to.equal('foo');
-        expect(tpl.find('div').className).to.equal('bar');
-    });
-
-    it('should support token callback functions', () => {
-        const tpl = templar('<div id="{{value}}"></div>');
-        tpl.set('value', () => 'foo');
-        expect(tpl.find('div').id).to.equal('foo');
-    });
-
-    it('should support passing the data object to token callback functions', () => {
-        const tpl = templar('<div id="{{foo}}" class="{{bar}}"></div>');
-        tpl.set('foo', 5);
-        tpl.set('bar', (data) => {
-            return data.foo * 2;
-        });
-        expect(tpl.find('div').id).to.equal('5');
-        expect(tpl.find('div').className).to.equal('10');
-    });
-
     it('should support default interpolation on initialization', () => {
         const tpl = templar('<div id="{{foo}}"></div>', {foo: 123});
         expect(tpl.find('div').id).to.equal('123');

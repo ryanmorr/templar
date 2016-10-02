@@ -48,6 +48,12 @@ describe('expressions', () => {
         expect(tpl.find('div').textContent).to.equal('120');
     });
 
+    it('should support functions that return a DOM node', () => {
+        const tpl = templar('<div>{{value()}}</div>');
+        tpl.set('value', () => document.createTextNode('foo'));
+        expect(tpl.find('div').textContent).to.equal('foo');
+    });
+
     it('should support complex expressions', () => {
         const tpl = templar('<div>{{(foo + bar) + baz.qux + 7 + array[2]}}</div>');
         tpl.set({

@@ -105,25 +105,6 @@ describe('node interpolation', () => {
         expect(container.innerHTML).to.equal('<div><em><strong>qux</strong></em></div>');
     });
 
-    it('should support token callback functions', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        tpl.set('value', () => 'foo');
-        expect(tpl.find('div').textContent).to.equal('foo');
-    });
-
-    it('should support token callback functions that return a DOM node', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        tpl.set('value', () => document.createTextNode('foo'));
-        expect(tpl.find('div').textContent).to.equal('foo');
-    });
-
-    it('should support passing the data object to token callback functions', () => {
-        const tpl = templar('<div>{{foo}}</div>');
-        tpl.set('num', 5);
-        tpl.set('foo', (data) => data.num * 2);
-        expect(tpl.find('div').textContent).to.equal('10');
-    });
-
     it('should support escaping HTML characters', () => {
         const tpl = templar('<div>{{&value}}</div>');
         tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
