@@ -16115,7 +16115,6 @@ module.exports = exports['default'];
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.isFunction = isFunction;
 exports.toArray = toArray;
 exports.getMatches = getMatches;
 exports.contains = contains;
@@ -16146,7 +16145,6 @@ var counter = 1;
 var batch = [];
 var slice = [].slice;
 var indexOf = [].indexOf;
-var toString = {}.toString;
 var htmlRe = /<[a-z][\s\S]*>/;
 var escapeRe = /[<>&"']/g;
 var escapeMap = {
@@ -16156,18 +16154,6 @@ var escapeMap = {
     '"': '&#39;',
     '\'': '&quot;'
 };
-
-/**
- * Check if the provided object is
- * a function
- *
- * @param {*} obj
- * @return {Boolean}
- * @api private
- */
-function isFunction(obj) {
-    return toString.call(obj) === '[object Function]';
-}
 
 /**
  * Convert an array-like object to

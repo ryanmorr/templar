@@ -11,7 +11,6 @@ let counter = 1;
 const batch = [];
 const slice = [].slice;
 const indexOf = [].indexOf;
-const toString = {}.toString;
 const htmlRe = /<[a-z][\s\S]*>/;
 const escapeRe = /[<>&"']/g;
 const escapeMap = {
@@ -21,18 +20,6 @@ const escapeMap = {
     '"': '&#39;',
     '\'': '&quot;'
 };
-
-/**
- * Check if the provided object is
- * a function
- *
- * @param {*} obj
- * @return {Boolean}
- * @api private
- */
-export function isFunction(obj) {
-    return toString.call(obj) === '[object Function]';
-}
 
 /**
  * Convert an array-like object to
