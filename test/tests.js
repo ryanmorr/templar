@@ -15356,7 +15356,15 @@ var AttrBinding = function (_Binding) {
                 this.node.removeAttribute(this.attr);
                 return;
             }
-            this.node.setAttribute(this.attr, value);
+            if (this.attr === 'checked') {
+                if (value === 'true') {
+                    this.node.setAttribute('checked', 'checked');
+                } else {
+                    this.node.removeAttribute('checked');
+                }
+            } else {
+                this.node.setAttribute(this.attr, value);
+            }
         }
     }]);
 
@@ -16477,6 +16485,23 @@ describe('expressions', function () {
         });
         (0, _chai.expect)(tpl.find('div').textContent).to.equal('foo');
         (0, _chai.expect)(tpl.find('span').textContent).to.equal('bar');
+    });
+
+    it('should support array access', function () {
+        var tpl = (0, _src2.default)('<div>{{ array[2] }}</div>');
+        tpl.set('array', ['foo', 'bar', 'baz', 'qux']);
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('baz');
+    });
+
+    it('should support simple math expressions', function () {
+        var tpl = (0, _src2.default)('<div>{{foo + bar}}</div>');
+        tpl.set('foo', 4);
+        tpl.set('bar', 5);
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('9');
+        tpl.set('foo', 10);
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('15');
+        tpl.set('bar', 2);
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('12');
     });
 });
 
