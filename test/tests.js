@@ -15440,7 +15440,8 @@ var Binding = function () {
         }
 
         /**
-         * Clear `renderer`
+         * Clear `renderer` to allow
+         * updates
          *
          * @api private
          */

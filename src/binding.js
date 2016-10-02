@@ -37,7 +37,8 @@ export default class Binding {
     }
 
     /**
-     * Clear `renderer`
+     * Clear `renderer` to allow
+     * updates
      *
      * @api private
      */
