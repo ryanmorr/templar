@@ -65,9 +65,13 @@ function addBindings(bindings, text, binding) {
  */
 function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
-        const vars = tokens.map((value) => `${value} = this['${value}']`);
+        let body = `return ${expr};`;
+        if (tokens.length) {
+            const vars = tokens.map((value) => `${value} = this['${value}']`);
+            body = `var ${vars.join(',')}; ${body}`;
+        }
         // eslint-disable-next-line no-new-func
-        exprCache[expr] = new Function('var ' + vars.join(', ') + '; return ' + expr + ';');
+        exprCache[expr] = new Function(body);
     }
 }
 

@@ -15731,11 +15731,15 @@ function addBindings(bindings, text, binding) {
  */
 function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
-        var vars = tokens.map(function (value) {
-            return value + ' = this[\'' + value + '\']';
-        });
+        var body = 'return ' + expr + ';';
+        if (tokens.length) {
+            var vars = tokens.map(function (value) {
+                return value + ' = this[\'' + value + '\']';
+            });
+            body = 'var ' + vars.join(',') + '; ' + body;
+        }
         // eslint-disable-next-line no-new-func
-        exprCache[expr] = new Function('var ' + vars.join(', ') + '; return ' + expr + ';');
+        exprCache[expr] = new Function(body);
     }
 }
 
