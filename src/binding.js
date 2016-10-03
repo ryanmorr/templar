@@ -26,6 +26,18 @@ export default class Binding {
     }
 
     /**
+     * Add the tokens that this binding
+     * makes use of
+     *
+     * @param {Array} tokens
+     * @api private
+     */
+    setTokens(tokens) {
+        this.tokens = tokens;
+    }
+
+
+    /**
      * Ensure all the tokens are defined
      * before rendering any changes
      *

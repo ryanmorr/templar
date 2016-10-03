@@ -15415,15 +15415,29 @@ var Binding = function () {
     }
 
     /**
-     * Ensure all the tokens are defined
-     * before rendering any changes
+     * Add the tokens that this binding
+     * makes use of
      *
-     * @return {Boolean}
+     * @param {Array} tokens
      * @api private
      */
 
 
     _createClass(Binding, [{
+        key: 'setTokens',
+        value: function setTokens(tokens) {
+            this.tokens = tokens;
+        }
+
+        /**
+         * Ensure all the tokens are defined
+         * before rendering any changes
+         *
+         * @return {Boolean}
+         * @api private
+         */
+
+    }, {
         key: 'shouldUpdate',
         value: function shouldUpdate() {
             var _this = this;
@@ -15692,7 +15706,7 @@ function addBindings(bindings, text, binding) {
     (0, _util.getMatches)(matcherRe, text, function (matches) {
         var str = matches[1];
         var tokens = extractTokens(str);
-        binding.tokens = tokens;
+        binding.setTokens(tokens);
         if (!simpleIdentifierRe.test(str)) {
             compileExpression(str, tokens);
         }

@@ -40,7 +40,7 @@ function addBindings(bindings, text, binding) {
     getMatches(matcherRe, text, (matches) => {
         const str = matches[1];
         const tokens = extractTokens(str);
-        binding.tokens = tokens;
+        binding.setTokens(tokens);
         if (!simpleIdentifierRe.test(str)) {
             compileExpression(str, tokens);
         }
