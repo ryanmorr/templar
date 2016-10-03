@@ -16536,7 +16536,7 @@ describe('expressions', function () {
     });
 
     it('should support complex expressions', function () {
-        var tpl = (0, _src2.default)('<div>{{(foo + bar) + baz.qux + 7 + array[2]}}</div>');
+        var tpl = (0, _src2.default)('<div>{{foo ? (foo + bar) + baz.qux + 7 + array[2] : -1}}</div>');
         tpl.set({
             foo: 1,
             bar: 2,
@@ -16546,6 +16546,8 @@ describe('expressions', function () {
             array: [1, 2, 3]
         });
         (0, _chai.expect)(tpl.find('div').textContent).to.equal('17');
+        tpl.set('foo', 0);
+        (0, _chai.expect)(tpl.find('div').textContent).to.equal('-1');
     });
 });
 

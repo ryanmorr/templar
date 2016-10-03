@@ -66,7 +66,7 @@ describe('expressions', () => {
     });
 
     it('should support complex expressions', () => {
-        const tpl = templar('<div>{{(foo + bar) + baz.qux + 7 + array[2]}}</div>');
+        const tpl = templar('<div>{{foo ? (foo + bar) + baz.qux + 7 + array[2] : -1}}</div>');
         tpl.set({
             foo: 1,
             bar: 2,
@@ -76,5 +76,7 @@ describe('expressions', () => {
             array: [1, 2, 3]
         });
         expect(tpl.find('div').textContent).to.equal('17');
+        tpl.set('foo', 0);
+        expect(tpl.find('div').textContent).to.equal('-1');
     });
 });
