@@ -24,9 +24,7 @@ export default class NodeBinding extends Binding {
      * @api private
      */
     constructor(tpl, node) {
-        super();
-        this.tpl = tpl;
-        this.text = node.data;
+        super(tpl, node.data);
         this.nodes = [node];
     }
 

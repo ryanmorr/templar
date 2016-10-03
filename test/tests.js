@@ -15332,12 +15332,10 @@ var AttrBinding = function (_Binding) {
     function AttrBinding(tpl, node, attr, text) {
         _classCallCheck(this, AttrBinding);
 
-        var _this = _possibleConstructorReturn(this, (AttrBinding.__proto__ || Object.getPrototypeOf(AttrBinding)).call(this));
+        var _this = _possibleConstructorReturn(this, (AttrBinding.__proto__ || Object.getPrototypeOf(AttrBinding)).call(this, tpl, text));
 
-        _this.tpl = tpl;
         _this.node = node;
         _this.attr = attr;
-        _this.text = text;
         return _this;
     }
 
@@ -15400,21 +15398,33 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @api private
  */
 var Binding = function () {
-    function Binding() {
+
+    /**
+     * Instantiate the class
+     *
+     * @constructor
+     * @param {Templar} tpl
+     * @param {String} text
+     * @api private
+     */
+    function Binding(tpl, text) {
         _classCallCheck(this, Binding);
+
+        this.tpl = tpl;
+        this.text = text;
     }
+
+    /**
+     * Ensure all the tokens are defined
+     * before rendering any changes
+     *
+     * @return {Boolean}
+     * @api private
+     */
+
 
     _createClass(Binding, [{
         key: 'shouldUpdate',
-
-
-        /**
-         * Ensure all the tokens are defined
-         * before rendering any changes
-         *
-         * @return {Boolean}
-         * @api private
-         */
         value: function shouldUpdate() {
             var _this = this;
 
@@ -15544,10 +15554,8 @@ var NodeBinding = function (_Binding) {
     function NodeBinding(tpl, node) {
         _classCallCheck(this, NodeBinding);
 
-        var _this = _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this));
+        var _this = _possibleConstructorReturn(this, (NodeBinding.__proto__ || Object.getPrototypeOf(NodeBinding)).call(this, tpl, node.data));
 
-        _this.tpl = tpl;
-        _this.text = node.data;
         _this.nodes = [node];
         return _this;
     }

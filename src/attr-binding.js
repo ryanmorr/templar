@@ -24,11 +24,9 @@ export default class AttrBinding extends Binding {
      * @api private
      */
     constructor(tpl, node, attr, text) {
-        super();
-        this.tpl = tpl;
+        super(tpl, text);
         this.node = node;
         this.attr = attr;
-        this.text = text;
     }
 
     /**

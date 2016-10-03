@@ -13,6 +13,19 @@ import { updateDOM } from './util';
 export default class Binding {
 
     /**
+     * Instantiate the class
+     *
+     * @constructor
+     * @param {Templar} tpl
+     * @param {String} text
+     * @api private
+     */
+    constructor(tpl, text) {
+        this.tpl = tpl;
+        this.text = text;
+    }
+
+    /**
      * Ensure all the tokens are defined
      * before rendering any changes
      *
