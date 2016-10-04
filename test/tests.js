@@ -15677,7 +15677,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * Common variables
  */
-var matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+var matcherRe = /\{\{\s*\&?(.+?)\s*\}\}/g;
 var nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 var simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
 var expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
@@ -15713,9 +15713,6 @@ function addBindings(bindings, text, binding) {
             compileExpression(str, tokens);
         }
         tokens.forEach(function (token) {
-            if (token[0] === '&') {
-                token = token.substr(1);
-            }
             if (!(token in bindings)) {
                 bindings[token] = [];
             }

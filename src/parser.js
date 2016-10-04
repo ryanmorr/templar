@@ -9,7 +9,7 @@ import { toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 /**
  * Common variables
  */
-const matcherRe = /\{\{\s*(.+?)\s*\}\}/g;
+const matcherRe = /\{\{\s*\&?(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 const simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
 const expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
@@ -45,9 +45,6 @@ function addBindings(bindings, text, binding) {
             compileExpression(str, tokens);
         }
         tokens.forEach((token) => {
-            if (token[0] === '&') {
-                token = token.substr(1);
-            }
             if (!(token in bindings)) {
                 bindings[token] = [];
             }
