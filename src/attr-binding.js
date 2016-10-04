@@ -37,19 +37,21 @@ export default class AttrBinding extends Binding {
      */
     render() {
         super.render();
-        const value = interpolate(this.text, this.tpl.data);
+        let value = interpolate(this.text, this.tpl.data);
         if (value === '') {
             this.node.removeAttribute(this.attr);
             return;
         }
-        if (this.attr === 'checked') {
-            if (value === 'true') {
-                this.node.setAttribute('checked', 'checked');
-            } else {
-                this.node.removeAttribute('checked');
-            }
-        } else {
-            this.node.setAttribute(this.attr, value);
+        if (value === 'true') {
+            value = true;
         }
+        if (value === 'false') {
+            value = false;
+        }
+        if (this.attr in this.node) {
+            this.node[this.attr] = value;
+            return;
+        }
+        this.node.setAttribute(this.attr, value);
     }
 }

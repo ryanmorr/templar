@@ -15356,15 +15356,17 @@ var AttrBinding = function (_Binding) {
                 this.node.removeAttribute(this.attr);
                 return;
             }
-            if (this.attr === 'checked') {
-                if (value === 'true') {
-                    this.node.setAttribute('checked', 'checked');
-                } else {
-                    this.node.removeAttribute('checked');
-                }
-            } else {
-                this.node.setAttribute(this.attr, value);
+            if (value === 'true') {
+                value = true;
             }
+            if (value === 'false') {
+                value = false;
+            }
+            if (this.attr in this.node) {
+                this.node[this.attr] = value;
+                return;
+            }
+            this.node.setAttribute(this.attr, value);
         }
     }]);
 
