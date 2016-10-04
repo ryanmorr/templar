@@ -16208,7 +16208,6 @@ function getMatches(re, str, fn) {
     if (re.global) {
         re.lastIndex = 0;
     }
-    re.lastIndex = 0;
     while (matches = re.exec(str)) {
         fn(matches);
     }
