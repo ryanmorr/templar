@@ -15587,14 +15587,14 @@ var NodeBinding = function (_Binding) {
     _createClass(NodeBinding, [{
         key: 'purge',
         value: function purge() {
-            this.nodes.forEach(function (el) {
-                if (el instanceof _templar2.default) {
-                    el.unmount();
+            this.nodes.forEach(function (node) {
+                if (node instanceof _templar2.default) {
+                    node.unmount();
                     return;
                 }
-                var parent = el.parentNode;
+                var parent = node.parentNode;
                 if (parent) {
-                    parent.removeChild(el);
+                    parent.removeChild(node);
                 }
             });
         }
@@ -16170,8 +16170,8 @@ var batch = [];
 var slice = [].slice;
 var indexOf = [].indexOf;
 var htmlRe = /<[a-z][\s\S]*>/;
-var escapeRe = /[<>&"']/g;
-var escapeMap = {
+var escapeHTMLRe = /[<>&"']/g;
+var escapeHTMLMap = {
     '<': '&lt;',
     '>': '&gt;',
     '&': '&amp;',
@@ -16242,8 +16242,8 @@ function escapeHTML(str) {
         return '';
     }
     if (typeof str === 'string') {
-        return str.replace(escapeRe, function (c) {
-            return escapeMap[c] || '';
+        return str.replace(escapeHTMLRe, function (c) {
+            return escapeHTMLMap[c] || '';
         });
     }
     return str;

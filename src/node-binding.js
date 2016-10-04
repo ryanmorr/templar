@@ -35,14 +35,14 @@ export default class NodeBinding extends Binding {
      * @api private
      */
     purge() {
-        this.nodes.forEach((el) => {
-            if (el instanceof Templar) {
-                el.unmount();
+        this.nodes.forEach((node) => {
+            if (node instanceof Templar) {
+                node.unmount();
                 return;
             }
-            const parent = el.parentNode;
+            const parent = node.parentNode;
             if (parent) {
-                parent.removeChild(el);
+                parent.removeChild(node);
             }
         });
     }

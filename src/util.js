@@ -12,8 +12,8 @@ const batch = [];
 const slice = [].slice;
 const indexOf = [].indexOf;
 const htmlRe = /<[a-z][\s\S]*>/;
-const escapeRe = /[<>&"']/g;
-const escapeMap = {
+const escapeHTMLRe = /[<>&"']/g;
+const escapeHTMLMap = {
     '<': '&lt;',
     '>': '&gt;',
     '&': '&amp;',
@@ -84,7 +84,7 @@ export function escapeHTML(str) {
         return '';
     }
     if (typeof str === 'string') {
-        return str.replace(escapeRe, (c) => escapeMap[c] || '');
+        return str.replace(escapeHTMLRe, (c) => escapeHTMLMap[c] || '');
     }
     return str;
 }
