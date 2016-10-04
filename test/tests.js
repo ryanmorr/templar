@@ -15981,8 +15981,8 @@ var Templar = function () {
             var _this = this;
 
             if (this.isMounted()) {
-                (0, _util.getTemplateElements)(this.getRoot(), this.id).forEach(function (el) {
-                    _this.frag.appendChild(el);
+                (0, _util.getTemplateNodes)(this.getRoot(), this.id).forEach(function (node) {
+                    _this.frag.appendChild(node);
                 });
                 this.root = this.frag;
                 this.mounted = false;
@@ -16150,7 +16150,7 @@ exports.uid = uid;
 exports.getNodeIndex = getNodeIndex;
 exports.getParent = getParent;
 exports.wrapFragment = wrapFragment;
-exports.getTemplateElements = getTemplateElements;
+exports.getTemplateNodes = getTemplateNodes;
 
 var _templar = require('./templar');
 
@@ -16188,6 +16188,9 @@ var escapeMap = {
  * @api private
  */
 function toArray(obj) {
+    if ('from' in Array) {
+        return Array.from(obj);
+    }
     return slice.call(obj);
 }
 
@@ -16377,21 +16380,21 @@ function wrapFragment(frag, id) {
  * @return {Array}
  * @api private
  */
-function getTemplateElements(root, id) {
+function getTemplateNodes(root, id) {
     var elements = [];
-    var el = root.firstChild,
+    var node = root.firstChild,
         isTpl = false;
-    while (el) {
-        if (el.templar === id && !isTpl) {
+    while (node) {
+        if (node.templar === id && !isTpl) {
             isTpl = true;
-        } else if (el.templar === id && isTpl) {
+        } else if (node.templar === id && isTpl) {
             isTpl = false;
-            elements.push(el);
+            elements.push(node);
         }
         if (isTpl) {
-            elements.push(el);
+            elements.push(node);
         }
-        el = el.nextSibling;
+        node = node.nextSibling;
     }
     return elements;
 }

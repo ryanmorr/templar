@@ -30,6 +30,9 @@ const escapeMap = {
  * @api private
  */
 export function toArray(obj) {
+    if ('from' in Array) {
+        return Array.from(obj);
+    }
     return slice.call(obj);
 }
 
@@ -217,20 +220,20 @@ export function wrapFragment(frag, id) {
  * @return {Array}
  * @api private
  */
-export function getTemplateElements(root, id) {
+export function getTemplateNodes(root, id) {
     const elements = [];
-    let el = root.firstChild, isTpl = false;
-    while (el) {
-        if (el.templar === id && !isTpl) {
+    let node = root.firstChild, isTpl = false;
+    while (node) {
+        if (node.templar === id && !isTpl) {
             isTpl = true;
-        } else if (el.templar === id && isTpl) {
+        } else if (node.templar === id && isTpl) {
             isTpl = false;
-            elements.push(el);
+            elements.push(node);
         }
         if (isTpl) {
-            elements.push(el);
+            elements.push(node);
         }
-        el = el.nextSibling;
+        node = node.nextSibling;
     }
     return elements;
 }

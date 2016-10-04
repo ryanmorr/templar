@@ -2,7 +2,7 @@
  * Import dependencies
  */
 import { parseTemplate } from './parser';
-import { toArray, contains, parseHTML, uid, wrapFragment, getTemplateElements } from './util';
+import { toArray, contains, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
 /**
  * DOM templating class
@@ -74,8 +74,8 @@ export default class Templar {
      */
     unmount() {
         if (this.isMounted()) {
-            getTemplateElements(this.getRoot(), this.id).forEach((el) => {
-                this.frag.appendChild(el);
+            getTemplateNodes(this.getRoot(), this.id).forEach((node) => {
+                this.frag.appendChild(node);
             });
             this.root = this.frag;
             this.mounted = false;
