@@ -37,7 +37,7 @@ export default class AttrBinding extends Binding {
      */
     render() {
         super.render();
-        let value = interpolate(this.text, this.tpl.data);
+        let value = interpolate(this.text, this.tpl.data).trim();
         if (value === '') {
             this.node.removeAttribute(this.attr);
             return;

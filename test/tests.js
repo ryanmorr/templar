@@ -15351,7 +15351,7 @@ var AttrBinding = function (_Binding) {
         key: 'render',
         value: function render() {
             _get(AttrBinding.prototype.__proto__ || Object.getPrototypeOf(AttrBinding.prototype), 'render', this).call(this);
-            var value = (0, _parser.interpolate)(this.text, this.tpl.data);
+            var value = (0, _parser.interpolate)(this.text, this.tpl.data).trim();
             if (value === '') {
                 this.node.removeAttribute(this.attr);
                 return;
