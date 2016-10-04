@@ -2,7 +2,7 @@
  * Import dependencies
  */
 import { parseTemplate } from './parser';
-import { toArray, contains, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
+import { hashmap, toArray, contains, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
 /**
  * DOM templating class
@@ -26,7 +26,7 @@ export default class Templar {
         const frag = parseHTML(tpl);
         this.root = this.frag = wrapFragment(frag, this.id);
         this.bindings = parseTemplate(this, frag.childNodes);
-        this.data = Object.create(null);
+        this.data = hashmap();
         this.mounted = false;
         this.destroyed = false;
         if (data) {

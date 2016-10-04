@@ -22,6 +22,17 @@ const escapeHTMLMap = {
 };
 
 /**
+ * Get a 'bare' object for basic
+ * key/value hash maps
+ *
+ * @return {Object}
+ * @api private
+ */
+export function hashmap() {
+    return Object.create(null);
+}
+
+/**
  * Convert an array-like object to
  * an array
  *

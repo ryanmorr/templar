@@ -15683,7 +15683,7 @@ var simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
 var expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
 var identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 var rootRe = /^([^.]+)/;
-var exprCache = Object.create(null);
+var exprCache = (0, _util.hashmap)();
 
 /**
  * Check if a string has interpolation
@@ -15855,7 +15855,7 @@ function interpolateDOM(tpl, data, fn) {
  * @api private
  */
 function parseTemplate(tpl, nodes) {
-    var bindings = arguments.length <= 2 || arguments[2] === undefined ? Object.create(null) : arguments[2];
+    var bindings = arguments.length <= 2 || arguments[2] === undefined ? (0, _util.hashmap)() : arguments[2];
 
     return (0, _util.toArray)(nodes).reduce(function (bindings, node) {
         if (node.nodeType === 3) {
@@ -15921,7 +15921,7 @@ var Templar = function () {
         var frag = (0, _util.parseHTML)(tpl);
         this.root = this.frag = (0, _util.wrapFragment)(frag, this.id);
         this.bindings = (0, _parser.parseTemplate)(this, frag.childNodes);
-        this.data = Object.create(null);
+        this.data = (0, _util.hashmap)();
         this.mounted = false;
         this.destroyed = false;
         if (data) {
@@ -16139,6 +16139,7 @@ module.exports = exports['default'];
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.hashmap = hashmap;
 exports.toArray = toArray;
 exports.getMatches = getMatches;
 exports.contains = contains;
@@ -16178,6 +16179,17 @@ var escapeHTMLMap = {
     '"': '&#39;',
     '\'': '&quot;'
 };
+
+/**
+ * Get a 'bare' object for basic
+ * key/value hash maps
+ *
+ * @return {Object}
+ * @api private
+ */
+function hashmap() {
+    return Object.create(null);
+}
 
 /**
  * Convert an array-like object to

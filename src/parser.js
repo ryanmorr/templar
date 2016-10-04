@@ -4,7 +4,7 @@
 import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
+import { hashmap, toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 /**
  * Common variables
@@ -15,7 +15,7 @@ const simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
 const expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
 const identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 const rootRe = /^([^.]+)/;
-const exprCache = Object.create(null);
+const exprCache = hashmap();
 
 /**
  * Check if a string has interpolation
@@ -181,7 +181,7 @@ export function interpolateDOM(tpl, data, fn) {
  * @return {Object}
  * @api private
  */
-export function parseTemplate(tpl, nodes, bindings = Object.create(null)) {
+export function parseTemplate(tpl, nodes, bindings = hashmap()) {
     return toArray(nodes).reduce((bindings, node) => {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
