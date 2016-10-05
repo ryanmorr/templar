@@ -15605,26 +15605,17 @@ var NodeBinding = function (_Binding) {
             var nodes = [];
             var node = this.nodes[0];
             var parent = (0, _util.getParent)(node);
-            var insertIndex = (0, _util.getNodeIndex)(parent, node);
-            var childNodes = parent.childNodes;
+            var index = (0, _util.getNodeIndex)(parent, node);
+            var children = parent.childNodes;
             this.purge();
             var frag = (0, _parser.interpolateDOM)(this.text, this.tpl.data, function (value) {
                 if (value instanceof _templar2.default) {
                     value.root = parent;
                 }
-                var nodeType = value.nodeType;
-                if (nodeType === 11) {
-                    nodes.push.apply(nodes, value.childNodes);
-                } else {
-                    nodes.push(value);
-                }
+                value.nodeType === 11 ? nodes.push.apply(nodes, value.childNodes) : nodes.push(value);
             });
             this.nodes = nodes;
-            if (insertIndex in childNodes) {
-                parent.insertBefore(frag, childNodes[insertIndex]);
-            } else {
-                parent.appendChild(frag);
-            }
+            index in children ? parent.insertBefore(frag, children[index]) : parent.appendChild(frag);
         }
     }]);
 
