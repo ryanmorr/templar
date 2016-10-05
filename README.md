@@ -112,20 +112,22 @@ const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
 
 ### templar#set(token, value)
 
-Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once.
-
-Simple interpolation with primitive values (strings, numbers, and booleans):
+Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once. Returns the `templar` instance to support method chaining:
 
 ```javascript
 const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
 
 // Set a single value
 tpl.set('foo', 'aaa');
+
 // Set multiple values
 tpl.set({
     bar: 'bbb',
     baz: 'ccc'
 });
+
+// Supports method chaining
+tpl.set('foo', 123).set('bar', 456);
 ```
 
 ### templar#get(token)
@@ -140,7 +142,7 @@ tpl.get('foo'); // 123
 
 ### templar#mount(root)
 
-Append the template to an element:
+Append the template to an element. Returns the `templar` instance to support method chaining:
 
 ```javascript
 const tpl = templar('<div>{{foo}}</div>');
@@ -151,7 +153,7 @@ tpl.mount(container);
 
 ### templar#unmount()
 
-Remove the template from its parent element:
+Remove the template from its parent element. Returns the `templar` instance to support method chaining:
 
 ```javascript
 const tpl = templar('<div>{{foo}}</div>');
