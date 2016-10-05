@@ -69,4 +69,17 @@ describe('attribute interpolation', () => {
         tpl.set('value', 'foo');
         expect(tpl.get('value')).to.equal('foo');
     });
+
+    it('should support the style attribute', () => {
+        const tpl = templar('<div style="width: {{width}}px; height: {{height}}px;"></div>');
+        tpl.set('width', 10);
+        tpl.set('height', 20);
+        expect(tpl.find('div').style.cssText).to.equal('width: 10px; height: 20px;');
+    });
+
+    it('should support the value property', () => {
+        const tpl = templar('<input type="text" value="{{value}}" />');
+        tpl.set('value', 'foo');
+        expect(tpl.find('input').value).to.equal('foo');
+    });
 });

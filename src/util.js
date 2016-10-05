@@ -247,3 +247,41 @@ export function getTemplateNodes(root, id) {
     }
     return elements;
 }
+
+/**
+ * Set the attribute/property of a DOM
+ * node
+ *
+ * @param {Element} node
+ * @param {String} attr
+ * @param {String} value
+ * @api private
+ */
+export function setAttribute(node, attr, value) {
+    if (value === 'true') {
+        value = true;
+    } else if (value === 'false') {
+        value = false;
+    }
+    switch (attr) {
+        case 'class':
+            node.className = value;
+            break;
+        case 'style':
+            node.style.cssText = value;
+            break;
+        case 'value':
+            const tag = node.tagName.toLowerCase();
+            if (tag === 'input' || tag === 'textarea') {
+                node.value = value;
+                break;
+            }
+            // falls through
+        default:
+            if (attr in node) {
+                node[attr] = value;
+                return;
+            }
+            node.setAttribute(attr, value);
+    }
+}

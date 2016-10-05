@@ -15298,6 +15298,8 @@ var _binding2 = _interopRequireDefault(_binding);
 
 var _parser = require('./parser');
 
+var _util = require('./util');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -15356,17 +15358,7 @@ var AttrBinding = function (_Binding) {
                 this.node.removeAttribute(this.attr);
                 return;
             }
-            if (value === 'true') {
-                value = true;
-            }
-            if (value === 'false') {
-                value = false;
-            }
-            if (this.attr in this.node) {
-                this.node[this.attr] = value;
-                return;
-            }
-            this.node.setAttribute(this.attr, value);
+            (0, _util.setAttribute)(this.node, this.attr, value);
         }
     }]);
 
@@ -15376,7 +15368,7 @@ var AttrBinding = function (_Binding) {
 exports.default = AttrBinding;
 module.exports = exports['default'];
 
-},{"./binding":74,"./parser":77}],74:[function(require,module,exports){
+},{"./binding":74,"./parser":77,"./util":79}],74:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16158,6 +16150,7 @@ exports.getNodeIndex = getNodeIndex;
 exports.getParent = getParent;
 exports.wrapFragment = wrapFragment;
 exports.getTemplateNodes = getTemplateNodes;
+exports.setAttribute = setAttribute;
 
 var _templar = require('./templar');
 
@@ -16416,6 +16409,44 @@ function getTemplateNodes(root, id) {
     return elements;
 }
 
+/**
+ * Set the attribute/property of a DOM
+ * node
+ *
+ * @param {Element} node
+ * @param {String} attr
+ * @param {String} value
+ * @api private
+ */
+function setAttribute(node, attr, value) {
+    if (value === 'true') {
+        value = true;
+    } else if (value === 'false') {
+        value = false;
+    }
+    switch (attr) {
+        case 'class':
+            node.className = value;
+            break;
+        case 'style':
+            node.style.cssText = value;
+            break;
+        case 'value':
+            var tag = node.tagName.toLowerCase();
+            if (tag === 'input' || tag === 'textarea') {
+                node.value = value;
+                break;
+            }
+        // falls through
+        default:
+            if (attr in node) {
+                node[attr] = value;
+                return;
+            }
+            node.setAttribute(attr, value);
+    }
+}
+
 },{"./templar":78}],80:[function(require,module,exports){
 'use strict';
 
@@ -16494,6 +16525,19 @@ describe('attribute interpolation', function () {
         var tpl = (0, _src2.default)('<div id="{{value}}"></div>');
         tpl.set('value', 'foo');
         (0, _chai.expect)(tpl.get('value')).to.equal('foo');
+    });
+
+    it('should support the style attribute', function () {
+        var tpl = (0, _src2.default)('<div style="width: {{width}}px; height: {{height}}px;"></div>');
+        tpl.set('width', 10);
+        tpl.set('height', 20);
+        (0, _chai.expect)(tpl.find('div').style.cssText).to.equal('width: 10px; height: 20px;');
+    });
+
+    it('should support the value property', function () {
+        var tpl = (0, _src2.default)('<input type="text" value="{{value}}" />');
+        tpl.set('value', 'foo');
+        (0, _chai.expect)(tpl.find('input').value).to.equal('foo');
     });
 });
 

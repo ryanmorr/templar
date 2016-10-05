@@ -3,6 +3,7 @@
  */
 import Binding from './binding';
 import { interpolate } from './parser';
+import { setAttribute } from './util';
 
 /**
  * Bind a token to a DOM node attribute
@@ -37,21 +38,11 @@ export default class AttrBinding extends Binding {
      */
     render() {
         super.render();
-        let value = interpolate(this.text, this.tpl.data).trim();
+        const value = interpolate(this.text, this.tpl.data).trim();
         if (value === '') {
             this.node.removeAttribute(this.attr);
             return;
         }
-        if (value === 'true') {
-            value = true;
-        }
-        if (value === 'false') {
-            value = false;
-        }
-        if (this.attr in this.node) {
-            this.node[this.attr] = value;
-            return;
-        }
-        this.node.setAttribute(this.attr, value);
+        setAttribute(this.node, this.attr, value);
     }
 }
