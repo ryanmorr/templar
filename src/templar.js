@@ -55,6 +55,7 @@ export default class Templar {
      * element
      *
      * @param {Element} root
+     * @return {Templar}
      * @api public
      */
     mount(root) {
@@ -64,12 +65,14 @@ export default class Templar {
         root.appendChild(this.frag);
         this.root = root;
         this.mounted = true;
+        return this;
     }
 
     /**
      * Remove the template from it's
      * parent element
      *
+     * @return {Templar}
      * @api public
      */
     unmount() {
@@ -80,6 +83,7 @@ export default class Templar {
             this.root = this.frag;
             this.mounted = false;
         }
+        return this;
     }
 
     /**
@@ -100,6 +104,7 @@ export default class Templar {
      *
      * @param {String|Object} token
      * @param {String|Number|Boolean|Node|Templar|Function} value
+     * @return {Templar}
      * @api public
      */
     set(token, value) {
@@ -118,6 +123,7 @@ export default class Templar {
                 });
             }
         }
+        return this;
     }
 
     /**

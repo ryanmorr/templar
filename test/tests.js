@@ -15954,6 +15954,7 @@ var Templar = function () {
          * element
          *
          * @param {Element} root
+         * @return {Templar}
          * @api public
          */
 
@@ -15966,12 +15967,14 @@ var Templar = function () {
             root.appendChild(this.frag);
             this.root = root;
             this.mounted = true;
+            return this;
         }
 
         /**
          * Remove the template from it's
          * parent element
          *
+         * @return {Templar}
          * @api public
          */
 
@@ -15987,6 +15990,7 @@ var Templar = function () {
                 this.root = this.frag;
                 this.mounted = false;
             }
+            return this;
         }
 
         /**
@@ -16010,6 +16014,7 @@ var Templar = function () {
          *
          * @param {String|Object} token
          * @param {String|Number|Boolean|Node|Templar|Function} value
+         * @return {Templar}
          * @api public
          */
 
@@ -16037,6 +16042,7 @@ var Templar = function () {
                     })();
                 }
             }
+            return this;
         }
 
         /**
@@ -17024,6 +17030,14 @@ describe('templar', function () {
         (0, _chai.expect)(tpl.isDestroyed()).to.equal(false);
         tpl.destroy();
         (0, _chai.expect)(tpl.isDestroyed()).to.equal(true);
+    });
+
+    it('should support method chaining', function () {
+        var tpl = (0, _src2.default)('<div></div>');
+        var container = document.createElement('div');
+        (0, _chai.expect)(tpl.mount(container)).to.equal(tpl);
+        (0, _chai.expect)(tpl.unmount()).to.equal(tpl);
+        (0, _chai.expect)(tpl.set('foo', 'foo')).to.equal(tpl);
     });
 }); /* eslint-disable max-len */
 

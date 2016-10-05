@@ -155,4 +155,12 @@ describe('templar', () => {
         tpl.destroy();
         expect(tpl.isDestroyed()).to.equal(true);
     });
+
+    it('should support method chaining', () => {
+        const tpl = templar('<div></div>');
+        const container = document.createElement('div');
+        expect(tpl.mount(container)).to.equal(tpl);
+        expect(tpl.unmount()).to.equal(tpl);
+        expect(tpl.set('foo', 'foo')).to.equal(tpl);
+    });
 });
