@@ -10,7 +10,7 @@
 
 ## Usage
 
-Template syntax is much like your standard mustache/handlbars templates with double curly braces (`{{` `}}`) serving as delimiters to indicate internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template, Take for instance the following:
+Template syntax is similar to your standard mustache templates with double curly braces (`{{` `}}`) serving as delimiters to internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template, Take for instance the following:
 
 ```javascript
 import templar from 'templar';
