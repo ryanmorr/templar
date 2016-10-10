@@ -16316,6 +16316,7 @@ function uid() {
  * Get the index of a node or template
  * amongst its sibling nodes
  *
+ * @param {Node} parent
  * @param {Node|Templar} node
  * @return {Number}
  * @api private
