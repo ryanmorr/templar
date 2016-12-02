@@ -58,6 +58,7 @@ function addBindings(bindings, text, binding) {
  * a function
  *
  * @param {String} expr
+ * @param {Array} tokens
  * @api private
  */
 function compileExpression(expr, tokens) {
