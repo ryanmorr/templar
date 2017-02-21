@@ -22,6 +22,11 @@ const escapeHTMLMap = {
 };
 
 /**
+ * Check if the browser supports the <template> element
+ */
+const supportsTemplate = 'content' in document.createElement('template');
+
+/**
  * Get a 'bare' object for basic
  * key/value hash maps
  *
@@ -120,6 +125,11 @@ export function isHTML(str) {
  * @api private
  */
 export function parseHTML(html) {
+    if (supportsTemplate) {
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        return document.importNode(template.content, true);
+    }
     const frag = document.createDocumentFragment();
     const div = document.createElement('div');
     div.innerHTML = html;

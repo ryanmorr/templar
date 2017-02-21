@@ -15709,6 +15709,7 @@ function addBindings(bindings, text, binding) {
  * a function
  *
  * @param {String} expr
+ * @param {Array} tokens
  * @api private
  */
 function compileExpression(expr, tokens) {
@@ -16171,6 +16172,11 @@ var escapeHTMLMap = {
 };
 
 /**
+ * Check if the browser supports the <template> element
+ */
+var supportsTemplate = 'content' in document.createElement('template');
+
+/**
  * Get a 'bare' object for basic
  * key/value hash maps
  *
@@ -16271,6 +16277,11 @@ function isHTML(str) {
  * @api private
  */
 function parseHTML(html) {
+    if (supportsTemplate) {
+        var template = document.createElement('template');
+        template.innerHTML = html;
+        return document.importNode(template.content, true);
+    }
     var frag = document.createDocumentFragment();
     var div = document.createElement('div');
     div.innerHTML = html;
