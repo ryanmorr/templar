@@ -1,4 +1,4 @@
-/*! templar v0.1.0 | https://github.com/ryanmorr/templar */
+/*! templar v0.1.1 | https://github.com/ryanmorr/templar */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.templar = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
@@ -427,6 +427,7 @@ function addBindings(bindings, text, binding) {
  * a function
  *
  * @param {String} expr
+ * @param {Array} tokens
  * @api private
  */
 function compileExpression(expr, tokens) {
@@ -889,6 +890,11 @@ var escapeHTMLMap = {
 };
 
 /**
+ * Check if the browser supports the <template> element
+ */
+var supportsTemplate = 'content' in document.createElement('template');
+
+/**
  * Get a 'bare' object for basic
  * key/value hash maps
  *
@@ -989,6 +995,11 @@ function isHTML(str) {
  * @api private
  */
 function parseHTML(html) {
+    if (supportsTemplate) {
+        var template = document.createElement('template');
+        template.innerHTML = html;
+        return document.importNode(template.content, true);
+    }
     var frag = document.createDocumentFragment();
     var div = document.createElement('div');
     div.innerHTML = html;
@@ -1034,6 +1045,7 @@ function uid() {
  * Get the index of a node or template
  * amongst its sibling nodes
  *
+ * @param {Node} parent
  * @param {Node|Templar} node
  * @return {Number}
  * @api private
