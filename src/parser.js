@@ -191,19 +191,13 @@ export function parseTemplate(tpl, nodes, bindings = hashmap()) {
                 addBindings(bindings, node.data, binding);
             }
         } else if (node.nodeType === 1) {
-            for (let i = 0, length = node.attributes.length, attr, name, value; i < length; i++) {
-                attr = node.attributes[i];
-                name = attr.name;
-                value = attr.value;
+            for (let i = 0, length = node.attributes.length; i < length; i++) {
+                const attr = node.attributes[i], name = attr.name, value = attr.value;
                 if (hasInterpolation(value)) {
-                    if (name[0] === 'o' && name[1] === 'n') {
-                        name = name.slice(2).toLowerCase();
-                        const binding = new EventBinding(tpl, node, name, value);
-                        addBindings(bindings, value, binding);
-                    } else {
-                        const binding = new AttrBinding(tpl, node, name, value);
-                        addBindings(bindings, value, binding);
-                    }
+                    const binding = (name[0] === 'o' && name[1] === 'n')
+                        ? new EventBinding(tpl, node, name.slice(2).toLowerCase(), value)
+                        : new AttrBinding(tpl, node, name, value);
+                    addBindings(bindings, value, binding);
                 }
             }
             if (node.hasChildNodes()) {
