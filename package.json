@@ -1,7 +1,7 @@
 {
   "name": "templar",
   "description": "A simple, yet intuitive DOM templating engine",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "license": "Unlicense",
   "homepage": "https://github.com/ryanmorr/templar",
   "main": "dist/templar.min.js",
