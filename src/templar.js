@@ -11,7 +11,6 @@ import { hashmap, toArray, contains, parseHTML, uid, wrapFragment, getTemplateNo
  * @api public
  */
 export default class Templar {
-
     /**
      * Instantiate the class providing the
      * template string

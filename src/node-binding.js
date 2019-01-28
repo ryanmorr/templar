@@ -14,7 +14,6 @@ import { getNodeIndex, getParent } from './util';
  * @api private
  */
 export default class NodeBinding extends Binding {
-
     /**
      * Instantiate the class
      *

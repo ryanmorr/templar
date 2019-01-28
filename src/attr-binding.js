@@ -13,7 +13,6 @@ import { setAttribute } from './util';
  * @api private
  */
 export default class AttrBinding extends Binding {
-
     /**
      * Instantiate the class
      *

@@ -1,6 +1,3 @@
-/* eslint-disable max-len */
-
-import { expect } from 'chai';
 import templar from '../../src';
 
 describe('expressions', () => {

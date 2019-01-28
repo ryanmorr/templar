@@ -11,7 +11,6 @@ import { updateDOM } from './util';
  * @api private
  */
 export default class Binding {
-
     /**
      * Instantiate the class
      *

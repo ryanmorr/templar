@@ -8,13 +8,14 @@
     "es6": true,
     "browser": true,
     "node": true,
-    "mocha": true,
-    "phantomjs": true
+    "mocha": true
   },
   "globals": {
     "require": true,
     "define": true,
-    "module": true
+    "module": true,
+    "expect": true,
+    "sinon": true
   },
   "rules": {
     ////////// Errors //////////
