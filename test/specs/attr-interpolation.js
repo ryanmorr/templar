@@ -14,10 +14,13 @@ describe('attribute interpolation', () => {
         expect(tpl.query('div')[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
-    it('should support the removal of an attribute if none is defined', () => {
-        const tpl = templar('<div id="{{id}}"></div>');
+    it('should support the removal of an attribute if the value is an empty string or false', () => {
+        const tpl = templar('<div id="{{id}}" disabled="{{disabled}}"></div>');
         tpl.set('id', '');
-        expect(tpl.query('div')[0].hasAttribute('foo')).to.equal(false);
+        tpl.set('disabled', false);
+        const div = tpl.query('div')[0];
+        expect(div.hasAttribute('foo')).to.equal(false);
+        expect(div.hasAttribute('disabled')).to.equal(false);
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', () => {

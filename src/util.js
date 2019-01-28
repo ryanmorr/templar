@@ -214,7 +214,7 @@ export function getTemplateNodes(root, id) {
  * @param {String} value
  * @api private
  */
-export function setAttribute(node, attr, value) {
+export function updateAttribute(node, attr, value) {
     if (value === 'true') {
         value = true;
     } else if (value === 'false') {
@@ -237,9 +237,12 @@ export function setAttribute(node, attr, value) {
         default:
             if (attr in node) {
                 node[attr] = value;
-                return;
+            } else {
+                node.setAttribute(attr, value);
             }
-            node.setAttribute(attr, value);
+            if (value === '' || value === false) {
+                node.removeAttribute(attr);
+            }
     }
 }
 
