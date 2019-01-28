@@ -100,7 +100,7 @@ export default class Templar {
         }
         this.data[token] = value;
         if (token in this.bindings) {
-            const method = this.isRendered() ? 'update' : 'render';
+            const method = document.contains(this.getRoot()) ? 'update' : 'render';
             this.bindings[token].forEach((binding) => {
                 if (binding.shouldUpdate()) {
                     binding[method]();
@@ -158,16 +158,5 @@ export default class Templar {
      */
     isMounted() {
         return this.mounted;
-    }
-
-    /**
-     * Is the template rendered within
-     * the DOM?
-     *
-     * @return {Boolean}
-     * @api public
-     */
-    isRendered() {
-        return this.isMounted() && document.contains(this.getRoot());
     }
 }

@@ -51,28 +51,6 @@ describe('templar', () => {
         expect(tpl.isMounted()).to.equal(false);
     });
 
-    it('should know whether the template has been rendered to the DOM', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        const container = document.createElement('div');
-
-        expect(tpl.isMounted()).to.equal(false);
-        expect(tpl.isRendered()).to.equal(false);
-
-        tpl.mount(container);
-        expect(tpl.isMounted()).to.equal(true);
-        expect(tpl.isRendered()).to.equal(false);
-
-        document.body.appendChild(container);
-        expect(tpl.isMounted()).to.equal(true);
-        expect(tpl.isRendered()).to.equal(true);
-
-        tpl.unmount();
-        expect(tpl.isMounted()).to.equal(false);
-        expect(tpl.isRendered()).to.equal(false);
-
-        document.body.removeChild(container);
-    });
-
     it('should support appending and removing a template between multiple elements', () => {
         const container = document.createElement('div');
         for (let i = 0; i < 3; i++) {
