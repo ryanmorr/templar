@@ -215,7 +215,6 @@ describe('node interpolation', () => {
     it('should only schedule one frame per cycle', (done) => {
         const tpl = templar('<div>{{foo}}</div><span>{{bar}}</span>');
         const requestSpy = sinon.spy(window, 'requestAnimationFrame');
-        const cancelSpy = sinon.spy(window, 'cancelAnimationFrame');
         // Append to the DOM
         const container = document.createElement('div');
         document.body.appendChild(container);
@@ -224,19 +223,14 @@ describe('node interpolation', () => {
         tpl.mount(container);
         tpl.set('foo', 'aaa');
         expect(requestSpy.callCount).to.equal(1);
-        expect(cancelSpy.callCount).to.equal(0);
         // Immediately updating one binding after another should cancel
         // the current frame and start a new one
         tpl.set('bar', 'bbb');
-        expect(requestSpy.callCount).to.equal(2);
-        expect(cancelSpy.callCount).to.equal(1);
-        // Restore the original methods
-        requestSpy.restore();
-        cancelSpy.restore();
+        expect(requestSpy.callCount).to.equal(1);
         // Check the updates in the next frame
         requestAnimationFrame(() => {
-            expect(requestSpy.callCount).to.equal(2);
-            expect(cancelSpy.callCount).to.equal(1);
+            // Restore the original methods
+            requestSpy.restore();
             expect(container.querySelector('div').textContent).to.equal('aaa');
             expect(container.querySelector('span').textContent).to.equal('bbb');
             document.body.removeChild(container);

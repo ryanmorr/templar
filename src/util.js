@@ -140,28 +140,6 @@ export function parseHTML(html) {
 }
 
 /**
- * Use `requestAnimationFrame` to
- * batch DOM updates to boost
- * performance
- *
- * @param {Function} fn
- * @api private
- */
-export function updateDOM(fn) {
-    if (frame) {
-        cancelAnimationFrame(frame);
-    }
-    batch.push(fn);
-    frame = requestAnimationFrame(() => {
-        frame = null;
-        let render;
-        while ((render = batch.shift())) {
-            render();
-        }
-    });
-}
-
-/**
  * Generate a unique id
  *
  * @return {String}
@@ -295,4 +273,28 @@ export function setAttribute(node, attr, value) {
             }
             node.setAttribute(attr, value);
     }
+}
+
+/**
+ * Schedule a frame to render DOM
+ * updates
+ *
+ * @param {Function} callback
+ * @api private
+ */
+export function scheduleRender(callback) {
+    if (!frame) {
+        frame = requestAnimationFrame(render);
+    }
+    batch.push(callback);
+}
+
+/**
+ * Render all the updates
+ *
+ * @api private
+ */
+function render() {
+    frame = null;
+    while (batch.length) batch.pop()();
 }

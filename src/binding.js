@@ -1,7 +1,7 @@
 /**
  * Import dependencies
  */
-import { updateDOM } from './util';
+import { scheduleRender } from './util';
 
 /**
  * Abstract class that binds a token
@@ -56,7 +56,7 @@ export default class Binding {
     update() {
         if (!this.renderer) {
             this.renderer = this.render.bind(this);
-            updateDOM(this.renderer);
+            scheduleRender(this.renderer);
         }
     }
 
