@@ -13,6 +13,9 @@
   "bugs": {
     "url": "https://github.com/ryanmorr/templar/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@babel/core": "^7.0.1",
     "@babel/preset-env": "^7.0.0",
