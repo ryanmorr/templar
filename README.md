@@ -2,18 +2,24 @@
 
 [![Version Badge][version-image]][project-url]
 [![Build Status][build-image]][build-url]
-[![Dependencies][dependencies-image]][project-url]
 [![License][license-image]][license-url]
-[![File Size][file-size-image]][project-url]
 
 > A simple, yet intuitive DOM templating engine
+
+## Install
+
+Download the [development](http://github.com/ryanmorr/templar/raw/master/dist/templar.js) or [minified](http://github.com/ryanmorr/templar/raw/master/dist/templar.min.js) version, or install via NPM:
+
+``` sh
+npm install @ryanmorr/templar
+```
 
 ## Usage
 
 Template syntax is similar to your standard mustache templates with double curly braces (`{{` `}}`) serving as delimiters to internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template, Take for instance the following:
 
 ```javascript
-import templar from 'templar';
+import templar from '@ryanmorr/templar';
 
 // Create a new template
 const tpl = templar('<div id="{{id}}">{{content}}</div>');
@@ -56,6 +62,16 @@ tpl.set('bar', document.createDocumentFragment());
 tpl.set('baz', '<strong>bold</strong>');
 ```
 
+Add and remove event listeners:
+
+```javascript
+const tpl = templar('<button onclick={{onClick}}>Click Me!</button>');
+
+tpl.set('onClick', (e) => {
+    // Handle the click event
+});
+```
+
 Use simple expressions, such as basic arithmetics, the ternary operator, array access, dot-notation, and function invocations:
 
 ```javascript
@@ -76,6 +92,7 @@ You can even nest templates within templates:
 ```javascript
 const div = templar('<div>{{content}}</div>');
 const em = templar('<em>{{text}}</em>');
+
 div.set('foo', em);
 em.set('text', 'some text');
 ```
@@ -85,21 +102,21 @@ By default, HTML strings are automatically parsed into DOM nodes. To prevent thi
 ```javascript
 const tpl = templar('<div>{{&foo}}</div>');
 
-tpl.set('foo', '<i>foo</i>'); // &lt;i&gt;foo&lt;/i&gt;
+tpl.set('foo', '<i>foo</i>'); //=> &lt;i&gt;foo&lt;/i&gt;
 ```
 
-Setting an attribute to an empty string will effectively remove the attribute from the element:
+Setting an attribute/event to null will remove it from the element:
 
 ```javascript
 const tpl = templar('<div id="{{id}}"></div>');
 
-tpl.set('id', '');
-tpl.find('div').hasAttribute('id'); // false
+tpl.set('id', null);
+tpl.find('div').hasAttribute('id'); //=> false
 ```
 
 ## API
 
-### templar(tpl[, data])
+### templar(tpl, [data])
 
 Create a new template by providing a template string and optionally provide a data object to set default values:
 
@@ -110,7 +127,7 @@ const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
 });
 ```
 
-### templar#set(token, value)
+### templar#set(token, [value])
 
 Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once. Returns the `templar` instance to support method chaining:
 
@@ -125,9 +142,6 @@ tpl.set({
     bar: 'bbb',
     baz: 'ccc'
 });
-
-// Supports method chaining
-tpl.set('foo', 123).set('bar', 456);
 ```
 
 ### templar#get(token)
@@ -137,7 +151,7 @@ Get the current value of a token:
 ```javascript
 const tpl = templar('<div id="{{foo}}"></div>', {foo: 123});
 
-tpl.get('foo'); // 123
+tpl.get('foo'); //=> 123
 ```
 
 ### templar#mount(root)
@@ -146,9 +160,8 @@ Append the template to an element. Returns the `templar` instance to support met
 
 ```javascript
 const tpl = templar('<div>{{foo}}</div>');
-const container = document.createElement('div');
 
-tpl.mount(container);
+tpl.mount(document.body);
 ```
 
 ### templar#unmount()
@@ -162,6 +175,30 @@ tpl.mount(document.body);
 tpl.unmount();
 ```
 
+### templar#on(name, callback)
+
+Subcribe a callback function to one of the 4 custom events (mount, unmount, change, attributechange). Returns a function capable of removing the listener.
+
+```javascript
+const tpl = templar('<div>{{foo}}</div>');
+
+tpl.on('mount', (element) => {
+    // Executed when the template is appended to an element\
+});
+
+tpl.on('unmount', () => {
+    // Executed when the template is removed from an element
+});
+
+tpl.on('change', (element) => {
+    // Executed when the contents of an element are updated
+});
+
+tpl.on('attributechange', (element, oldValue, newValue) => {
+    // Executed when an attribute changes
+});
+```
+
 ### templar#getRoot()
 
 Get the root element of the template. This is the document fragment before it has been mounted, and the parent element after:
@@ -170,9 +207,21 @@ Get the root element of the template. This is the document fragment before it ha
 const tpl = templar('<div>{{foo}}</div>');
 const container = document.createElement('div');
 
-tpl.getRoot(); // document fragment
+tpl.getRoot(); //=> document fragment
 tpl.mount(container);
-tpl.getRoot(); // container
+tpl.getRoot(); //=> container
+```
+
+### templar#query(selector)
+
+Query the template for all the elements matching the provided CSS selector string and return an array:
+
+```javascript
+const tpl = templar('<span></span><span></span><span></span>');
+
+tpl.query('span').forEach((el) => {
+    // Do something with the span elements
+});
 ```
 
 ### templar#isMounted()
@@ -183,90 +232,9 @@ Check if the template has been mounted to a parent element:
 const tpl = templar('<div>{{foo}}</div>');
 const container = document.createElement('div');
 
-tpl.isMounted(); // false
+tpl.isMounted(); //=> false
 tpl.mount(container);
-tpl.isMounted(); // true
-```
-
-### templar#isRendered()
-
-Check if the template actually exists within the DOM:
-
-```javascript
-const tpl = templar('<div>{{foo}}</div>');
-const container = document.createElement('div');
-
-tpl.mount(container);
-tpl.isRendered(); // false
-
-document.body.appendChild(container);
-tpl.isRendered(); // true
-```
-
-### templar#find(selector)
-
-Query the template for the first element matching the provided CSS selector string:
-
-```javascript
-const tpl = templar('<button>{{foo}}</button>');
-
-tpl.find('button').addEventListener('click', (e) => {
-    // handle event
-})
-```
-
-### templar#query(selector)
-
-Query the template for all the elements matching the provided CSS selector string:
-
-```javascript
-const tpl = templar('<span></span><span></span><span></span>');
-
-tpl.query('span').forEach((el) => {
-    // do something
-});
-```
-
-### templar#destroy()
-
-Destroy the `templar` instance. This will remove the template from the DOM and nullify internal properties. This cannot be undone:
-
-```javascript
-const tpl = templar('<div>{{foo}}</div>');
-
-tpl.destroy();
-```
-
-### templar#isDestroyed()
-
-Check if the `templar` instance has been destroyed:
-
-```javascript
-const tpl = templar('<div>{{foo}}</div>');
-
-tpl.isDestroyed(); // false
-tpl.destroy();
-tpl.isDestroyed(); // true
-```
-
-## Installation
-
-templar is [CommonJS](http://www.commonjs.org/) and [AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) compatible with no dependencies. You can download the [development](http://github.com/ryanmorr/templar/raw/master/dist/templar.js) or [minified](http://github.com/ryanmorr/templar/raw/master/dist/templar.min.js) version, or install it in one of the following ways:
-
-``` sh
-npm install ryanmorr/templar
-
-bower install ryanmorr/templar
-```
-
-## Tests
-
-Open `test/runner.html` in your browser or test with PhantomJS by issuing the following commands:
-
-``` sh
-npm install
-npm install -g gulp
-gulp test
+tpl.isMounted(); //=> true
 ```
 
 ## License
@@ -277,7 +245,5 @@ This project is dedicated to the public domain as described by the [Unlicense](h
 [version-image]: https://badge.fury.io/gh/ryanmorr%2Ftemplar.svg
 [build-url]: https://travis-ci.org/ryanmorr/templar
 [build-image]: https://travis-ci.org/ryanmorr/templar.svg
-[dependencies-image]: https://david-dm.org/ryanmorr/templar.svg
 [license-image]: https://img.shields.io/badge/license-Unlicense-blue.svg
 [license-url]: UNLICENSE
-[file-size-image]: https://badge-size.herokuapp.com/ryanmorr/templar/master/dist/templar.min.js.svg?color=blue&label=file%20size
