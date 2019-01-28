@@ -4,7 +4,7 @@
 import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { hashmap, toArray, getMatches, escapeHTML, parseHTML, isHTML } from './util';
+import { hashmap, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 /**
  * Common variables
@@ -183,7 +183,7 @@ export function interpolateDOM(tpl, data, fn) {
  * @api private
  */
 export function parseTemplate(tpl, nodes, bindings = hashmap()) {
-    return toArray(nodes).reduce((bindings, node) => {
+    return Array.from(nodes).reduce((bindings, node) => {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
                 const binding = new NodeBinding(tpl, node);

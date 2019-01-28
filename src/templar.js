@@ -2,7 +2,7 @@
  * Import dependencies
  */
 import { parseTemplate } from './parser';
-import { hashmap, toArray, contains, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
+import { hashmap, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
 /**
  * DOM templating class
@@ -119,7 +119,7 @@ export default class Templar {
      * @api public
      */
     query(selector) {
-        return toArray(this.getRoot().querySelectorAll(selector));
+        return Array.from(this.getRoot().querySelectorAll(selector));
     }
 
     /**
@@ -152,6 +152,6 @@ export default class Templar {
      * @api public
      */
     isRendered() {
-        return this.isMounted() && contains(document, this.getRoot());
+        return this.isMounted() && document.contains(this.getRoot());
     }
 }

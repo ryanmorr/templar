@@ -9,7 +9,6 @@ import Templar from './templar';
 let frame;
 let counter = 1;
 const batch = [];
-const slice = [].slice;
 const indexOf = [].indexOf;
 const htmlRe = /<[a-z][\s\S]*>/;
 const escapeHTMLRe = /[<>&"']/g;
@@ -38,21 +37,6 @@ export function hashmap() {
 }
 
 /**
- * Convert an array-like object to
- * an array
- *
- * @param {ArrayLike} obj
- * @return {Array}
- * @api private
- */
-export function toArray(obj) {
-    if ('from' in Array) {
-        return Array.from(obj);
-    }
-    return slice.call(obj);
-}
-
-/**
  * Iterates through all the matches
  * of the provided regex and string
  *
@@ -69,22 +53,6 @@ export function getMatches(re, str, fn) {
     while ((matches = re.exec(str))) {
         fn(matches);
     }
-}
-
-/**
- * Does the provided root element contain
- * the provided node
- *
- * @param {Element} root
- * @param {Element} el
- * @return {Boolean}
- * @api private
- */
-export function contains(root, el) {
-    if ('contains' in root) {
-        return root.contains(el);
-    }
-    return !!(root.compareDocumentPosition(el) & 16);
 }
 
 /**
