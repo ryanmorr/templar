@@ -34,22 +34,6 @@ export default class Templar {
     }
 
     /**
-     * Unmount the template and nullify
-     * the properties
-     *
-     * @api public
-     */
-    destroy() {
-        if (!this.isDestroyed()) {
-            if (this.isMounted()) {
-                this.unmount();
-            }
-            this.root = this.frag = this.data = this.bindings = null;
-            this.destroyed = true;
-        }
-    }
-
-    /**
      * Append the template to a parent
      * element
      *
@@ -126,19 +110,6 @@ export default class Templar {
     }
 
     /**
-     * Query the template for a single
-     * element matching the provided
-     * selector string
-     *
-     * @param {String} selector
-     * @return {Element|Null}
-     * @api public
-     */
-    find(selector) {
-        return this.getRoot().querySelector(selector);
-    }
-
-    /**
      * Query the template for all the
      * elements matching the provided
      * selector string
@@ -182,15 +153,5 @@ export default class Templar {
      */
     isRendered() {
         return this.isMounted() && contains(document, this.getRoot());
-    }
-
-    /**
-     * Has the template been destroyed?
-     *
-     * @return {Boolean}
-     * @api public
-     */
-    isDestroyed() {
-        return this.destroyed;
     }
 }

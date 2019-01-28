@@ -96,28 +96,12 @@ describe('templar', () => {
         expect(tpl.get('value')).to.equal(null);
     });
 
-    it('should support querying the template for a single element', () => {
+    it('should support querying the template for elements', () => {
         const tpl = templar('<div></div>');
         const container = document.createElement('div');
-        expect(tpl.find('div')).to.equal(tpl.getRoot().childNodes[1]);
+        expect(tpl.query('div')[0]).to.equal(tpl.getRoot().childNodes[1]);
         tpl.mount(container);
-        expect(tpl.find('div')).to.equal(tpl.getRoot().childNodes[1]);
-    });
-
-    it('should support querying the template for a single element before it has been mounted to the DOM', () => {
-        const tpl = templar('<div></div>');
-        const el = tpl.find('div');
-        expect(el.nodeType).to.equal(1);
-        expect(el).to.equal(tpl.getRoot().childNodes[1]);
-    });
-
-    it('should support querying the template for a single element after it has been mounted to the DOM', () => {
-        const tpl = templar('<div></div>');
-        const container = document.createElement('div');
-        tpl.mount(container);
-        const el = tpl.find('div');
-        expect(el.nodeType).to.equal(1);
-        expect(el).to.equal(tpl.getRoot().childNodes[1]);
+        expect(tpl.query('div')[0]).to.equal(tpl.getRoot().childNodes[1]);
     });
 
     it('should support querying the template for an array of elements before it has been mounted to the DOM', () => {
@@ -134,23 +118,6 @@ describe('templar', () => {
         const els = tpl.query('div');
         expect(els).to.be.an('array');
         expect(els).to.deep.equal([].slice.call(container.querySelectorAll('div')));
-    });
-
-    it('should be able to destroy the templar instance', () => {
-        const tpl = templar('<div></div>');
-        const container = document.createElement('div');
-        tpl.mount(container);
-        tpl.destroy();
-        expect(tpl.isMounted()).to.equal(false);
-        expect(tpl.getRoot()).to.equal(null);
-        expect(tpl.bindings).to.equal(null);
-    });
-
-    it('should know whether the instance has been destroyed or not', () => {
-        const tpl = templar('<div></div>');
-        expect(tpl.isDestroyed()).to.equal(false);
-        tpl.destroy();
-        expect(tpl.isDestroyed()).to.equal(true);
     });
 
     it('should support method chaining', () => {

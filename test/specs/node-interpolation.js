@@ -3,17 +3,17 @@ import templar from '../../src';
 describe('node interpolation', () => {
     it('should support interpolation', () => {
         const tpl = templar('<div>{{value}}</div>');
-        const div = tpl.find('div');
+        const div = tpl.query('div')[0];
         const textNode = div.firstChild;
         tpl.set('value', 'foo');
         // The template engine should not use `requestAnimationFrame` if
         // the fragment hasn't been mounted to the DOM, so these
         // assertions should work synchronously
-        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.query('div')[0].textContent).to.equal('foo');
         // The div should not be removed when updating its content
-        expect(tpl.find('div')).to.equal(div);
+        expect(tpl.query('div')[0]).to.equal(div);
         // Only the inner text node should be replaced
-        expect(tpl.find('div').firstChild).to.not.equal(textNode);
+        expect(tpl.query('div')[0].firstChild).to.not.equal(textNode);
     });
 
     it('should support only text node interpolation', () => {
@@ -26,50 +26,50 @@ describe('node interpolation', () => {
         const tpl = templar('<div>{{foo}} {{bar}}</div>');
         tpl.set('foo', 'aaa');
         tpl.set('bar', 'bbb');
-        expect(tpl.find('div').textContent).to.equal('aaa bbb');
+        expect(tpl.query('div')[0].textContent).to.equal('aaa bbb');
     });
 
     it('should support leading and trailing spaces between delimiters of tokens', () => {
         const tpl = templar('<div>{{ foo }}</div>');
         tpl.set('foo', 'bar');
-        expect(tpl.find('div').textContent).to.equal('bar');
+        expect(tpl.query('div')[0].textContent).to.equal('bar');
     });
 
     it('should support the same token more than once', () => {
         const tpl = templar('<div>{{value}}</div><span>{{value}}</span>');
         tpl.set('value', 'foo');
-        expect(tpl.find('div').textContent).to.equal('foo');
-        expect(tpl.find('span').textContent).to.equal('foo');
+        expect(tpl.query('div')[0].textContent).to.equal('foo');
+        expect(tpl.query('span')[0].textContent).to.equal('foo');
     });
 
     it('should support passing a key/value map', () => {
         const tpl = templar('<div>{{foo}}</div><span>{{bar}}</span>');
         tpl.set({foo: 123, bar: 456});
-        expect(tpl.find('div').textContent).to.equal('123');
-        expect(tpl.find('span').textContent).to.equal('456');
+        expect(tpl.query('div')[0].textContent).to.equal('123');
+        expect(tpl.query('span')[0].textContent).to.equal('456');
     });
 
     it('should ignore a null value', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
-        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.query('div')[0].textContent).to.equal('foo');
         tpl.set('value', null);
-        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.query('div')[0].textContent).to.equal('foo');
     });
 
     it('should ignore an undefined value', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', 'foo');
-        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.query('div')[0].textContent).to.equal('foo');
         tpl.set('value', void 0);
-        expect(tpl.find('div').textContent).to.equal('foo');
+        expect(tpl.query('div')[0].textContent).to.equal('foo');
     });
 
     it('should support interpolation with a DOM node', () => {
         const tpl = templar('<div>{{value}}</div>');
         const el = document.createElement('strong');
         tpl.set('value', el);
-        expect(tpl.find('div').firstChild).to.equal(el);
+        expect(tpl.query('div')[0].firstChild).to.equal(el);
     });
 
     it('should support interpolation with a DOM fragment', () => {
@@ -79,14 +79,14 @@ describe('node interpolation', () => {
             frag.appendChild(document.createTextNode(i));
         }
         tpl.set('value', frag);
-        expect(tpl.find('div').textContent).to.equal('012');
+        expect(tpl.query('div')[0].textContent).to.equal('012');
     });
 
     it('should support parsing and interpolation of an HTML string', () => {
         const tpl = templar('<div>{{value}}</div>');
         tpl.set('value', '<strong>foo</strong>');
-        expect(tpl.find('div').firstChild.nodeName).to.equal('STRONG');
-        expect(tpl.find('div').firstChild.textContent).to.equal('foo');
+        expect(tpl.query('div')[0].firstChild.nodeName).to.equal('STRONG');
+        expect(tpl.query('div')[0].firstChild.textContent).to.equal('foo');
     });
 
     it('should support nested templates', () => {
@@ -104,7 +104,7 @@ describe('node interpolation', () => {
     it('should support escaping HTML characters', () => {
         const tpl = templar('<div>{{&value}}</div>');
         tpl.set('value', '<i id="foo" class=\'bar\'>bar</i>');
-        expect(tpl.find('div').textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
+        expect(tpl.query('div')[0].textContent).to.equal('&lt;i id=&#39;foo&#39; class=&quot;bar&quot;&gt;bar&lt;/i&gt;');
     });
 
     it('should support multiple element interpolation between existing elements', () => {
@@ -121,19 +121,19 @@ describe('node interpolation', () => {
         tpl.set('bar', '<span>a</span><span>b</span>');
         tpl.set('baz', frag);
         tpl2.set('b', 2);
-        expect(tpl.find('div').innerHTML).to.equal('123 <div>1</div><div>2</div> 456 <span>a</span><span>b</span> 789 <em>0</em><em>1</em><em>2</em> 101112');
+        expect(tpl.query('div')[0].innerHTML).to.equal('123 <div>1</div><div>2</div> 456 <span>a</span><span>b</span> 789 <em>0</em><em>1</em><em>2</em> 101112');
         tpl.set('foo', 'abc');
         tpl.set('bar', 'efg');
         tpl.set('baz', 'hij');
-        expect(tpl.find('div').innerHTML).to.equal('123 abc 456 efg 789 hij 101112');
+        expect(tpl.query('div')[0].innerHTML).to.equal('123 abc 456 efg 789 hij 101112');
         tpl.set('foo', tpl2);
         tpl2.set('a', 3);
-        expect(tpl.find('div').innerHTML).to.equal('123 <div>3</div><div>2</div> 456 efg 789 hij 101112');
+        expect(tpl.query('div')[0].innerHTML).to.equal('123 <div>3</div><div>2</div> 456 efg 789 hij 101112');
     });
 
     it('should support default interpolation on initialization', () => {
         const tpl = templar('<div>{{foo}}</div>', {foo: 'bar'});
-        expect(tpl.find('div').textContent).to.equal('bar');
+        expect(tpl.query('div')[0].textContent).to.equal('bar');
     });
 
     it('should support the retrieval of the current value of a token', () => {
