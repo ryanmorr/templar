@@ -1,6 +1,7 @@
 /**
  * Import dependencies
  */
+import EventEmitter from './eventemitter';
 import { parseTemplate } from './parser';
 import { hashmap, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
@@ -25,9 +26,9 @@ export default class Templar {
         const frag = parseHTML(tpl);
         this.root = this.frag = wrapFragment(frag, this.id);
         this.bindings = parseTemplate(this, frag.childNodes);
+        this.events = new EventEmitter();
         this.data = hashmap();
         this.mounted = false;
-        this.destroyed = false;
         if (data) {
             this.set(data);
         }
@@ -48,6 +49,7 @@ export default class Templar {
         root.appendChild(this.frag);
         this.root = root;
         this.mounted = true;
+        this.events.emit('mount', root);
         return this;
     }
 
@@ -65,6 +67,7 @@ export default class Templar {
             });
             this.root = this.frag;
             this.mounted = false;
+            this.events.emit('unmount');
         }
         return this;
     }
@@ -107,6 +110,21 @@ export default class Templar {
             }
         }
         return this;
+    }
+
+    /**
+     * Add a listener for a custom event.
+     * Returns a function that removes the
+     * listener when invoked
+     *
+     * @param {String} name
+     * @param {Function} callback
+     * @return {Function}
+     * @api public
+     */
+    on(name, callback) {
+        this.events.on(name, callback);
+        return () => this.events.remove(name, callback);
     }
 
     /**

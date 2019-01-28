@@ -126,4 +126,47 @@ describe('templar', () => {
         expect(tpl.unmount()).to.equal(tpl);
         expect(tpl.set('foo', 'foo')).to.equal(tpl);
     });
+
+    it('should dispatch the "mount" custom event when a template is mounted to the DOM', () => {
+        const tpl = templar('<div>foo</div>');
+        const container = document.createElement('div');
+
+        const onMount = sinon.spy((root) => expect(root).to.equal(container));
+
+        tpl.on('mount', onMount);
+        tpl.mount(container);
+
+        expect(onMount.called).to.equal(true);
+    });
+
+    it('should dispatch the "unmount" custom event when a template is unmounted from the DOM', () => {
+        const tpl = templar('<div>foo</div>');
+        const container = document.createElement('div');
+
+        const onUnmount = sinon.spy();
+
+        tpl.on('unmount', onUnmount);
+        tpl.mount(container);
+        tpl.unmount();
+
+        expect(onUnmount.called).to.equal(true);
+    });
+
+    it('should remove a listener for a custom event', () => {
+        const tpl = templar('<div>foo</div>');
+        const container = document.createElement('div');
+
+        const onMount = sinon.spy();
+
+        const off = tpl.on('mount', onMount);
+        tpl.mount(container);
+
+        expect(onMount.callCount).to.equal(1);
+
+        off();
+        tpl.unmount();
+        tpl.mount(container);
+
+        expect(onMount.callCount).to.equal(1);
+    });
 });
