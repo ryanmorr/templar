@@ -18,14 +18,26 @@ describe('attribute interpolation', () => {
         expect(tpl.query('div')[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
     });
 
-    it('should support the removal of an attribute if the value is an empty string or false', () => {
-        const tpl = templar('<div id="{{id}}" disabled="{{disabled}}"></div>');
-
-        tpl.set('id', '');
-        tpl.set('disabled', false);
-
+    it('should support the removal of an attribute if the value is null, undefined, or false', () => {
+        const tpl = templar('<div disabled="{{disabled}}"></div>');
         const div = tpl.query('div')[0];
-        expect(div.hasAttribute('foo')).to.equal(false);
+
+        tpl.set('disabled', true);
+        expect(div.hasAttribute('disabled')).to.equal(true);
+
+        tpl.set('disabled', false);
+        expect(div.hasAttribute('disabled')).to.equal(false);
+
+        tpl.set('disabled', true);
+        expect(div.hasAttribute('disabled')).to.equal(true);
+
+        tpl.set('disabled', null);
+        expect(div.hasAttribute('disabled')).to.equal(false);
+
+        tpl.set('disabled', true);
+        expect(div.hasAttribute('disabled')).to.equal(true);
+
+        tpl.set('disabled', void 0);
         expect(div.hasAttribute('disabled')).to.equal(false);
     });
 

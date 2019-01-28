@@ -26,6 +26,30 @@ const escapeHTMLMap = {
 const supportsTemplate = 'content' in document.createElement('template');
 
 /**
+ * Convert strings of primitives
+ * into their natural type
+ *
+ * @param {String} value
+ * @return {String|Boolean|Null|Undefined}
+ * @api private
+ */
+function coerce(value) {
+    if (value === 'true') {
+        return true;
+    }
+    if (value === 'false') {
+        return false;
+    }
+    if (value === 'null') {
+        return null;
+    }
+    if (value === 'undefined') {
+        return void 0;
+    }
+    return value;
+}
+
+/**
  * Get a 'bare' object for basic
  * key/value hash maps
  *
@@ -221,17 +245,13 @@ export function getTemplateNodes(root, id) {
  * node
  *
  * @param {Element} node
- * @param {String} attr
+ * @param {String} name
  * @param {String} value
  * @api private
  */
-export function updateAttribute(node, attr, value) {
-    if (value === 'true') {
-        value = true;
-    } else if (value === 'false') {
-        value = false;
-    }
-    switch (attr) {
+export function updateAttribute(node, name, value) {
+    value = coerce(value);
+    switch (name) {
         case 'class':
             node.className = value;
             break;
@@ -246,13 +266,13 @@ export function updateAttribute(node, attr, value) {
             }
             // falls through
         default:
-            if (attr in node) {
-                node[attr] = value;
-            } else {
-                node.setAttribute(attr, value);
+            if (name in node) {
+                node[name] = value == null ? '' : value;
+            } else if (value != null && value !== false) {
+                node.setAttribute(name, value);
             }
-            if (value === '' || value === false) {
-                node.removeAttribute(attr);
+            if (value == null || value === false) {
+                node.removeAttribute(name);
             }
     }
 }
