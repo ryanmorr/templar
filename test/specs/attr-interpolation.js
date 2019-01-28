@@ -66,4 +66,17 @@ describe('attribute interpolation', () => {
         tpl.set('value', 'foo');
         expect(tpl.query('input')[0].value).to.equal('foo');
     });
+
+    it('should emit a "attributechange" custom event when a node attribute is updated', () => {
+        const tpl = templar('<div id="{{foo}}"></div>', {foo: 'foo'});
+        const div = tpl.query('div')[0];
+        const onChange = sinon.spy((el, oldValue, value) => {
+            expect(el).to.equal(div);
+            expect(oldValue).to.equal('foo');
+            expect(value).to.equal('bar');
+        });
+        tpl.on('attributechange', onChange);
+        tpl.set('foo', 'bar');
+        expect(onChange.called).to.equal(true);
+    });
 });

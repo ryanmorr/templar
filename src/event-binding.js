@@ -38,6 +38,7 @@ export default class EventBinding extends Binding {
      */
     render() {
         super.render();
+        const oldValue = this.value;
         const value = this.tpl.data[this.tokens[0]];
         if (value === this.value) {
             return;
@@ -49,6 +50,7 @@ export default class EventBinding extends Binding {
         if (isFunction(value)) {
             this.node.addEventListener(this.type, value);
             this.value = value;
+            this.tpl.events.emit('attributechange', this.node, oldValue, this.value);
         }
     }
 }

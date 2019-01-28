@@ -27,6 +27,7 @@ export default class AttrBinding extends Binding {
         super(tpl, text);
         this.node = node;
         this.attr = attr;
+        this.value = null;
     }
 
     /**
@@ -37,7 +38,9 @@ export default class AttrBinding extends Binding {
      */
     render() {
         super.render();
-        const value = interpolate(this.text, this.tpl.data).trim();
-        updateAttribute(this.node, this.attr, value);
+        const oldValue = this.value;
+        this.value = interpolate(this.text, this.tpl.data).trim();
+        updateAttribute(this.node, this.attr, this.value);
+        this.tpl.events.emit('attributechange', this.node, oldValue, this.value);
     }
 }

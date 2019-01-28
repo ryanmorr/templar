@@ -135,6 +135,17 @@ describe('node interpolation', () => {
         expect(spy.callCount).to.equal(1);
     });
 
+    it('should emit a "change" custom event when a node is updated', () => {
+        const tpl = templar('<div>{{foo}}</div>');
+        const div = tpl.query('div')[0];
+        const onChange = sinon.spy((el) => {
+            expect(el).to.equal(div);
+        });
+        tpl.on('change', onChange);
+        tpl.set('foo', 'bar');
+        expect(onChange.called).to.equal(true);
+    });
+
     it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', () => {
         const tpl = templar('<div>{{foo}}</div>');
         const spy = sinon.spy(window, 'requestAnimationFrame');

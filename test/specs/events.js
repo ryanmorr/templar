@@ -24,12 +24,10 @@ describe('events', () => {
 
         const onClick = sinon.spy(() => {
             tpl.set('click', null);
-            requestAnimationFrame(() => {
-                expect(removeEventSpy.called).to.equal(true);
-                expect(removeEventSpy.calledWith('click', onClick)).to.equal(true);
-                removeEventSpy.restore();
-                done();
-            });
+            expect(removeEventSpy.called).to.equal(true);
+            expect(removeEventSpy.calledWith('click', onClick)).to.equal(true);
+            removeEventSpy.restore();
+            done();
         });
 
         tpl.set('click', onClick);

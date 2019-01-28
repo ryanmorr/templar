@@ -68,5 +68,6 @@ export default class NodeBinding extends Binding {
         });
         this.nodes = nodes;
         index in children ? parent.insertBefore(frag, children[index]) : parent.appendChild(frag);
+        this.tpl.events.emit('change', parent);
     }
 }
