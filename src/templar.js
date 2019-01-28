@@ -1,7 +1,7 @@
 /**
  * Import dependencies
  */
-import EventEmitter from './eventemitter';
+import EventEmitter from './event-emitter';
 import { parseTemplate } from './parser';
 import { hashmap, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
