@@ -98,16 +98,14 @@ export default class Templar {
             Object.keys(token).forEach((name) => this.set(name, token[name]));
             return;
         }
-        if (value != null) {
-            this.data[token] = value;
-            if (token in this.bindings) {
-                const method = this.isRendered() ? 'update' : 'render';
-                this.bindings[token].forEach((binding) => {
-                    if (binding.shouldUpdate()) {
-                        binding[method]();
-                    }
-                });
-            }
+        this.data[token] = value;
+        if (token in this.bindings) {
+            const method = this.isRendered() ? 'update' : 'render';
+            this.bindings[token].forEach((binding) => {
+                if (binding.shouldUpdate()) {
+                    binding[method]();
+                }
+            });
         }
         return this;
     }

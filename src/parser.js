@@ -4,6 +4,7 @@
 import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
+import EventBinding from './event-binding';
 import { hashmap, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 /**
@@ -190,11 +191,19 @@ export function parseTemplate(tpl, nodes, bindings = hashmap()) {
                 addBindings(bindings, node.data, binding);
             }
         } else if (node.nodeType === 1) {
-            for (let i = 0, length = node.attributes.length, attr; i < length; i++) {
+            for (let i = 0, length = node.attributes.length, attr, name, value; i < length; i++) {
                 attr = node.attributes[i];
-                if (hasInterpolation(attr.value)) {
-                    const binding = new AttrBinding(tpl, node, attr.name, attr.value);
-                    addBindings(bindings, attr.value, binding);
+                name = attr.name;
+                value = attr.value;
+                if (hasInterpolation(value)) {
+                    if (name[0] === 'o' && name[1] === 'n') {
+                        name = name.slice(2).toLowerCase();
+                        const binding = new EventBinding(tpl, node, name, value);
+                        addBindings(bindings, value, binding);
+                    } else {
+                        const binding = new AttrBinding(tpl, node, name, value);
+                        addBindings(bindings, value, binding);
+                    }
                 }
             }
             if (node.hasChildNodes()) {

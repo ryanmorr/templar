@@ -43,22 +43,6 @@ describe('attribute interpolation', () => {
         expect(tpl.query('div')[0].className).to.equal('456');
     });
 
-    it('should ignore a null value', () => {
-        const tpl = templar('<div id="{{value}}"></div>');
-        tpl.set('value', 'foo');
-        expect(tpl.query('div')[0].id).to.equal('foo');
-        tpl.set('value', null);
-        expect(tpl.query('div')[0].id).to.equal('foo');
-    });
-
-    it('should ignore an undefined value', () => {
-        const tpl = templar('<div id="{{value}}"></div>');
-        tpl.set('value', 'foo');
-        expect(tpl.query('div')[0].id).to.equal('foo');
-        tpl.set('value', void 0);
-        expect(tpl.query('div')[0].id).to.equal('foo');
-    });
-
     it('should support default interpolation on initialization', () => {
         const tpl = templar('<div id="{{foo}}"></div>', {foo: 123});
         expect(tpl.query('div')[0].id).to.equal('123');

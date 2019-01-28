@@ -56,6 +56,29 @@ export function getMatches(re, str, fn) {
 }
 
 /**
+ * Check if an object is a function
+ *
+ * @param {*} obj
+ * @return {Boolean}
+ * @api private
+ */
+export function isFunction(obj) {
+    return {}.toString.call(obj) === '[object Function]';
+}
+
+/**
+ * Is the provided string an HTML
+ * string?
+ *
+ * @param {String} str
+ * @return {Boolean}
+ * @api private
+ */
+export function isHTML(str) {
+    return htmlRe.test(str);
+}
+
+/**
  * Escape HTML characters
  *
  * @param {String} str
@@ -70,18 +93,6 @@ export function escapeHTML(str) {
         return str.replace(escapeHTMLRe, (c) => escapeHTMLMap[c] || '');
     }
     return str;
-}
-
-/**
- * Is the provided string an HTML
- * string?
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
-export function isHTML(str) {
-    return htmlRe.test(str);
 }
 
 /**

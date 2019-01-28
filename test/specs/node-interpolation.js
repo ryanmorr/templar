@@ -49,22 +49,6 @@ describe('node interpolation', () => {
         expect(tpl.query('span')[0].textContent).to.equal('456');
     });
 
-    it('should ignore a null value', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        tpl.set('value', 'foo');
-        expect(tpl.query('div')[0].textContent).to.equal('foo');
-        tpl.set('value', null);
-        expect(tpl.query('div')[0].textContent).to.equal('foo');
-    });
-
-    it('should ignore an undefined value', () => {
-        const tpl = templar('<div>{{value}}</div>');
-        tpl.set('value', 'foo');
-        expect(tpl.query('div')[0].textContent).to.equal('foo');
-        tpl.set('value', void 0);
-        expect(tpl.query('div')[0].textContent).to.equal('foo');
-    });
-
     it('should support interpolation with a DOM node', () => {
         const tpl = templar('<div>{{value}}</div>');
         const el = document.createElement('strong');
