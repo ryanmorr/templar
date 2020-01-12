@@ -2,6 +2,7 @@ import Templar from './templar';
 
 let counter = 1;
 const indexOf = [].indexOf;
+const template = document.createElement('template');
 const htmlRe = /<[a-z][\s\S]*>/;
 const escapeHTMLRe = /[<>&"']/g;
 const escapeHTMLMap = {
@@ -11,8 +12,6 @@ const escapeHTMLMap = {
     '"': '&#39;',
     '\'': '&quot;'
 };
-
-const supportsTemplate = 'content' in document.createElement('template');
 
 function coerce(value) {
     if (value === 'true') {
@@ -63,18 +62,8 @@ export function escapeHTML(str) {
 }
 
 export function parseHTML(html) {
-    if (supportsTemplate) {
-        const template = document.createElement('template');
-        template.innerHTML = html;
-        return document.importNode(template.content, true);
-    }
-    const frag = document.createDocumentFragment();
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    while (div.firstChild) {
-        frag.appendChild(div.firstChild);
-    }
-    return frag;
+    template.innerHTML = html;
+    return document.importNode(template.content, true);
 }
 
 export function uid() {
