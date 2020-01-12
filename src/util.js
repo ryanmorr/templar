@@ -1,8 +1,6 @@
 import Templar from './templar';
 
-let frame;
 let counter = 1;
-const batch = [];
 const indexOf = [].indexOf;
 const htmlRe = /<[a-z][\s\S]*>/;
 const escapeHTMLRe = /[<>&"']/g;
@@ -160,16 +158,4 @@ export function updateAttribute(node, name, value) {
                 node.removeAttribute(name);
             }
     }
-}
-
-export function scheduleRender(callback) {
-    if (!frame) {
-        frame = requestAnimationFrame(render);
-    }
-    batch.push(callback);
-}
-
-function render() {
-    frame = null;
-    while (batch.length) batch.pop()();
 }

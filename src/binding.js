@@ -1,4 +1,4 @@
-import { scheduleRender } from './util';
+import { scheduleRender } from '@ryanmorr/schedule-render';
 
 export default class Binding {
     constructor(tpl, text) {
