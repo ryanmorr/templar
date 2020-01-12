@@ -1,27 +1,7 @@
-/**
- * Import dependencies
- */
 import Binding from './binding';
 import { isFunction } from './util';
 
-/**
- * Bind a token to a DOM node event handler
- *
- * @class EventBinding
- * @extends Binding
- * @api private
- */
 export default class EventBinding extends Binding {
-    /**
-     * Instantiate the class
-     *
-     * @constructor
-     * @param {Templar} tpl
-     * @param {Node} node
-     * @param {String} type
-     * @param {String} value
-     * @api private
-     */
     constructor(tpl, node, type, value) {
         super(tpl, value);
         this.node = node;
@@ -31,11 +11,6 @@ export default class EventBinding extends Binding {
         this.value = null;
     }
 
-    /**
-     * Update the event handler of the node
-     *
-     * @api private
-     */
     render() {
         super.render();
         const oldValue = this.value;

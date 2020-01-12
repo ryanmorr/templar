@@ -1,15 +1,9 @@
-/**
- * Import dependencies
- */
 import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
 import EventBinding from './event-binding';
 import { hashmap, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
-/**
- * Common variables
- */
 const matcherRe = /\{\{\s*\&?(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 const simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
@@ -18,25 +12,10 @@ const identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
 const rootRe = /^([^.]+)/;
 const exprCache = hashmap();
 
-/**
- * Check if a string has interpolation
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
 function hasInterpolation(str) {
     return str.indexOf('{{') !== -1;
 }
 
-/**
- * Map tokens to a `Binding` instance
- *
- * @param {Object} bindings
- * @param {String} text
- * @param {Binding} binding
- * @api private
- */
 function addBindings(bindings, text, binding) {
     getMatches(matcherRe, text, (matches) => {
         const str = matches[1];
@@ -54,14 +33,6 @@ function addBindings(bindings, text, binding) {
     });
 }
 
-/**
- * Convert a string expression into
- * a function
- *
- * @param {String} expr
- * @param {Array} tokens
- * @api private
- */
 function compileExpression(expr, tokens) {
     if (!(expr in exprCache)) {
         let body = `return ${expr};`;
@@ -74,14 +45,6 @@ function compileExpression(expr, tokens) {
     }
 }
 
-/**
- * Extract the tokens from an expression
- * string
- *
- * @param {String} expr
- * @return {Array}
- * @api private
- */
 function extractTokens(expr) {
     return (expr.replace(expressionsRe, '').match(identifierRe) || []).reduce((tokens, token) => {
         token = token.match(rootRe)[1];
@@ -92,43 +55,14 @@ function extractTokens(expr) {
     }, []);
 }
 
-/**
- * Get the value of a token
- *
- * @param {String} token
- * @param {Object} data
- * @return {String|Number|Boolean|Node|Templar}
- * @api private
- */
 function getTokenValue(token, data) {
     return (token in exprCache) ? exprCache[token].call(data) : data[token];
 }
 
-/**
- * Supplant the tokens of a string with
- * the corresponding value in an object
- * literal
- *
- * @param {String} tpl
- * @param {Object} data
- * @return {String}
- * @api private
- */
 export function interpolate(tpl, data) {
     return tpl.replace(matcherRe, (all, token) => getTokenValue(token, data));
 }
 
-/**
- * Build a document fragment that supplants
- * the tokens of a string with the
- * corresponding value in an object literal
- *
- * @param {String} tpl
- * @param {Object} data
- * @param {Function} fn
- * @return {DocumentFragment}
- * @api private
- */
 export function interpolateDOM(tpl, data, fn) {
     const frag = document.createDocumentFragment();
     getMatches(nodeContentRe, tpl, (matches) => {
@@ -169,20 +103,6 @@ export function interpolateDOM(tpl, data, fn) {
     return frag;
 }
 
-/**
- * Parses the nodes of a template to
- * create a key/value object that maps
- * the template tokens to a `Binding`
- * instance capable of supplanting the
- * value in the DOM
- *
- * @param {Templar} tpl
- * @param {NodeList} nodes
- * @param {String} id
- * @param {Object} bindings
- * @return {Object}
- * @api private
- */
 export function parseTemplate(tpl, nodes, bindings = hashmap()) {
     return Array.from(nodes).reduce((bindings, node) => {
         if (node.nodeType === 3) {

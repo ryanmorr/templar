@@ -1,38 +1,14 @@
-/**
- * Import dependencies
- */
 import Templar from './templar';
 import Binding from './binding';
 import { interpolateDOM } from './parser';
 import { getNodeIndex, getParent } from './util';
 
-/**
- * Bind a token to a DOM node
- *
- * @class NodeBinding
- * @extends Binding
- * @api private
- */
 export default class NodeBinding extends Binding {
-    /**
-     * Instantiate the class
-     *
-     * @constructor
-     * @param {Templar} tpl
-     * @param {Node} node
-     * @api private
-     */
     constructor(tpl, node) {
         super(tpl, node.data);
         this.nodes = [node];
     }
 
-    /**
-     * Remove all the current nodes occupying
-     * the token placeholders
-     *
-     * @api private
-     */
     purge() {
         this.nodes.forEach((node) => {
             if (node instanceof Templar) {
@@ -46,12 +22,6 @@ export default class NodeBinding extends Binding {
         });
     }
 
-    /**
-     * Replace the token placeholders with the
-     * current values in the `Templar` instance
-     *
-     * @api private
-     */
     render() {
         super.render();
         const nodes = [];
