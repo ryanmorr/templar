@@ -1,7 +1,6 @@
 import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import EventBinding from './event-binding';
 import { hashmap, getMatches, escapeHTML, parseHTML, isHTML } from './util';
 
 const matcherRe = /\{\{\s*\&?(.+?)\s*\}\}/g;
@@ -114,9 +113,7 @@ export function parseTemplate(tpl, nodes, bindings = hashmap()) {
             for (let i = 0, length = node.attributes.length; i < length; i++) {
                 const attr = node.attributes[i], name = attr.name, value = attr.value;
                 if (hasInterpolation(value)) {
-                    const binding = (name[0] === 'o' && name[1] === 'n')
-                        ? new EventBinding(tpl, node, name.slice(2).toLowerCase(), value)
-                        : new AttrBinding(tpl, node, name, value);
+                    const binding = new AttrBinding(tpl, node, name, value);
                     addBindings(bindings, value, binding);
                 }
             }

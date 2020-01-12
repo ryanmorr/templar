@@ -13,22 +13,6 @@ const escapeHTMLMap = {
     '\'': '&quot;'
 };
 
-function coerce(value) {
-    if (value === 'true') {
-        return true;
-    }
-    if (value === 'false') {
-        return false;
-    }
-    if (value === 'null') {
-        return null;
-    }
-    if (value === 'undefined') {
-        return void 0;
-    }
-    return value;
-}
-
 export function hashmap() {
     return Object.create(null);
 }
@@ -119,32 +103,4 @@ export function getTemplateNodes(root, id) {
         node = node.nextSibling;
     }
     return elements;
-}
-
-export function updateAttribute(node, name, value) {
-    value = coerce(value);
-    switch (name) {
-        case 'class':
-            node.className = value;
-            break;
-        case 'style':
-            node.style.cssText = value;
-            break;
-        case 'value':
-            const tag = node.tagName.toLowerCase();
-            if (tag === 'input' || tag === 'textarea') {
-                node.value = value;
-                break;
-            }
-            // falls through
-        default:
-            if (name in node) {
-                node[name] = value == null ? '' : value;
-            } else if (value != null && value !== false) {
-                node.setAttribute(name, value);
-            }
-            if (value == null || value === false) {
-                node.removeAttribute(name);
-            }
-    }
 }
