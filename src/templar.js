@@ -50,7 +50,7 @@ export default class Templar {
         }
         this.data[token] = value;
         if (token in this.bindings) {
-            const method = document.contains(this.getRoot()) ? 'update' : 'render';
+            const method = document.contains(this.getRoot()) ? 'scheduleRender' : 'render';
             this.bindings[token].forEach((binding) => {
                 if (binding.shouldUpdate()) {
                     binding[method]();

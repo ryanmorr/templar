@@ -1,15 +1,21 @@
 import templar from '../../src';
 
 describe('attribute interpolation', () => {
-    it('should support interpolation', () => {
-        const tpl = templar('<div id="{{id}}"></div>');
+    const root = document.createElement('div');
 
-        tpl.set('id', 'foo');
-
-        expect(tpl.query('div')[0].id).to.equal('foo');
+    beforeEach(() => {
+        root.innerHTML = '';
     });
 
-    it('should support multiple tokens within an attribute', () => {
+    it('should update an attribute', () => {
+        const tpl = templar('<div id="{{id}}"></div>');
+        tpl.mount(root);
+
+        tpl.set('id', 'foo');
+        expect(root.innerHTML).to.equal('<div id="foo"></div>');
+    });
+
+    it('should update multiple tokens within an attribute', () => {
         const tpl = templar('<div class="foo bar {{class1}} {{class2}}"></div>');
 
         tpl.set('class1', 'baz');
@@ -96,6 +102,40 @@ describe('attribute interpolation', () => {
         tpl.set('value', 'foo');
 
         expect(tpl.query('input')[0].value).to.equal('foo');
+    });
+
+    it('should add an event', (done) => {
+        const tpl = templar('<div onclick="{{click}}"></div>');
+        const div = tpl.query('div')[0];
+        const evt = new MouseEvent('click');
+
+        const onClick = sinon.spy((e) => {
+            expect(e).to.equal(evt);
+            done();
+        });
+
+        tpl.set('click', onClick);
+
+        div.dispatchEvent(evt);
+    });
+
+    it('should remove an event if the value is null', (done) => {
+        const tpl = templar('<div onclick="{{click}}"></div>');
+        const div = tpl.query('div')[0];
+        const removeEventSpy = sinon.spy(div, 'removeEventListener');
+        const evt = new MouseEvent('click');
+
+        const onClick = sinon.spy(() => {
+            tpl.set('click', null);
+            expect(removeEventSpy.called).to.equal(true);
+            expect(removeEventSpy.calledWith('click', onClick)).to.equal(true);
+            removeEventSpy.restore();
+            done();
+        });
+
+        tpl.set('click', onClick);
+
+        div.dispatchEvent(evt);
     });
 
     it('should emit a "attributechange" custom event when a node attribute is updated', () => {

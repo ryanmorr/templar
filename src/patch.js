@@ -1,4 +1,5 @@
 import Templar from './templar';
+import { isHTML, parseHTML } from './util';
 
 function coerce(value) {
     if (value === 'true') {
@@ -21,9 +22,6 @@ function arrayToFrag(nodes) {
 }
 
 function resolveNode(node) {
-    if (node instanceof Templar) {
-        return node;
-    }
     if (node.nodeType === 11) {
         return Array.from(node.childNodes);
     }
@@ -38,7 +36,7 @@ function clear(parent, element) {
     }
 }
 
-function getNode(value) {
+function getNode(value, escape) {
     if (value instanceof Templar) {
         return value;
     }
@@ -49,6 +47,9 @@ function getNode(value) {
         value = String(value);
     }
     if (typeof value === 'string') {
+        if (escape === false && isHTML(value)) {
+            return parseHTML(value);
+        }
         return document.createTextNode(value);
     }
     if (Array.isArray(value)) {
@@ -85,15 +86,15 @@ function replace(parent, node, referenceNode) {
     }
 }
 
-export function patchNode(parent, oldNode, newValue, marker) {
+export function patchNode(parent, oldNode, newValue, escape, marker) {
     if (typeof newValue === 'number') {
         newValue = String(newValue);
     }
-    if (oldNode.nodeType === 3 && typeof newValue === 'string') {
+    if (oldNode.nodeType === 3 && typeof newValue === 'string' && !isHTML(newValue)) {
         oldNode.data = newValue;
         return oldNode;
     }
-    const newNode = getNode(newValue);
+    const newNode = getNode(newValue, escape);
     const resolvedNode = resolveNode(newNode);
     if (oldNode instanceof Templar) {
         oldNode.unmount();

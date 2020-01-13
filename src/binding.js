@@ -5,7 +5,7 @@ export default class Binding {
         this.tpl = tpl;
     }
 
-    update() {
+    scheduleRender() {
         if (!this.renderer) {
             this.renderer = this.render.bind(this);
             scheduleRender(this.renderer);

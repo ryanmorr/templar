@@ -1,19 +1,6 @@
 import templar from '../../src';
 
 describe('templar', () => {
-    it('should implicitly parse the HTML template string to a DOM fragment on initialization', () => {
-        const tpl = templar('<section><div>{{foo}}</div><span>{{bar}}</span></section>');
-        const section = tpl.getRoot().childNodes[1];
-        const children = section.childNodes;
-
-        expect(section.tagName.toLowerCase()).to.equal('section');
-        expect(children).to.have.length(2);
-        expect(children[0].tagName.toLowerCase()).to.equal('div');
-        expect(children[0].textContent).to.equal('{{foo}}');
-        expect(children[1].tagName.toLowerCase()).to.equal('span');
-        expect(children[1].textContent).to.equal('{{bar}}');
-    });
-
     it('should support appending a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
@@ -39,7 +26,7 @@ describe('templar', () => {
     });
 
     it('should know whether the template has been mounted to a parent element', () => {
-        const tpl = templar('<div>{{value}}</div>');
+        const tpl = templar('<div></div>');
         const container = document.createElement('div');
 
         expect(tpl.isMounted()).to.equal(false);
@@ -83,6 +70,15 @@ describe('templar', () => {
 
         tpl.unmount();
         expect(tpl.getRoot()).to.equal(frag);
+    });
+
+    it('should support the retrieval of the current value of a token', () => {
+        const tpl = templar('<div>{{foo}}</div>', {foo: 'bar'});
+
+        expect(tpl.get('foo')).to.equal('bar');
+
+        tpl.set('foo', 'baz');
+        expect(tpl.get('foo')).to.equal('baz');
     });
 
     it('should return null for the value of a non-existent token', () => {

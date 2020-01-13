@@ -16,6 +16,17 @@ function addBinding(bindings, token, binding) {
     bindings[token].push(binding);
 }
 
+function parseAttribute(tpl, node, bindings, name, value) {
+    const binding = new AttrBinding(tpl, node, name, value);
+    const tokens = [];
+    getMatches(matcherRe, value, (matches) => {
+        const token = matches[1];
+        tokens.push(token);
+        addBinding(bindings, token, binding);
+    });
+    binding.setTokens(tokens);
+}
+
 function parseNode(tpl, node, bindings) {
     const frag = document.createDocumentFragment();
     getMatches(nodeContentRe, node.data, (matches) => {
@@ -46,16 +57,9 @@ export function parseTemplate(tpl, nodes, bindings = {}) {
             }
         } else if (node.nodeType === 1) {
             for (let i = 0, length = node.attributes.length; i < length; i++) {
-                const attr = node.attributes[i], name = attr.name, value = attr.value;
-                if (hasInterpolation(value)) {
-                    const binding = new AttrBinding(tpl, node, name, value);
-                    const tokens = [];
-                    getMatches(matcherRe, value, (matches) => {
-                        const token = matches[1];
-                        tokens.push(token);
-                        addBinding(bindings, token, binding);
-                    });
-                    binding.setTokens(tokens);
+                const attr = node.attributes[i];
+                if (hasInterpolation(attr.value)) {
+                    parseAttribute(tpl, node, bindings, attr.name, attr.value);
                 }
             }
             if (node.hasChildNodes()) {
