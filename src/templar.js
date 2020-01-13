@@ -21,9 +21,7 @@ export default class Templar {
             this.unmount();
         }
         root.appendChild(this.frag);
-        this.root = root;
-        this.mounted = true;
-        this.events.emit('mount', root);
+        this._setRoot(root);
         return this;
     }
 
@@ -75,5 +73,11 @@ export default class Templar {
 
     isMounted() {
         return this.mounted;
+    }
+
+    _setRoot(root) {
+        this.root = root;
+        this.mounted = true;
+        this.events.emit('mount', root);
     }
 }

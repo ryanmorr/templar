@@ -44,13 +44,9 @@ function getNode(value, escape) {
 
 function insertBefore(parent, node, referenceNode) {
     if (node instanceof Templar) {
-        if (node.isMounted()) {
-            node.unmount();
-        }
+        node.unmount();
         parent.insertBefore(node.frag, referenceNode);
-        node.root = parent;
-        node.mounted = true;
-        node.events.emit('mount', parent);
+        node._setRoot(parent);
     } else {
         parent.insertBefore(node, referenceNode);
     }
@@ -58,13 +54,9 @@ function insertBefore(parent, node, referenceNode) {
 
 function replace(parent, node, referenceNode) {
     if (node instanceof Templar) {
-        if (node.isMounted()) {
-            node.unmount();
-        }
+        node.unmount();
         parent.replaceChild(node.frag, referenceNode);
-        node.root = parent;
-        node.mounted = true;
-        node.events.emit('mount', parent);
+        node._setRoot(parent);
     } else {
         parent.replaceChild(node, referenceNode);
     }
