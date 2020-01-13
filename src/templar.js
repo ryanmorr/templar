@@ -1,15 +1,15 @@
 import EventEmitter from './event-emitter';
 import { parseTemplate } from './parser';
-import { hashmap, parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
+import { parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
 export default class Templar {
     constructor(tpl, data) {
         this.id = uid();
+        this.data = {};
         const frag = parseHTML(tpl);
         this.root = this.frag = wrapFragment(frag, this.id);
         this.bindings = parseTemplate(this, frag.childNodes);
         this.events = new EventEmitter();
-        this.data = hashmap();
         this.mounted = false;
         if (data) {
             this.set(data);

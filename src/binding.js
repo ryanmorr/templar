@@ -1,17 +1,8 @@
 import { scheduleRender } from '@ryanmorr/schedule-render';
 
 export default class Binding {
-    constructor(tpl, text) {
+    constructor(tpl) {
         this.tpl = tpl;
-        this.text = text;
-    }
-
-    setTokens(tokens) {
-        this.tokens = tokens;
-    }
-
-    shouldUpdate() {
-        return this.tokens.every((token) => token in this.tpl.data);
     }
 
     update() {

@@ -1,8 +1,6 @@
-import { hashmap } from './util';
-
 export default class EventEmitter {
     constructor() {
-        this.events = hashmap();
+        this.events = {};
     }
 
     on(name, callback) {

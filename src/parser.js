@@ -1,120 +1,61 @@
-import Templar from './templar';
 import NodeBinding from './node-binding';
 import AttrBinding from './attr-binding';
-import { hashmap, getMatches, escapeHTML, parseHTML, isHTML } from './util';
+import { getMatches } from './util';
 
 const matcherRe = /\{\{\s*\&?(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
-const simpleIdentifierRe = /^\&?[A-Za-z0-9_]+$/;
-const expressionsRe = /"[^"]*"|'[^']*'|\/([^/]+)\/|true|false/g;
-const identifierRe = /[a-zA-Z_]\w*([.][a-zA-Z_]\w*)*/g;
-const rootRe = /^([^.]+)/;
-const exprCache = hashmap();
 
 function hasInterpolation(str) {
     return str.indexOf('{{') !== -1;
 }
 
-function addBindings(bindings, text, binding) {
-    getMatches(matcherRe, text, (matches) => {
-        const str = matches[1];
-        const tokens = extractTokens(str);
-        binding.setTokens(tokens);
-        if (!simpleIdentifierRe.test(str)) {
-            compileExpression(str, tokens);
-        }
-        tokens.forEach((token) => {
-            if (!(token in bindings)) {
-                bindings[token] = [];
-            }
-            bindings[token].push(binding);
-        });
-    });
-}
-
-function compileExpression(expr, tokens) {
-    if (!(expr in exprCache)) {
-        let body = `return ${expr};`;
-        if (tokens.length) {
-            const vars = tokens.map((value) => `${value} = this['${value}']`);
-            body = `var ${vars.join(',')}; ${body}`;
-        }
-        // eslint-disable-next-line no-new-func
-        exprCache[expr] = new Function(body);
+function addBinding(bindings, token, binding) {
+    if (!(token in bindings)) {
+        bindings[token] = [];
     }
+    bindings[token].push(binding);
 }
 
-function extractTokens(expr) {
-    return (expr.replace(expressionsRe, '').match(identifierRe) || []).reduce((tokens, token) => {
-        token = token.match(rootRe)[1];
-        if (tokens.indexOf(token) === -1) {
-            tokens.push(token);
-        }
-        return tokens;
-    }, []);
-}
-
-function getTokenValue(token, data) {
-    return (token in exprCache) ? exprCache[token].call(data) : data[token];
-}
-
-export function interpolate(tpl, data) {
-    return tpl.replace(matcherRe, (all, token) => getTokenValue(token, data));
-}
-
-export function interpolateDOM(tpl, data, fn) {
+function parseNode(tpl, node, bindings) {
     const frag = document.createDocumentFragment();
-    getMatches(nodeContentRe, tpl, (matches) => {
-        let value;
+    getMatches(nodeContentRe, node.data, (matches) => {
         if (matches[1] != null) {
             let token = matches[1], escape = false;
             if (token[0] === '&') {
                 escape = true;
                 token = token.substr(1);
             }
-            value = getTokenValue(token, data);
-            switch (typeof value) {
-                case 'string':
-                    if (!escape && isHTML(value)) {
-                        value = parseHTML(value);
-                        break;
-                    }
-                    // falls through
-                case 'number':
-                case 'boolean':
-                    value = document.createTextNode(escapeHTML(value));
-                    break;
-                default:
-                    if (value instanceof Templar) {
-                        value.mount(frag);
-                    }
-            }
+            const substitute = document.createTextNode('');
+            const marker = document.createTextNode('');
+            const binding = new NodeBinding(tpl, substitute, marker, token, escape);
+            addBinding(bindings, token, binding);
+            frag.appendChild(substitute);
+            frag.appendChild(marker);
         } else if (matches[2] != null) {
-            value = document.createTextNode(matches[2]);
-        }
-        if (value != null) {
-            fn(value);
-            if (value.nodeName) {
-                frag.appendChild(value);
-            }
+            frag.appendChild(document.createTextNode(matches[2]));
         }
     });
     return frag;
 }
 
-export function parseTemplate(tpl, nodes, bindings = hashmap()) {
+export function parseTemplate(tpl, nodes, bindings = {}) {
     return Array.from(nodes).reduce((bindings, node) => {
         if (node.nodeType === 3) {
             if (hasInterpolation(node.data)) {
-                const binding = new NodeBinding(tpl, node);
-                addBindings(bindings, node.data, binding);
+                node.replaceWith(parseNode(tpl, node, bindings));
             }
         } else if (node.nodeType === 1) {
             for (let i = 0, length = node.attributes.length; i < length; i++) {
                 const attr = node.attributes[i], name = attr.name, value = attr.value;
                 if (hasInterpolation(value)) {
                     const binding = new AttrBinding(tpl, node, name, value);
-                    addBindings(bindings, value, binding);
+                    const tokens = [];
+                    getMatches(matcherRe, value, (matches) => {
+                        const token = matches[1];
+                        tokens.push(token);
+                        addBinding(bindings, token, binding);
+                    });
+                    binding.setTokens(tokens);
                 }
             }
             if (node.hasChildNodes()) {
@@ -123,4 +64,8 @@ export function parseTemplate(tpl, nodes, bindings = hashmap()) {
         }
         return bindings;
     }, bindings);
+}
+
+export function interpolate(tpl, data) {
+    return tpl.replace(matcherRe, (all, token) => data[token]);
 }

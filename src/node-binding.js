@@ -1,43 +1,40 @@
-import Templar from './templar';
 import Binding from './binding';
-import { interpolateDOM } from './parser';
-import { getNodeIndex, getParent } from './util';
+import { patchNode } from './patch';
+import { isHTML, parseHTML, escapeHTML } from './util';
 
 export default class NodeBinding extends Binding {
-    constructor(tpl, node) {
-        super(tpl, node.data);
-        this.nodes = [node];
+    constructor(tpl, node, marker, token, escape) {
+        super(tpl);
+        this.node = node;
+        this.marker = marker;
+        this.token = token;
+        this.escape = escape;
     }
 
-    purge() {
-        this.nodes.forEach((node) => {
-            if (node instanceof Templar) {
-                node.unmount();
-                return;
-            }
-            const parent = node.parentNode;
-            if (parent) {
-                parent.removeChild(node);
-            }
-        });
+    shouldUpdate() {
+        return this.token in this.tpl.data;
     }
 
     render() {
         super.render();
-        const nodes = [];
-        const node = this.nodes[0];
-        const parent = getParent(node);
-        const index = getNodeIndex(parent, node);
-        const children = parent.childNodes;
-        this.purge();
-        const frag = interpolateDOM(this.text, this.tpl.data, (value) => {
-            if (value instanceof Templar) {
-                value.root = parent;
-            }
-            value.nodeType === 11 ? nodes.push.apply(nodes, value.childNodes) : nodes.push(value);
-        });
-        this.nodes = nodes;
-        index in children ? parent.insertBefore(frag, children[index]) : parent.appendChild(frag);
+        let value = this.tpl.data[this.token];
+        if (value === this.node) {
+            return;
+        }
+        switch (typeof value) {
+            case 'string':
+                if (!this.escape && isHTML(value)) {
+                    value = parseHTML(value);
+                    break;
+                }
+                // falls through
+            case 'number':
+            case 'boolean':
+                value = document.createTextNode(escapeHTML(value));
+                break;
+        }
+        const parent = this.marker.parentNode;
+        this.node = patchNode(parent, this.node, value, this.marker);
         this.tpl.events.emit('change', parent);
     }
 }
