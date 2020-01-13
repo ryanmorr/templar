@@ -58,7 +58,7 @@ describe('nodes', () => {
         expect(root.innerHTML).to.equal('<div>bar</div><span>bar</span>');
     });
 
-    it('should support passing a key/value map', () => {
+    it('should support setting multiple values via a key/value map', () => {
         const tpl = templar('<div>{{foo}}</div><span>{{bar}}</span>');
         tpl.mount(root);
 
@@ -87,12 +87,20 @@ describe('nodes', () => {
         expect(root.innerHTML).to.equal('<div>012</div>');
     });
 
-    it('should support parsing and interpolation of an HTML string', () => {
+    it('should parse an HTML string by default', () => {
         const tpl = templar('<div>{{foo}}</div>');
         tpl.mount(root);
 
         tpl.set('foo', '<strong>foo</strong>');
         expect(root.innerHTML).to.equal('<div><strong>foo</strong></div>');
+    });
+
+    it('should escape HTML characters if the token is immediately preceeded by an ampersand', () => {
+        const tpl = templar('<div>{{&foo}}</div>');
+        tpl.mount(root);
+
+        tpl.set('foo', '<i id="foo" class=\'bar\'>baz</i>');
+        expect(root.innerHTML).to.equal('<div>&lt;i id="foo" class=\'bar\'&gt;baz&lt;/i&gt;</div>');
     });
 
     it('should support nested templates', () => {
@@ -113,15 +121,7 @@ describe('nodes', () => {
         expect(root.innerHTML).to.equal('<div>123</div>');
     });
 
-    it('should support escaping HTML characters', () => {
-        const tpl = templar('<div>{{&foo}}</div>');
-        tpl.mount(root);
-
-        tpl.set('foo', '<i id="foo" class=\'bar\'>baz</i>');
-        expect(root.innerHTML).to.equal('<div>&lt;i id="foo" class=\'bar\'&gt;baz&lt;/i&gt;</div>');
-    });
-
-    it('should support multiple element interpolation between existing elements', () => {
+    it('should update multiple elements between existing elements', () => {
         const tpl1 = templar('<div>123 {{foo}} 456 {{bar}} 789 {{baz}} 101112</div>');
         const tpl2 = templar('<div>{{a}}</div><div>{{b}}</div>');
         tpl1.mount(root);
@@ -172,5 +172,33 @@ describe('nodes', () => {
         tpl.set('foo', 'bar');
 
         expect(onChange.called).to.equal(true);
+    });
+
+    it('should ignore leading/trailing line breaks', () => {
+        const tpl = templar(`
+            <div>{{foo}}</div>
+        `);
+        tpl.mount(root);
+
+        tpl.set('foo', 'bar')
+        expect(root.innerHTML).to.equal('<div>bar</div>');
+    });
+
+    it('should support an array of children', () => {
+        const tpl = templar('<div>{{foo}}</div>');
+        tpl.mount(root);
+
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < 3; i++) frag.appendChild(document.createTextNode(i));
+
+        tpl.set('foo', [
+            'foo',
+            document.createElement('span'),
+            document.createTextNode('bar'),
+            frag,
+            345,
+            '<em></em>'
+        ]);
+        expect(root.innerHTML).to.equal('<div>foo<span></span>bar012345&lt;em&gt;&lt;/em&gt;</div>');
     });
 });

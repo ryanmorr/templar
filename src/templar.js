@@ -6,7 +6,7 @@ export default class Templar {
     constructor(tpl, data) {
         this.id = uid();
         this.data = {};
-        const frag = parseHTML(tpl);
+        const frag = parseHTML(tpl.trim());
         this.root = this.frag = wrapFragment(frag, this.id);
         this.bindings = parseTemplate(this, frag.childNodes);
         this.events = new EventEmitter();

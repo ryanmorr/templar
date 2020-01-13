@@ -1,6 +1,6 @@
 import templar from '../../src';
 
-describe('attribute interpolation', () => {
+describe('attributes', () => {
     const root = document.createElement('div');
 
     beforeEach(() => {
@@ -8,23 +8,25 @@ describe('attribute interpolation', () => {
     });
 
     it('should update an attribute', () => {
-        const tpl = templar('<div id="{{id}}"></div>');
+        const tpl = templar('<div id="{{foo}}"></div>', {foo: 'bar'});
         tpl.mount(root);
 
-        tpl.set('id', 'foo');
-        expect(root.innerHTML).to.equal('<div id="foo"></div>');
+        tpl.set('foo', 'bar');
+        expect(root.innerHTML).to.equal('<div id="bar"></div>');
+
+        tpl.set('foo', 'baz');
+        expect(root.innerHTML).to.equal('<div id="baz"></div>');
     });
 
     it('should update multiple tokens within an attribute', () => {
         const tpl = templar('<div class="foo bar {{class1}} {{class2}}"></div>');
+        tpl.mount(root);
 
-        tpl.set('class1', 'baz');
-        tpl.set('class2', 'qux');
-
-        expect(tpl.query('div')[0].className.split(/\s+/).join(' ')).to.equal('foo bar baz qux');
+        tpl.set({'class1': 'baz', 'class2': 'qux'});
+        expect(root.innerHTML).to.equal('<div class="foo bar baz qux"></div>')
     });
 
-    it('should support the removal of an attribute if the value is null, undefined, or false', () => {
+    it('should remove an attribute if the value is null, undefined, or false', () => {
         const tpl = templar('<div disabled="{{disabled}}"></div>');
         const div = tpl.query('div')[0];
 
@@ -49,62 +51,82 @@ describe('attribute interpolation', () => {
 
     it('should support leading and trailing spaces between delimiters of tokens', () => {
         const tpl = templar('<div id="{{ foo }}"></div>');
+        tpl.mount(root);
 
         tpl.set('foo', 'bar');
-
-        expect(tpl.query('div')[0].id).to.equal('bar');
+        expect(root.innerHTML).to.equal('<div id="bar"></div>');
     });
 
     it('should support the same token more than once', () => {
-        const tpl = templar('<div id="{{value}}" class="{{value}}"></div>');
+        const tpl = templar('<div id="{{foo}}" class="{{foo}}"></div>');
+        tpl.mount(root);
 
-        tpl.set('value', 'foo');
-
-        expect(tpl.query('div')[0].id).to.equal('foo');
-        expect(tpl.query('div')[0].className).to.equal('foo');
+        tpl.set('foo', 'bar');
+        expect(root.innerHTML).to.equal('<div id="bar" class="bar"></div>');
     });
 
-    it('should support passing a key/value map', () => {
-        const tpl = templar('<div id="{{foo}}" class="{{bar}}"></div>');
+    it('should set CSS styles as a string', () => {
+        const tpl = templar('<div style="{{style}}"></div>');
+        tpl.mount(root);
 
-        tpl.set({foo: 123, bar: 456});
-
-        expect(tpl.query('div')[0].id).to.equal('123');
-        expect(tpl.query('div')[0].className).to.equal('456');
+        tpl.set('style', 'background-color: rgb(20, 20, 20); position: static;');
+        expect(root.innerHTML).to.equal('<div style="background-color: rgb(20, 20, 20); position: static;"></div>');
     });
 
-    it('should support default interpolation on initialization', () => {
-        const tpl = templar('<div id="{{foo}}"></div>', {foo: 123});
+    it('should set CSS styles as a key/value map', () => {
+        const tpl = templar('<div style="{{style}}"></div>');
+        tpl.mount(root);
 
-        expect(tpl.query('div')[0].id).to.equal('123');
+        tpl.set('style', {width: '30px', height: '42px'});
+        expect(root.innerHTML).to.equal('<div style="width: 30px; height: 42px;"></div>');
     });
 
-    it('should support the retrieval of the current value of a token', () => {
-        const tpl = templar('<div id="{{value}}"></div>');
+    it('should support CSS variables', (done) => {
+        const tpl = templar('<div style="{{style}}"></div>');
+        const div = tpl.query('div')[0];
+        tpl.mount(root);
+        document.body.appendChild(root);
 
-        tpl.set('value', 'foo');
+        tpl.set('style', {color: 'var(--color)', '--color': 'red'});
+        requestAnimationFrame(() => {
+            expect(div.style.color).to.equal('var(--color)');
+            expect(window.getComputedStyle(div).getPropertyValue('color')).to.equal('rgb(255, 0, 0)');
+            expect(window.getComputedStyle(div).getPropertyValue('--color')).to.equal('red');
 
-        expect(tpl.get('value')).to.equal('foo');
+            document.body.removeChild(root);
+            done();
+        }); 
     });
 
-    it('should support the style attribute', () => {
+    it('should support style templating', () => {
         const tpl = templar('<div style="width: {{width}}px; height: {{height}}px;"></div>');
+        tpl.mount(root);
 
         tpl.set('width', 10);
         tpl.set('height', 20);
-
-        expect(tpl.query('div')[0].style.cssText).to.equal('width: 10px; height: 20px;');
+        expect(root.innerHTML).to.equal('<div style="width: 10px; height: 20px;"></div>');
     });
 
-    it('should support the value property', () => {
+    it('should support boolean attributes', () => {
+        const tpl = templar('<input type="checkbox" checked={{checked}} />');
+        const checkbox = tpl.query('input')[0];
+
+        tpl.set('checked', true);
+        expect(checkbox.checked).to.equal(true);
+        
+        tpl.set('checked', false);
+        expect(checkbox.checked).to.equal(false);
+    });
+
+    it('should support dynamic properties', () => {
         const tpl = templar('<input type="text" value="{{value}}" />');
+        const input = tpl.query('input')[0];
 
         tpl.set('value', 'foo');
-
-        expect(tpl.query('input')[0].value).to.equal('foo');
+        expect(input.value).to.equal('foo');
     });
 
-    it('should add an event', (done) => {
+    it('should add an event listener', (done) => {
         const tpl = templar('<div onclick="{{click}}"></div>');
         const div = tpl.query('div')[0];
         const evt = new MouseEvent('click');
@@ -119,7 +141,7 @@ describe('attribute interpolation', () => {
         div.dispatchEvent(evt);
     });
 
-    it('should remove an event if the value is null', (done) => {
+    it('should remove an event listener if the value is null', (done) => {
         const tpl = templar('<div onclick="{{click}}"></div>');
         const div = tpl.query('div')[0];
         const removeEventSpy = sinon.spy(div, 'removeEventListener');

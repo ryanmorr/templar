@@ -24,7 +24,7 @@ export default class AttrBinding extends Binding {
     render() {
         super.render();
         const oldValue = this.value;
-        this.value = this.isEvent || this.text === '{{' + this.tokens[0] + '}}'
+        this.value = this.isEvent || this.text === ('{{' + this.tokens[0] + '}}')
             ? this.tpl.data[this.tokens[0]]
             : interpolate(this.text, this.tpl.data).trim();
         patchAttribute(this.node, this.attr, oldValue, this.value);

@@ -58,7 +58,7 @@ describe('templar', () => {
         expect(container.childNodes.length).to.equal(6);
     });
 
-    it('should support getting the template\'s root element', () => {
+    it('should return the root element of a template', () => {
         const tpl = templar('<div>foo</div>');
         const frag = tpl.frag;
         const container = document.createElement('div');
@@ -72,7 +72,7 @@ describe('templar', () => {
         expect(tpl.getRoot()).to.equal(frag);
     });
 
-    it('should support the retrieval of the current value of a token', () => {
+    it('should return the current value of a token', () => {
         const tpl = templar('<div>{{foo}}</div>', {foo: 'bar'});
 
         expect(tpl.get('foo')).to.equal('bar');
@@ -93,37 +93,9 @@ describe('templar', () => {
         expect(tpl.query('div')[0]).to.equal(tpl.getRoot().childNodes[1]);
         tpl.mount(container);
         expect(tpl.query('div')[0]).to.equal(tpl.getRoot().childNodes[1]);
-    });
+    });;
 
-    it('should support querying the template for an array of elements before it has been mounted to the DOM', () => {
-        const tpl = templar('<div></div>');
-        const els = tpl.query('div');
-
-        expect(els).to.be.an('array');
-        expect(els).to.deep.equal(Array.from(tpl.getRoot().querySelectorAll('div')));
-    });
-
-    it('should support querying the template for an array of elements after it has been mounted to the DOM', () => {
-        const tpl = templar('<div></div>');
-        const container = document.createElement('div');
-
-        tpl.mount(container);
-        const els = tpl.query('div');
-
-        expect(els).to.be.an('array');
-        expect(els).to.deep.equal(Array.from(container.querySelectorAll('div')));
-    });
-
-    it('should support method chaining', () => {
-        const tpl = templar('<div></div>');
-        const container = document.createElement('div');
-
-        expect(tpl.mount(container)).to.equal(tpl);
-        expect(tpl.unmount()).to.equal(tpl);
-        expect(tpl.set('foo', 'foo')).to.equal(tpl);
-    });
-
-    it('should dispatch the "mount" custom event when a template is mounted to the DOM', () => {
+    it('should dispatch the "mount" custom event when a template is appended to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
 
@@ -135,7 +107,7 @@ describe('templar', () => {
         expect(onMount.called).to.equal(true);
     });
 
-    it('should dispatch the "unmount" custom event when a template is unmounted from the DOM', () => {
+    it('should dispatch the "unmount" custom event when a template is removed from the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const container = document.createElement('div');
 
