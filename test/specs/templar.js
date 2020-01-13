@@ -1,7 +1,7 @@
 import templar from '../../src/templar';
 
 describe('templar', () => {
-    it('should support appending a template to the DOM', () => {
+    it('should append a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const root = document.createElement('div');
         const div = tpl.getRoot().childNodes[1];
@@ -11,7 +11,7 @@ describe('templar', () => {
         expect(root.contains(div)).to.equal(true);
     });
 
-    it('should support removing the template from the DOM', () => {
+    it('should remove a template from the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const root = document.createElement('div');
         const frag = tpl.frag;
@@ -38,7 +38,7 @@ describe('templar', () => {
         expect(tpl.isMounted()).to.equal(false);
     });
 
-    it('should support appending and removing a template between multiple elements', () => {
+    it('should support extracting a template between multiple elements', () => {
         const root = document.createElement('div');
         for (let i = 0; i < 3; i++) {
             root.appendChild(document.createElement('div'));
@@ -86,7 +86,7 @@ describe('templar', () => {
         expect(tpl.get('value')).to.equal(null);
     });
 
-    it('should support querying the template for elements', () => {
+    it('should query the template for elements', () => {
         const tpl = templar('<div></div>');
         const root = document.createElement('div');
 
