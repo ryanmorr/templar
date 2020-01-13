@@ -9,6 +9,7 @@ export default class AttrBinding extends Binding {
         this.attr = attr;
         this.text = text;
         this.value = null;
+        this.tokens = [];
         this.isEvent = attr.startsWith('on');
         if (this.isEvent) {
             this.node[attr] = null;
@@ -16,11 +17,7 @@ export default class AttrBinding extends Binding {
         }
     }
 
-    setTokens(tokens) {
-        this.tokens = tokens;
-    }
-
-    shouldUpdate() {
+    shouldRender() {
         return this.tokens.every((token) => token in this.tpl.data);
     }
 

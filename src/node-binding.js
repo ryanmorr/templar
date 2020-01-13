@@ -10,7 +10,7 @@ export default class NodeBinding extends Binding {
         this.escape = escape;
     }
 
-    shouldUpdate() {
+    shouldRender() {
         return this.token in this.tpl.data;
     }
 

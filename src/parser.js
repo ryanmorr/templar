@@ -18,13 +18,11 @@ function addBinding(bindings, token, binding) {
 
 function parseAttribute(tpl, node, bindings, name, value) {
     const binding = new AttrBinding(tpl, node, name, value);
-    const tokens = [];
     getMatches(matcherRe, value, (matches) => {
         const token = matches[1];
-        tokens.push(token);
+        binding.tokens.push(token);
         addBinding(bindings, token, binding);
     });
-    binding.setTokens(tokens);
 }
 
 function parseNode(tpl, node, bindings) {

@@ -52,7 +52,7 @@ export default class Templar {
         if (token in this.bindings) {
             const method = document.contains(this.getRoot()) ? 'scheduleRender' : 'render';
             this.bindings[token].forEach((binding) => {
-                if (binding.shouldUpdate()) {
+                if (binding.shouldRender()) {
                     binding[method]();
                 }
             });
