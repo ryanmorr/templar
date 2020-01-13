@@ -37,6 +37,9 @@ function attributeBinding(tpl, node, attr, text) {
     const render = () => {
         const oldValue = value;
         value = isEvent || text === ('{{' + tokens[0] + '}}') ? tpl.data[tokens[0]] : interpolate(text, tpl.data);
+        if (value === oldValue) {
+            return;
+        }
         patchAttribute(node, attr, oldValue, value);
         tpl.events.emit('attributechange', node, oldValue, value);
     };

@@ -174,6 +174,34 @@ describe('nodes', () => {
         expect(onChange.called).to.equal(true);
     });
 
+    it('should not emit a "change" custom event if a node is updated with the same value', () => {
+        const tpl = templar('<div>{{foo}}</div>');
+
+        const onChange = sinon.spy();
+        tpl.on('change', onChange);
+
+        const bar = document.createTextNode('bar');
+        tpl.set('foo', bar);
+        expect(onChange.callCount).to.equal(1);
+
+        tpl.set('foo', bar);
+        expect(onChange.callCount).to.equal(1);
+
+        const span = document.createElement('span');
+        tpl.set('foo', span);
+        expect(onChange.callCount).to.equal(2);
+
+        tpl.set('foo', span);
+        expect(onChange.callCount).to.equal(2);
+
+        const em = templar('<em></em>');
+        tpl.set('foo', em);
+        expect(onChange.callCount).to.equal(3);
+
+        tpl.set('foo', em);
+        expect(onChange.callCount).to.equal(3);
+    });
+
     it('should ignore leading/trailing line breaks', () => {
         const tpl = templar(`
             <div>{{foo}}</div>

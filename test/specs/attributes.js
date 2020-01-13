@@ -160,7 +160,7 @@ describe('attributes', () => {
         div.dispatchEvent(evt);
     });
 
-    it('should emit a "attributechange" custom event when a node attribute is updated', () => {
+    it('should emit an "attributechange" custom event when a node attribute is updated', () => {
         const tpl = templar('<div id="{{foo}}"></div>', {foo: 'foo'});
         const div = tpl.query('div')[0];
 
@@ -174,5 +174,24 @@ describe('attributes', () => {
         tpl.set('foo', 'bar');
 
         expect(onChange.called).to.equal(true);
+    });
+
+    it('should not emit an "attributechange" custom event if an attribute is updated with the same value', () => {
+        const tpl = templar('<div id="{{foo}}"></div>');
+
+        const onChange = sinon.spy();
+        tpl.on('attributechange', onChange);
+
+        tpl.set('foo', 'bar');
+        expect(onChange.callCount).to.equal(1);
+
+        tpl.set('foo', 'bar');
+        expect(onChange.callCount).to.equal(1);
+
+        tpl.set('foo', 123);
+        expect(onChange.callCount).to.equal(2);
+
+        tpl.set('foo', 123);
+        expect(onChange.callCount).to.equal(2);
     });
 });
