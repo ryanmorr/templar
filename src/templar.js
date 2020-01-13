@@ -64,7 +64,13 @@ export default class Templar {
     }
 
     query(selector) {
-        return Array.from(this.getRoot().querySelectorAll(selector));
+        const root = this.getRoot();
+        if (root === this.frag) {
+            Array.from(root.querySelectorAll(selector));
+        }
+        const tplNodes = getTemplateNodes(root, this.id);
+        const nodes = Array.from(root.querySelectorAll(selector));
+        return nodes.filter((node) => tplNodes.some((tplNode) => tplNode === node || tplNode.contains(node)));
     }
 
     getRoot() {
