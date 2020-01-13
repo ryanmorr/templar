@@ -1,87 +1,65 @@
-import templar from '../../src';
+import templar from '../../src/templar';
 
 describe('rendering', () => {
     it('should not schedule a frame if the template has been mounted to a parent element but not rendered within the DOM', () => {
         const tpl = templar('<div>{{foo}}</div>');
         const spy = sinon.spy(window, 'requestAnimationFrame');
-        const container = document.createElement('div');
+        const root = document.createElement('div');
 
-        tpl.mount(container);
+        tpl.mount(root);
         tpl.set('foo', 'aaa');
 
         expect(spy.called).to.equal(false);
-        expect(container.querySelector('div').textContent).to.equal('aaa');
+        expect(root.querySelector('div').textContent).to.equal('aaa');
 
         spy.restore();
     });
 
     it('should schedule a frame to update the template if it is rendered within the DOM', (done) => {
-        const tpl = templar('<div>{{foo}}</div>');
+        const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
         const spy = sinon.spy(window, 'requestAnimationFrame');
 
-        const container = document.createElement('div');
-        document.body.appendChild(container);
+        const root = document.createElement('div');
+        document.body.appendChild(root);
 
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        expect(spy.called).to.equal(true);
-
-        requestAnimationFrame(() => {
-            expect(container.querySelector('div').textContent).to.equal('aaa');
-            document.body.removeChild(container);
-            spy.restore();
-            done();
-        });
-    });
-
-    it('should only schedule one callback per frame per binding', (done) => {
-        const tpl = templar('<div id="{{foo}} {{bar}}"></div>');
-        const requestSpy = sinon.spy(window, 'requestAnimationFrame');
-        const renderSpy = sinon.spy(tpl.bindings.foo[0], 'render');
-
-        const container = document.createElement('div');
-        document.body.appendChild(container);
-
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        tpl.set('bar', 'bbb');
-        expect(requestSpy.callCount).to.equal(1);
-
-        tpl.set('bar', 'ccc');
-        expect(requestSpy.callCount).to.equal(1);
-
-        requestSpy.restore();
-        renderSpy.restore();
+        tpl.mount(root);
+        tpl.set('foo', 'abc');
+        expect(spy.callCount).to.equal(1);
 
         requestAnimationFrame(() => {
-            expect(renderSpy.callCount).to.equal(1);
-            expect(container.querySelector('div').id).to.equal('aaa ccc');
+            expect(root.innerHTML).to.equal('<div id="abc"></div>');
+            
+            tpl.set('bar', 123);
+            expect(spy.callCount).to.equal(3);
+            requestAnimationFrame(() => {
+                expect(root.innerHTML).to.equal('<div id="abc">123</div>');
 
-            document.body.removeChild(container);
-            done();
+                document.body.removeChild(root);
+                spy.restore();
+                done();
+            });
         });
     });
 
     it('should only schedule one frame per cycle', (done) => {
-        const tpl = templar('<div>{{foo}}</div><span>{{bar}}</span>');
-        const requestSpy = sinon.spy(window, 'requestAnimationFrame');
+        const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
+        const spy = sinon.spy(window, 'requestAnimationFrame');
 
-        const container = document.createElement('div');
-        document.body.appendChild(container);
+        const root = document.createElement('div');
+        document.body.appendChild(root);
 
-        tpl.mount(container);
-        tpl.set('foo', 'aaa');
-        expect(requestSpy.callCount).to.equal(1);
+        tpl.mount(root);
+        tpl.set('foo', 'abc');
+        expect(spy.callCount).to.equal(1);
 
-        tpl.set('bar', 'bbb');
-        expect(requestSpy.callCount).to.equal(1);
+        tpl.set('bar', 123);
+        expect(spy.callCount).to.equal(1);
 
         requestAnimationFrame(() => {
-            requestSpy.restore();
-            expect(container.querySelector('div').textContent).to.equal('aaa');
-            expect(container.querySelector('span').textContent).to.equal('bbb');
+            expect(root.innerHTML).to.equal('<div id="abc">123</div>');
 
-            document.body.removeChild(container);
+            document.body.removeChild(root);
+            spy.restore();
             done();
         });
     });

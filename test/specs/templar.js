@@ -1,4 +1,4 @@
-import templar from '../../src';
+import templar from '../../src/templar';
 
 describe('templar', () => {
     it('should support appending a template to the DOM', () => {

@@ -1,12 +1,22 @@
-import NodeBinding from './node-binding';
-import AttrBinding from './attr-binding';
+import { scheduleRender } from '@ryanmorr/schedule-render';
+import { patchNode, patchAttribute } from './patch';
 import { getMatches } from './util';
 
-const matcherRe = /\{\{\s*\&?(.+?)\s*\}\}/g;
+const matcherRe = /\{\{\s*&?(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;
 
 function hasInterpolation(str) {
     return str.indexOf('{{') !== -1;
+}
+
+function interpolate(tpl, data) {
+    return tpl.replace(matcherRe, (all, token) => data[token]).trim();
+}
+
+function getTokens(value) {
+    const tokens = [];
+    getMatches(matcherRe, value, (matches) => tokens.push(matches[1]));
+    return tokens;
 }
 
 function addBinding(bindings, token, binding) {
@@ -16,13 +26,56 @@ function addBinding(bindings, token, binding) {
     bindings[token].push(binding);
 }
 
+function attributeBinding(tpl, node, attr, text) {
+    let value = null;
+    const tokens = getTokens(text);
+    const isEvent = attr.startsWith('on');
+    if (isEvent) {
+        node[attr] = null;
+        node.removeAttribute(attr);
+    }
+    const render = () => {
+        const oldValue = value;
+        value = isEvent || text === ('{{' + tokens[0] + '}}') ? tpl.data[tokens[0]] : interpolate(text, tpl.data);
+        patchAttribute(node, attr, oldValue, value);
+        tpl.events.emit('attributechange', node, oldValue, value);
+    };
+    return () => {
+        if (tokens.every((token) => token in tpl.data)) {
+            if (document.contains(node)) {
+                scheduleRender(render);
+            } else {
+                render();
+            }
+        }
+    };
+}
+
+function nodeBinding(tpl, node, marker, token, escape) {
+    let value = null;
+    const render = () => {
+        value = tpl.data[token];
+        if (value === node) {
+            return;
+        }
+        const parent = marker.parentNode;
+        node = patchNode(parent, node, value, escape, marker);
+        tpl.events.emit('change', parent);
+    };
+    return () => {
+        if (token in tpl.data) {
+            if (document.contains(marker)) {
+                scheduleRender(render);
+            } else {
+                render();
+            }
+        }
+    };
+}
+
 function parseAttribute(tpl, node, bindings, name, value) {
-    const binding = new AttrBinding(tpl, node, name, value);
-    getMatches(matcherRe, value, (matches) => {
-        const token = matches[1];
-        binding.tokens.push(token);
-        addBinding(bindings, token, binding);
-    });
+    const binding = attributeBinding(tpl, node, name, value);
+    getTokens(value).forEach((token) => addBinding(bindings, token, binding));
 }
 
 function parseNode(tpl, node, bindings) {
@@ -36,7 +89,7 @@ function parseNode(tpl, node, bindings) {
             }
             const substitute = document.createTextNode('');
             const marker = document.createTextNode('');
-            const binding = new NodeBinding(tpl, substitute, marker, token, escape);
+            const binding = nodeBinding(tpl, substitute, marker, token, escape);
             addBinding(bindings, token, binding);
             frag.appendChild(substitute);
             frag.appendChild(marker);
@@ -66,8 +119,4 @@ export function parseTemplate(tpl, nodes, bindings = {}) {
         }
         return bindings;
     }, bindings);
-}
-
-export function interpolate(tpl, data) {
-    return tpl.replace(matcherRe, (all, token) => data[token]);
 }

@@ -2,9 +2,10 @@ import EventEmitter from './event-emitter';
 import { parseTemplate } from './parser';
 import { parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
 
-export default class Templar {
+class Templar {
     constructor(tpl, data) {
         this.id = uid();
+        this.templar = true;
         this.data = {};
         const frag = parseHTML(tpl.trim());
         this.root = this.frag = wrapFragment(frag, this.id);
@@ -22,7 +23,6 @@ export default class Templar {
         }
         root.appendChild(this.frag);
         this._setRoot(root);
-        return this;
     }
 
     unmount() {
@@ -34,7 +34,6 @@ export default class Templar {
             this.mounted = false;
             this.events.emit('unmount');
         }
-        return this;
     }
 
     get(token) {
@@ -47,15 +46,7 @@ export default class Templar {
             return;
         }
         this.data[token] = value;
-        if (token in this.bindings) {
-            const method = document.contains(this.getRoot()) ? 'scheduleRender' : 'render';
-            this.bindings[token].forEach((binding) => {
-                if (binding.shouldRender()) {
-                    binding[method]();
-                }
-            });
-        }
-        return this;
+        this.bindings[token].forEach((binding) => binding());
     }
 
     on(name, callback) {
@@ -86,4 +77,8 @@ export default class Templar {
         this.mounted = true;
         this.events.emit('mount', root);
     }
+}
+
+export default function templar(tpl, data) {
+    return new Templar(tpl, data);
 }

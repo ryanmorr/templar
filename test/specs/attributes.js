@@ -1,4 +1,4 @@
-import templar from '../../src';
+import templar from '../../src/templar';
 
 describe('attributes', () => {
     const root = document.createElement('div');
@@ -23,7 +23,7 @@ describe('attributes', () => {
         tpl.mount(root);
 
         tpl.set({'class1': 'baz', 'class2': 'qux'});
-        expect(root.innerHTML).to.equal('<div class="foo bar baz qux"></div>')
+        expect(root.innerHTML).to.equal('<div class="foo bar baz qux"></div>');
     });
 
     it('should remove an attribute if the value is null, undefined, or false', () => {

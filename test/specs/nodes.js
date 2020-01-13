@@ -1,4 +1,4 @@
-import templar from '../../src';
+import templar from '../../src/templar';
 
 describe('nodes', () => {
     const root = document.createElement('div');
@@ -72,7 +72,7 @@ describe('nodes', () => {
 
         const el = document.createElement('strong');
         tpl.set('foo', el);
-        expect(root.innerHTML).to.equal('<div><strong></strong></div>')
+        expect(root.innerHTML).to.equal('<div><strong></strong></div>');
         expect(root.querySelector('strong')).to.equal(el);
     });
 
@@ -180,7 +180,7 @@ describe('nodes', () => {
         `);
         tpl.mount(root);
 
-        tpl.set('foo', 'bar')
+        tpl.set('foo', 'bar');
         expect(root.innerHTML).to.equal('<div>bar</div>');
     });
 

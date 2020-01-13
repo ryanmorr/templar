@@ -21,6 +21,10 @@ export function isHTML(str) {
     return htmlRe.test(str);
 }
 
+export function isTemplate(obj) {
+    return typeof obj === 'object' && obj.templar === true;
+}
+
 export function getMatches(re, str, fn) {
     let matches;
     if (re.global) {
@@ -49,7 +53,7 @@ export function parseHTML(html) {
 export function wrapFragment(frag, id) {
     const first = document.createTextNode('');
     const last = document.createTextNode('');
-    first.templar = last.templar = id;
+    first.templarId = last.templarId = id;
     frag.insertBefore(first, frag.firstChild);
     frag.appendChild(last);
     return frag;
@@ -59,9 +63,9 @@ export function getTemplateNodes(root, id) {
     const elements = [];
     let node = root.firstChild, isTpl = false;
     while (node) {
-        if (node.templar === id && !isTpl) {
+        if (node.templarId === id && !isTpl) {
             isTpl = true;
-        } else if (node.templar === id && isTpl) {
+        } else if (node.templarId === id && isTpl) {
             isTpl = false;
             elements.push(node);
         }

@@ -7,7 +7,7 @@ import minify from 'rollup-plugin-babel-minify';
 const banner = `/*! ${pkg.name} v${pkg.version} | ${pkg.homepage} */`;
 
 export default {
-    input: 'src/index.js',
+    input: 'src/templar.js',
     output: [
         {
             banner,

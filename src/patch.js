@@ -1,5 +1,4 @@
-import Templar from './templar';
-import { isHTML, parseHTML } from './util';
+import { isHTML, isTemplate, parseHTML } from './util';
 
 function arrayToFrag(nodes) {
     return nodes.reduce((frag, node) => frag.appendChild(getNode(node)) && frag, document.createDocumentFragment());
@@ -21,7 +20,7 @@ function clear(parent, element) {
 }
 
 function getNode(value, escape) {
-    if (value instanceof Templar) {
+    if (isTemplate(value)) {
         return value;
     }
     if (value == null) {
@@ -43,7 +42,7 @@ function getNode(value, escape) {
 }
 
 function insertBefore(parent, node, referenceNode) {
-    if (node instanceof Templar) {
+    if (isTemplate(node)) {
         node.unmount();
         parent.insertBefore(node.frag, referenceNode);
         node._setRoot(parent);
@@ -53,7 +52,7 @@ function insertBefore(parent, node, referenceNode) {
 }
 
 function replace(parent, node, referenceNode) {
-    if (node instanceof Templar) {
+    if (isTemplate(node)) {
         node.unmount();
         parent.replaceChild(node.frag, referenceNode);
         node._setRoot(parent);
@@ -72,7 +71,7 @@ export function patchNode(parent, oldNode, newValue, escape, marker) {
     }
     const newNode = getNode(newValue, escape);
     const resolvedNode = resolveNode(newNode);
-    if (oldNode instanceof Templar) {
+    if (isTemplate(oldNode)) {
         oldNode.unmount();
         insertBefore(parent, newNode, marker);
     } else if (Array.isArray(oldNode)) {
