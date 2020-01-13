@@ -1,22 +1,6 @@
 import Templar from './templar';
 import { isHTML, parseHTML } from './util';
 
-function coerce(value) {
-    if (value === 'true') {
-        return true;
-    }
-    if (value === 'false') {
-        return false;
-    }
-    if (value === 'null') {
-        return null;
-    }
-    if (value === 'undefined') {
-        return void 0;
-    }
-    return value;
-}
-
 function arrayToFrag(nodes) {
     return nodes.reduce((frag, node) => frag.appendChild(getNode(node)) && frag, document.createDocumentFragment());
 }
@@ -115,7 +99,6 @@ export function patchNode(parent, oldNode, newValue, escape, marker) {
 }
 
 export function patchAttribute(element, name, oldVal, newVal) {
-    newVal = coerce(newVal);
     if (name === 'style') {
         if (typeof newVal === 'string') {
             element.style.cssText = newVal;
