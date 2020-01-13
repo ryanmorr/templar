@@ -57,11 +57,18 @@ class Templar {
     query(selector) {
         const root = this.getRoot();
         if (root === this.frag) {
-            Array.from(root.querySelectorAll(selector));
+            return Array.from(root.querySelectorAll(selector));
         }
         const tplNodes = getTemplateNodes(root, this.id);
-        const nodes = Array.from(root.querySelectorAll(selector));
-        return nodes.filter((node) => tplNodes.some((tplNode) => tplNode === node || tplNode.contains(node)));
+        return Array.from(root.querySelectorAll(selector)).filter((node) => tplNodes.some((tplNode) => {
+            if (tplNode === node) {
+                return true;
+            }
+            if (tplNode.nodeType === 1 && tplNode.contains(node)) {
+                return true;
+            }
+            return false;
+        }));
     }
 
     getRoot() {
