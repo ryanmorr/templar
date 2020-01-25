@@ -4,11 +4,11 @@
 [![Build Status][build-image]][build-url]
 [![License][license-image]][license-url]
 
-> A simple, yet intuitive DOM templating engine
+> A simple and versatile DOM templating engine
 
 ## Install
 
-Download the [development](http://github.com/ryanmorr/templar/raw/master/dist/templar.js) or [minified](http://github.com/ryanmorr/templar/raw/master/dist/templar.min.js) version, or install via NPM:
+Download the [CJS](https://github.com/ryanmorr/templar/raw/master/dist/templar.cjs.js), [ESM](https://github.com/ryanmorr/templar/raw/master/dist/templar.esm.js), [UMD](https://github.com/ryanmorr/templar/raw/master/dist/templar.umd.js) versions or install via NPM:
 
 ``` sh
 npm install @ryanmorr/templar
@@ -16,7 +16,7 @@ npm install @ryanmorr/templar
 
 ## Usage
 
-Template syntax is similar to your standard mustache templates with double curly braces (`{{` `}}`) serving as delimiters to internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template, Take for instance the following:
+Template syntax is similar to your standard mustache templates with double curly braces (`{{` `}}`) serving as delimiters to internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template::
 
 ```javascript
 import templar from '@ryanmorr/templar';
@@ -32,27 +32,20 @@ tpl.set('content', 'bar');
 tpl.mount(document.body);
 ```
 
-Outputs:
-
-```html
-<div id="foo">bar</div>
-```
-
 Internally, templar updates only the parts of the DOM that have changed and makes use of `requestAnimationFrame` to [batch DOM manipulations for increased performance](http://wilsonpage.co.uk/preventing-layout-thrashing/).
 
 ## Interpolation
 
-Supports simple interpolation with primitive values (strings, numbers, and booleans):
+Supports basic interpolation with strings and numbers:
 
 ```javascript
-const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
+const tpl = templar('<div id="{{foo}}">{{bar}}</div>');
 
 tpl.set('foo', 'aaa');
 tpl.set('bar', 123);
-tpl.set('baz', true);
 ```
 
-DOM nodes are also supported, including elements, text nodes, document fragments, and HTML strings:
+DOM nodes are also supported, including text nodes, elements, document fragments, and HTML strings:
 
 ```javascript
 const tpl = templar('<div>{{foo}} {{bar}} {{baz}}</div>');
@@ -62,6 +55,15 @@ tpl.set('bar', document.createDocumentFragment());
 tpl.set('baz', '<strong>bold</strong>');
 ```
 
+Set CSS styles as a string or object:
+
+```javascript
+const tpl = templar('<div style="{{style}}"></div>');
+
+tpl.set('style', 'width: 10px; height: 10px');
+tpl.set('style', {width: '20px', height: '20px'});
+```
+
 Add and remove event listeners:
 
 ```javascript
@@ -69,21 +71,6 @@ const tpl = templar('<button onclick={{onClick}}>Click Me!</button>');
 
 tpl.set('onClick', (e) => {
     // Handle the click event
-});
-```
-
-Use simple expressions, such as basic arithmetics, the ternary operator, array access, dot-notation, and function invocations:
-
-```javascript
-const tpl = templar('<div>{{foo ? foo + bar() + array[1] + obj.baz.qux : 0}}</div>');
-
-tpl.set('foo', 2);
-tpl.set('bar', () => 4);
-tpl.set('array', [10, 20, 30]);
-tpl.set('obj', {
-    baz: {
-        qux: 8
-    }
 });
 ```
 
@@ -105,13 +92,13 @@ const tpl = templar('<div>{{&foo}}</div>');
 tpl.set('foo', '<i>foo</i>'); //=> &lt;i&gt;foo&lt;/i&gt;
 ```
 
-Setting an attribute/event to null will remove it from the element:
+Setting an attribute/event to null, undefined, or false will remove it from the element:
 
 ```javascript
 const tpl = templar('<div id="{{id}}"></div>');
 
 tpl.set('id', null);
-tpl.find('div').hasAttribute('id'); //=> false
+tpl.query('div')[0].hasAttribute('id'); //=> false
 ```
 
 ## API
@@ -129,7 +116,7 @@ const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
 
 ### templar#set(token, [value])
 
-Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once. Returns the `templar` instance to support method chaining:
+Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once:
 
 ```javascript
 const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
@@ -156,7 +143,7 @@ tpl.get('foo'); //=> 123
 
 ### templar#mount(root)
 
-Append the template to an element. Returns the `templar` instance to support method chaining:
+Append the template to an element:
 
 ```javascript
 const tpl = templar('<div>{{foo}}</div>');
@@ -166,7 +153,7 @@ tpl.mount(document.body);
 
 ### templar#unmount()
 
-Remove the template from its parent element. Returns the `templar` instance to support method chaining:
+Remove the template from its parent element:
 
 ```javascript
 const tpl = templar('<div>{{foo}}</div>');
@@ -177,13 +164,13 @@ tpl.unmount();
 
 ### templar#on(name, callback)
 
-Subcribe a callback function to one of the 4 custom events (mount, unmount, change, attributechange). Returns a function capable of removing the listener.
+Subcribe a callback function to a custom event (mount, unmount, change, attributechange). Returns a function capable of removing the listener.
 
 ```javascript
 const tpl = templar('<div>{{foo}}</div>');
 
 tpl.on('mount', (element) => {
-    // Executed when the template is appended to an element\
+    // Executed when the template is appended to an element
 });
 
 tpl.on('unmount', () => {
@@ -194,8 +181,9 @@ tpl.on('change', (element) => {
     // Executed when the contents of an element are updated
 });
 
-tpl.on('attributechange', (element, oldValue, newValue) => {
+const off = tpl.on('attributechange', (element, oldValue, newValue) => {
     // Executed when an attribute changes
+    off(); // Remove custom event listener
 });
 ```
 
@@ -214,7 +202,7 @@ tpl.getRoot(); //=> container
 
 ### templar#query(selector)
 
-Query the template for all the elements matching the provided CSS selector string and return an array:
+Query only the template for every element matching the provided CSS selector and return an array:
 
 ```javascript
 const tpl = templar('<span></span><span></span><span></span>');
