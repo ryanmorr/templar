@@ -194,4 +194,20 @@ describe('attributes', () => {
         tpl.set('foo', 123);
         expect(onChange.callCount).to.equal(2);
     });
+
+    it('should support the input list attribute', () => {
+        const tpl = templar('<input list="{{list}}" />');
+        const input = tpl.query('input')[0];
+
+        tpl.set('list', 'foo');
+        expect(input.getAttribute('list')).to.equal('foo');
+    });
+
+    it('should support the input form attribute', () => {
+        const tpl = templar('<input form="{{form}}" />');
+        const input = tpl.query('input')[0];
+
+        tpl.set('form', 'foo');
+        expect(input.getAttribute('form')).to.equal('foo');
+    });
 });

@@ -110,7 +110,7 @@ export function patchAttribute(element, name, oldVal, newVal) {
         } else if (oldVal == null) {
             element.addEventListener(name, newVal);
         }
-    } else if (name in element) {
+    } else if (name !== 'form' && name !== 'list' && name in element) {
         element[name] = newVal == null ? '' : newVal;
     } else if (newVal == null || newVal === false) {
         element.removeAttribute(name);
