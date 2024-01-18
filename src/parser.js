@@ -1,4 +1,4 @@
-import { scheduleRender } from '@ryanmorr/schedule-render';
+import scheduleRender from '@ryanmorr/schedule-render';
 import { patchNode, patchAttribute } from './patch';
 import { getMatches } from './util';
 
