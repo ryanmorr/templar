@@ -1,14 +1,14 @@
 # templar
 
 [![Version Badge][version-image]][project-url]
-[![Build Status][build-image]][build-url]
 [![License][license-image]][license-url]
+[![Build Status][build-image]][build-url]
 
 > A simple and versatile DOM templating engine
 
 ## Install
 
-Download the [CJS](https://github.com/ryanmorr/templar/raw/master/dist/templar.cjs.js), [ESM](https://github.com/ryanmorr/templar/raw/master/dist/templar.esm.js), [UMD](https://github.com/ryanmorr/templar/raw/master/dist/templar.umd.js) versions or install via NPM:
+Download the [CJS](https://github.com/ryanmorr/templar/raw/master/dist/cjs/templar.js), [ESM](https://github.com/ryanmorr/templar/raw/master/dist/esm/templar.js), [UMD](https://github.com/ryanmorr/templar/raw/master/dist/umd/templar.js) versions or install via NPM:
 
 ``` sh
 npm install @ryanmorr/templar
@@ -16,7 +16,7 @@ npm install @ryanmorr/templar
 
 ## Usage
 
-Template syntax is similar to your standard mustache templates with double curly braces (`{{` `}}`) serving as delimiters to internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template::
+Template syntax is similar to your standard mustache templates with double curly braces (`{{` `}}`) serving as delimiters to internal logic. The tokens found between the delimiters are the reference point for the value of its place in the template:
 
 ```javascript
 import templar from '@ryanmorr/templar';
@@ -32,9 +32,37 @@ tpl.set('content', 'bar');
 tpl.mount(document.body);
 ```
 
-Internally, templar updates only the parts of the DOM that have changed and makes use of `requestAnimationFrame` to [batch DOM manipulations for increased performance](http://wilsonpage.co.uk/preventing-layout-thrashing/).
+## API
 
-## Interpolation
+### `templar(tpl, data?)`
+
+Create a new template by providing a template string and optionally provide a data object to set default values:
+
+```javascript
+const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
+    foo: 'abc',
+    bar: 123
+});
+```
+
+------
+
+### `set(token, value?)`
+
+Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once:
+
+```javascript
+const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
+
+// Set a single value
+tpl.set('foo', 'aaa');
+
+// Set multiple values
+tpl.set({
+    bar: 'bbb',
+    baz: 'ccc'
+});
+```
 
 Supports basic interpolation with strings and numbers:
 
@@ -92,46 +120,9 @@ const tpl = templar('<div>{{&foo}}</div>');
 tpl.set('foo', '<i>foo</i>'); //=> &lt;i&gt;foo&lt;/i&gt;
 ```
 
-Setting an attribute/event to null, undefined, or false will remove it from the element:
+------
 
-```javascript
-const tpl = templar('<div id="{{id}}"></div>');
-
-tpl.set('id', null);
-tpl.query('div')[0].hasAttribute('id'); //=> false
-```
-
-## API
-
-### templar(tpl, [data])
-
-Create a new template by providing a template string and optionally provide a data object to set default values:
-
-```javascript
-const tpl = templar('<div id="{{foo}}">{{bar}}</div>', {
-    foo: 'abc',
-    bar: 123
-});
-```
-
-### templar#set(token, [value])
-
-Set the value of a token and trigger the template to dynamically update with the new value. You can also provide an object literal to set multiple tokens at once:
-
-```javascript
-const tpl = templar('<div id="{{foo}}">{{bar}} {{baz}}</div>');
-
-// Set a single value
-tpl.set('foo', 'aaa');
-
-// Set multiple values
-tpl.set({
-    bar: 'bbb',
-    baz: 'ccc'
-});
-```
-
-### templar#get(token)
+### `get(token)`
 
 Get the current value of a token:
 
@@ -141,7 +132,9 @@ const tpl = templar('<div id="{{foo}}"></div>', {foo: 123});
 tpl.get('foo'); //=> 123
 ```
 
-### templar#mount(root)
+------
+
+### `mount(parent)`
 
 Append the template to an element:
 
@@ -151,7 +144,9 @@ const tpl = templar('<div>{{foo}}</div>');
 tpl.mount(document.body);
 ```
 
-### templar#unmount()
+------
+
+### `unmount()`
 
 Remove the template from its parent element:
 
@@ -162,7 +157,9 @@ tpl.mount(document.body);
 tpl.unmount();
 ```
 
-### templar#on(name, callback)
+------
+
+### `on(name, callback)`
 
 Subcribe a callback function to a custom event (mount, unmount, change, attributechange). Returns a function capable of removing the listener.
 
@@ -187,51 +184,13 @@ const off = tpl.on('attributechange', (element, oldValue, newValue) => {
 });
 ```
 
-### templar#getRoot()
-
-Get the root element of the template. This is the document fragment before it has been mounted, and the parent element after:
-
-```javascript
-const tpl = templar('<div>{{foo}}</div>');
-const container = document.createElement('div');
-
-tpl.getRoot(); //=> document fragment
-tpl.mount(container);
-tpl.getRoot(); //=> container
-```
-
-### templar#query(selector)
-
-Query only the template for every element matching the provided CSS selector and return an array:
-
-```javascript
-const tpl = templar('<span></span><span></span><span></span>');
-
-tpl.query('span').forEach((el) => {
-    // Do something with the span elements
-});
-```
-
-### templar#isMounted()
-
-Check if the template has been mounted to a parent element:
-
-```javascript
-const tpl = templar('<div>{{foo}}</div>');
-const container = document.createElement('div');
-
-tpl.isMounted(); //=> false
-tpl.mount(container);
-tpl.isMounted(); //=> true
-```
-
 ## License
 
 This project is dedicated to the public domain as described by the [Unlicense](http://unlicense.org/).
 
 [project-url]: https://github.com/ryanmorr/templar
-[version-image]: https://badge.fury.io/gh/ryanmorr%2Ftemplar.svg
-[build-url]: https://travis-ci.org/ryanmorr/templar
-[build-image]: https://travis-ci.org/ryanmorr/templar.svg
-[license-image]: https://img.shields.io/badge/license-Unlicense-blue.svg
+[version-image]: https://img.shields.io/github/package-json/v/ryanmorr/templar?color=blue&style=flat-square
+[build-url]: https://github.com/ryanmorr/templar/actions
+[build-image]: https://img.shields.io/github/actions/workflow/status/ryanmorr/templar/node.js.yml?style=flat-square
+[license-image]: https://img.shields.io/github/license/ryanmorr/templar?color=blue&style=flat-square
 [license-url]: UNLICENSE
