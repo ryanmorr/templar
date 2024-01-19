@@ -28,6 +28,7 @@ function addBinding(bindings, token, binding) {
 
 function attributeBinding(tpl, node, attr, text) {
     let value = null;
+    let rendering = false;
     const tokens = getTokens(text);
     const isEvent = attr.startsWith('on');
     if (isEvent) {
@@ -35,6 +36,7 @@ function attributeBinding(tpl, node, attr, text) {
         node.removeAttribute(attr);
     }
     const render = () => {
+        rendering = false;
         const oldValue = value;
         value = isEvent || text === ('{{' + tokens[0] + '}}') ? tpl.data[tokens[0]] : interpolate(text, tpl.data);
         if (value === oldValue) {
@@ -44,7 +46,8 @@ function attributeBinding(tpl, node, attr, text) {
         tpl.events.emit('attributechange', node, oldValue, value);
     };
     return () => {
-        if (tokens.every((token) => token in tpl.data)) {
+        if (!rendering && tokens.every((token) => token in tpl.data)) {
+            rendering = true;
             if (document.contains(node)) {
                 scheduleRender(render);
             } else {
@@ -56,7 +59,9 @@ function attributeBinding(tpl, node, attr, text) {
 
 function nodeBinding(tpl, node, marker, token, escape) {
     let value = null;
+    let rendering = false;
     const render = () => {
+        rendering = false;
         value = tpl.data[token];
         if (value === node) {
             return;
@@ -66,7 +71,8 @@ function nodeBinding(tpl, node, marker, token, escape) {
         tpl.events.emit('change', parent);
     };
     return () => {
-        if (token in tpl.data) {
+        if (!rendering && token in tpl.data) {
+            rendering = true;
             if (document.contains(marker)) {
                 scheduleRender(render);
             } else {

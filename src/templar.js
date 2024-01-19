@@ -18,16 +18,16 @@ class Templar {
     }
 
     mount(root) {
-        if (this.isMounted()) {
+        if (this.mounted) {
             this.unmount();
         }
         root.appendChild(this.frag);
-        this._setRoot(root);
+        this.setRoot(root);
     }
 
     unmount() {
-        if (this.isMounted()) {
-            getTemplateNodes(this.getRoot(), this.id).forEach((node) => {
+        if (this.mounted) {
+            getTemplateNodes(this.root, this.id).forEach((node) => {
                 this.frag.appendChild(node);
             });
             this.root = this.frag;
@@ -54,32 +54,7 @@ class Templar {
         return () => this.events.remove(name, callback);
     }
 
-    query(selector) {
-        const root = this.getRoot();
-        if (root === this.frag) {
-            return Array.from(root.querySelectorAll(selector));
-        }
-        const tplNodes = getTemplateNodes(root, this.id);
-        return Array.from(root.querySelectorAll(selector)).filter((node) => tplNodes.some((tplNode) => {
-            if (tplNode === node) {
-                return true;
-            }
-            if (tplNode.nodeType === 1 && tplNode.contains(node)) {
-                return true;
-            }
-            return false;
-        }));
-    }
-
-    getRoot() {
-        return this.root;
-    }
-
-    isMounted() {
-        return this.mounted;
-    }
-
-    _setRoot(root) {
+    setRoot(root) {
         this.root = root;
         this.mounted = true;
         this.events.emit('mount', root);

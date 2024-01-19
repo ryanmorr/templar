@@ -4,7 +4,7 @@ describe('templar', () => {
     it('should append a template to the DOM', () => {
         const tpl = templar('<div>foo</div>');
         const root = document.createElement('div');
-        const div = tpl.getRoot().childNodes[1];
+        const div = tpl.frag.childNodes[1];
 
         tpl.mount(root);
 
@@ -23,19 +23,6 @@ describe('templar', () => {
         expect(root.contains(div)).to.equal(false);
         expect(frag.contains(div)).to.equal(true);
         expect(frag.childNodes.length).to.equal(3);
-    });
-
-    it('should know whether the template has been mounted to a parent element', () => {
-        const tpl = templar('<div></div>');
-        const root = document.createElement('div');
-
-        expect(tpl.isMounted()).to.equal(false);
-
-        tpl.mount(root);
-        expect(tpl.isMounted()).to.equal(true);
-
-        tpl.unmount();
-        expect(tpl.isMounted()).to.equal(false);
     });
 
     it('should support extracting a template between multiple elements', () => {
@@ -58,20 +45,6 @@ describe('templar', () => {
         expect(root.childNodes.length).to.equal(6);
     });
 
-    it('should return the root element of a template', () => {
-        const tpl = templar('<div>foo</div>');
-        const frag = tpl.frag;
-        const root = document.createElement('div');
-
-        expect(tpl.getRoot()).to.equal(frag);
-
-        tpl.mount(root);
-        expect(tpl.getRoot()).to.equal(root);
-
-        tpl.unmount();
-        expect(tpl.getRoot()).to.equal(frag);
-    });
-
     it('should return the current value of a token', () => {
         const tpl = templar('<div>{{foo}}</div>', {foo: 'bar'});
 
@@ -84,28 +57,6 @@ describe('templar', () => {
     it('should return null for the value of a non-existent token', () => {
         const tpl = templar('<div></div>');
         expect(tpl.get('value')).to.equal(null);
-    });
-
-    it('should query the template for elements', () => {
-        const tpl = templar('<div></div>');
-        const root = document.createElement('div');
-
-        expect(tpl.query('div')[0]).to.equal(tpl.getRoot().childNodes[1]);
-        tpl.mount(root);
-        expect(tpl.query('div')[0]).to.equal(tpl.getRoot().childNodes[1]);
-    });
-
-    it('should not return non-template elements when querying', () => {
-        const tpl = templar('<div></div><div><div></div></div><div></div>');
-        const divs = tpl.query('div');
-
-        const root = document.createElement('div');
-        root.appendChild(document.createElement('div'));
-        tpl.mount(root);
-        root.appendChild(document.createElement('div'));
-
-        const elements = tpl.query('div');
-        expect(elements).to.deep.equal(divs);
     });
 
     it('should dispatch the "mount" custom event when a template is appended to the DOM', () => {

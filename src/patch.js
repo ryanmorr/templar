@@ -45,7 +45,7 @@ function insertBefore(parent, node, referenceNode) {
     if (isTemplate(node)) {
         node.unmount();
         parent.insertBefore(node.frag, referenceNode);
-        node._setRoot(parent);
+        node.setRoot(parent);
     } else {
         parent.insertBefore(node, referenceNode);
     }
@@ -55,7 +55,7 @@ function replace(parent, node, referenceNode) {
     if (isTemplate(node)) {
         node.unmount();
         parent.replaceChild(node.frag, referenceNode);
-        node._setRoot(parent);
+        node.setRoot(parent);
     } else {
         parent.replaceChild(node, referenceNode);
     }
@@ -94,9 +94,12 @@ export function patchAttribute(element, name, oldVal, newVal) {
         if (typeof newVal === 'string') {
             element.style.cssText = newVal;
         } else {
-            for (const key in newVal) {
+            if (typeof oldVal === 'string') {
+				element.style.cssText = oldVal = '';
+			}
+            for (const key in Object.assign({}, newVal, oldVal)) {
                 const style = newVal == null || newVal[key] == null ? '' : newVal[key];
-                if (key[0] === '-') {
+                if (key.startsWith('--')) {
                     element.style.setProperty(key, style);
                 } else {
                     element.style[key] = style;
@@ -107,14 +110,30 @@ export function patchAttribute(element, name, oldVal, newVal) {
         name = name.slice(2).toLowerCase();
         if (newVal == null) {
             element.removeEventListener(name, oldVal);
-        } else if (oldVal == null) {
+        }
+        if (oldVal == null) {
             element.addEventListener(name, newVal);
         }
-    } else if (name !== 'form' && name !== 'list' && name in element) {
-        element[name] = newVal == null ? '' : newVal;
-    } else if (newVal == null || newVal === false) {
-        element.removeAttribute(name);
     } else {
-        element.setAttribute(name, newVal);
+        if (
+            name !== 'width' &&
+            name !== 'height' &&
+            name !== 'href' &&
+            name !== 'list' &&
+            name !== 'form' &&
+            name !== 'tabIndex' &&
+            name !== 'download' &&
+            name in element
+        ) {
+            try {
+                element[name] = newVal == null ? '' : newVal;
+                return;
+            } catch (e) {} // eslint-disable-line no-empty
+        }
+        if (newVal != null && (newVal !== false || name.indexOf('-') != -1)) {
+            element.setAttribute(name, newVal);
+        } else {
+            element.removeAttribute(name);
+        }
     }
 }

@@ -13,10 +13,6 @@ export function uuid() {
     return Math.random().toString(36).substring(2, 11);
 }
 
-export function isFunction(obj) {
-    return {}.toString.call(obj) === '[object Function]';
-}
-
 export function isHTML(str) {
     return htmlRe.test(str);
 }
@@ -53,7 +49,7 @@ export function parseHTML(html) {
 export function wrapFragment(frag, id) {
     const first = document.createTextNode('');
     const last = document.createTextNode('');
-    first.templarId = last.templarId = id;
+    first.templarID = last.templarID = id;
     frag.insertBefore(first, frag.firstChild);
     frag.appendChild(last);
     return frag;
@@ -63,9 +59,9 @@ export function getTemplateNodes(root, id) {
     const elements = [];
     let node = root.firstChild, isTpl = false;
     while (node) {
-        if (node.templarId === id && !isTpl) {
+        if (node.templarID === id && !isTpl) {
             isTpl = true;
-        } else if (node.templarId === id && isTpl) {
+        } else if (node.templarID === id && isTpl) {
             isTpl = false;
             elements.push(node);
         }

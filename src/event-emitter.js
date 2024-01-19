@@ -1,32 +1,30 @@
 export default class EventEmitter {
     constructor() {
-        this.events = {};
+        this.events = new Map();
     }
 
     on(name, callback) {
-        let callbacks = this.events[name];
-        if (callbacks === undefined) {
+        let callbacks = this.events.get(name);
+        if (!callbacks) {
             callbacks = [];
-            this.events[name] = callbacks;
+            this.events.set(name, callbacks);
         }
         callbacks.push(callback);
     }
 
     remove(name, callback) {
-        const callbacks = this.events[name];
-        if (callbacks !== undefined) {
-            for (let i = 0, len = callbacks.length; i < len; i++) {
-                if (callbacks[i] === callback) {
-                    callbacks.splice(i, 1);
-                    return;
-                }
+        const callbacks = this.events.get(name);
+        if (callbacks) {
+            const index = callbacks.indexOf(callback);
+            if (index !== -1) {
+                callbacks.splice(index, 1);
             }
         }
     }
 
     emit(name, ...args) {
-        const callbacks = this.events[name];
-        if (callbacks !== undefined && callbacks.length) {
+        const callbacks = this.events.get(name);
+        if (callbacks && callbacks.length) {
             callbacks.forEach((callback) => callback(...args));
         }
     }

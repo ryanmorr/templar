@@ -162,7 +162,7 @@ describe('nodes', () => {
 
     it('should emit a "change" custom event when a node is updated', () => {
         const tpl = templar('<div>{{foo}}</div>');
-        const div = tpl.query('div')[0];
+        const div = tpl.frag.querySelector('div');
 
         const onChange = sinon.spy((el) => {
             expect(el).to.equal(div);
