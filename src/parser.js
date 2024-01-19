@@ -1,6 +1,6 @@
 import scheduleRender from '@ryanmorr/schedule-render';
 import { patchNode, patchAttribute } from './patch';
-import { getMatches } from './util';
+import { getMatches } from './utils';
 
 const matcherRe = /\{\{\s*&?(.+?)\s*\}\}/g;
 const nodeContentRe = /\{\{\s*(.+?)\s*\}\}|((?:(?!(?:\{\{\s*(.+?)\s*\}\})).)+)/g;

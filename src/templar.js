@@ -1,10 +1,10 @@
 import EventEmitter from './event-emitter';
 import { parseTemplate } from './parser';
-import { parseHTML, uid, wrapFragment, getTemplateNodes } from './util';
+import { parseHTML, uuid, wrapFragment, getTemplateNodes } from './utils';
 
 class Templar {
     constructor(tpl, data) {
-        this.id = uid();
+        this.id = uuid();
         this.templar = true;
         this.data = {};
         const frag = parseHTML(tpl.trim());

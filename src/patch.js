@@ -1,4 +1,4 @@
-import { isHTML, isTemplate, parseHTML } from './util';
+import { isHTML, isTemplate, parseHTML } from './utils';
 
 function arrayToFrag(nodes) {
     return nodes.reduce((frag, node) => frag.appendChild(getNode(node)) && frag, document.createDocumentFragment());
